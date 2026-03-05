@@ -4,24 +4,17 @@
    height="600mm"
    viewBox="0 0 600 600"
    version="1.1"
-   id="svg889"
-   sodipodi:docname="gem_frame_loom.svg"
+   id="svg3616"
+   sodipodi:docname="loom.svg"
    inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
   <defs
-     id="defs893">
-    <rect
-       x="1499.7678"
-       y="1331.1125"
-       width="6.1594343"
-       height="72.476736"
-       id="rect2209" />
-  </defs>
+     id="defs3620" />
   <sodipodi:namedview
-     id="namedview891"
+     id="namedview3618"
      pagecolor="#ffffff"
      bordercolor="#000000"
      borderopacity="0.25"
@@ -32,211 +25,213 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="0.35895139"
-     inkscape:cx="1066.9968"
-     inkscape:cy="1133.8583"
+     inkscape:cx="1122.7147"
+     inkscape:cy="1236.9363"
      inkscape:window-width="1854"
      inkscape:window-height="1011"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg889" />
+     inkscape:current-layer="svg3616" />
   <desc
-     id="desc855">Lumen Loom V8 - Vertical Nesting Corrected - 6mm Plywood - Red: Cut</desc>
+     id="desc3566">Ironman V11.0 - Heddle Bar Added - Stiffener Notches Removed</desc>
   <style
-     id="style857">
+     id="style3568">
     .cut { fill: none; stroke: #FF0000; stroke-width: 0.1; }
+    .label { fill: #000000; font-family: 'Courier New', monospace; font-size: 10px; text-anchor: middle; }
   </style>
-  <path
-     class="cut"
-     d="M 10 20 h 40 v 560 h -40 Z                         M 27 55 h 6.1 v 30 h -6.1 Z                         M 27 205 h 6.1 v 20 h -6.1 Z                         M 27 355 h 6.1 v 20 h -6.1 Z                         M 27 515 h 6.1 v 30 h -6.1 Z"
-     id="path859" />
-  <path
-     class="cut"
-     d="M 550 20 h 40 v 560 h -40 Z                         M 567 55 h 6.1 v 30 h -6.1 Z                         M 567 205 h 6.1 v 20 h -6.1 Z                         M 567 355 h 6.1 v 20 h -6.1 Z                         M 567 515 h 6.1 v 30 h -6.1 Z"
-     id="path861" />
-  <path
-     class="cut"
-     d="M 75 50 v -6.2 h 30 v 6.2 h 5 v 480 h -5 v 6.2 h -30 v -6.2 h -5 v -480 h 5 Z"
-     id="path863" />
-  <path
-     class="cut"
-     d="M 110 80 h -6 v 2 h 6 M 110 100 h -6 v 2 h 6 M 110 120 h -6 v 2 h 6 M 110 140 h -6 v 2 h 6 M 110 160 h -6 v 2 h 6 M 110 180 h -6 v 2 h 6 M 110 200 h -6 v 2 h 6 M 110 220 h -6 v 2 h 6 M 110 240 h -6 v 2 h 6 M 110 260 h -6 v 2 h 6 M 110 280 h -6 v 2 h 6 M 110 300 h -6 v 2 h 6 M 110 320 h -6 v 2 h 6 M 110 340 h -6 v 2 h 6 M 110 360 h -6 v 2 h 6 M 110 380 h -6 v 2 h 6 M 110 400 h -6 v 2 h 6 M 110 420 h -6 v 2 h 6 M 110 440 h -6 v 2 h 6 M 110 460 h -6 v 2 h 6"
-     id="path865" />
-  <path
-     class="cut"
-     d="M 135 50 v -6.2 h 30 v 6.2 h 5 v 480 h -5 v 6.2 h -30 v -6.2 h -5 v -480 h 5 Z"
-     id="path867" />
-  <path
-     class="cut"
-     d="m 129.7083,80 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6"
-     id="path869" />
-  <path
-     class="cut"
-     d="M 195 50 v -6.2 h 20 v 6.2 h 5 v 460 h -5 v 6.2 h -20 v -6.2 h -5 v -460 h 5 Z"
-     id="path871" />
-  <path
-     class="cut"
-     d="M 245 50 v -6.2 h 20 v 6.2 h 5 v 460 h -5 v 6.2 h -20 v -6.2 h -5 v -460 h 5 Z"
-     id="path873" />
   <g
-     transform="translate(288.88746,50)"
-     id="g881">
+     id="Uprights">
     <path
        class="cut"
-       d="m 15,0 h 220 a 15,15 0 0 1 0,30 H 15 A 15,15 0 0 1 15,0 Z M -5,12 h 20 v 6 H -5 Z m 240,0 h 20 v 6 h -20 z"
-       id="path875" />
+       d="M 10 20 h 40 v 560 h -40 Z M 27 55 h 6.1 v 30 h -6.1 Z M 27 205 h 6.1 v 30 h -6.1 Z M 27 355 h 6.1 v 30 h -6.1 Z M 27 515 h 6.1 v 30 h -6.1 Z"
+       id="path3570" />
+    <text
+       x="30"
+       y="300"
+       class="label"
+       transform="rotate(-90, 30, 300)"
+       id="text3572">Side (Left)</text>
     <path
        class="cut"
-       d="m 15,50 h 220 a 15,15 0 0 1 0,30 H 15 A 15,15 0 0 1 15,50 Z M -5,62 h 20 v 6 H -5 Z m 240,0 h 20 v 6 h -20 z"
-       id="path877" />
+       d="M 550 20 h 40 v 560 h -40 Z M 567 55 h 6.1 v 30 h -6.1 Z M 567 205 h 6.1 v 30 h -6.1 Z M 567 355 h 6.1 v 30 h -6.1 Z M 567 515 h 6.1 v 30 h -6.1 Z"
+       id="path3574" />
+    <text
+       x="570"
+       y="300"
+       class="label"
+       transform="rotate(-90, 570, 300)"
+       id="text3576">Side (Right)</text>
+  </g>
+  <path
+     class="cut"
+     d="M 70 50 v -6.2 h 30 v 6.2 h 5 v 480 h -5 v 6.2 h -30 v -6.2 h -5 v -480 h 5 Z"
+     id="path3579" />
+  <path
+     class="cut"
+     d="M 105 80 h -6 v 2 h 6 M 105 100 h -6 v 2 h 6 M 105 120 h -6 v 2 h 6 M 105 140 h -6 v 2 h 6 M 105 160 h -6 v 2 h 6 M 105 180 h -6 v 2 h 6 M 105 200 h -6 v 2 h 6 M 105 220 h -6 v 2 h 6 M 105 240 h -6 v 2 h 6 M 105 260 h -6 v 2 h 6 M 105 280 h -6 v 2 h 6 M 105 300 h -6 v 2 h 6 M 105 320 h -6 v 2 h 6 M 105 340 h -6 v 2 h 6 M 105 360 h -6 v 2 h 6 M 105 380 h -6 v 2 h 6 M 105 400 h -6 v 2 h 6 M 105 420 h -6 v 2 h 6 M 105 440 h -6 v 2 h 6 M 105 460 h -6 v 2 h 6 M 105 480 h -6 v 2 h 6 M 105 500 h -6 v 2 h 6"
+     id="path3581" />
+  <text
+     x="85"
+     y="300"
+     class="label"
+     transform="rotate(-90, 85, 300)"
+     id="text3583">Frame Loom - Top</text>
+  <path
+     class="cut"
+     d="M 130 50 v -6.2 h 30 v 6.2 h 5 v 480 h -5 v 6.2 h -30 v -6.2 h -5 v -480 h 5 Z"
+     id="path3585" />
+  <path
+     class="cut"
+     d="m 124.7083,80 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6"
+     id="path3587" />
+  <text
+     x="150"
+     y="300"
+     class="label"
+     transform="rotate(-90, 150, 300)"
+     id="text3589">Bottom</text>
+  <path
+     class="cut"
+     d="M 190 50 v -6.2 h 30 v 6.2 h 5 v 480 h -5 v 6.2 h -30 v -6.2 h -5 v -480 h 5 Z"
+     id="path3591" />
+  <path
+     class="cut"
+     d="M 250 50 v -6.2 h 30 v 6.2 h 5 v 480 h -5 v 6.2 h -30 v -6.2 h -5 v -480 h 5 Z"
+     id="path3593" />
+  <text
+     x="270"
+     y="300"
+     class="label"
+     transform="rotate(-90, 270, 300)"
+     id="text3595">Stiffener</text>
+  <text
+     x="-297.92215"
+     y="210.87636"
+     class="label"
+     transform="rotate(-90)"
+     id="text3595-0"
+     style="font-size:10px;font-family:'Courier New', monospace;text-anchor:middle;fill:#000000">Stiffener</text>
+  <g
+     id="Heddle_Bar"
+     transform="translate(99.070946,-8.3989173)">
     <path
        class="cut"
-       d="m 15,100 h 220 a 15,15 0 0 1 0,30 H 15 a 15,15 0 0 1 0,-30 z m -20,12 h 20 v 6 H -5 Z m 240,0 h 20 v 6 h -20 z"
-       id="path879" />
+       d="m 215,40 h 20 v 520 h -20 z"
+       id="path3597" />
+    <path
+       class="cut"
+       d="m 222,80 c 0,-3.999998 6,-3.999998 6,0 0,3.999998 -6,3.999998 -6,0"
+       id="path3599"
+       sodipodi:nodetypes="csc" />
+  </g>
+  <path
+     class="cut"
+     d="m 435.06603,42.183277 h 100 v 80.000003 a 10,10 0 0 1 -10,10 h -80 a 10,10 0 0 1 -10,-10 z"
+     id="path3610" />
+  <path
+     class="cut"
+     d="m 445.06603,42.183277 v 40 h 4 v -40 z m 15,0 v 40 h 4 v -40 z m 15,0 v 40 h 4 v -40 z m 15,0 v 40 h 4 v -40 z"
+     id="path3612"
+     sodipodi:nodetypes="cccccccccccccccccccc" />
+  <g
+     id="g4003"
+     transform="translate(18.931779,-114.06346)">
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:0.1"
+       d="m 500.32955,155.85323 v 40 h 4 v -40 z"
+       id="path3999" />
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:0.1"
+       d="m 485.32955,155.85323 v 40 h 4 v -40 z"
+       id="path3997" />
   </g>
   <g
-     transform="translate(300, 200)"
-     id="g887">
+     id="g3824"
+     transform="rotate(-90,536.56298,179.58701)">
     <path
        class="cut"
-       d="M 0 0 h 100 v 80 a 10 10 0 0 1 -10 10 h -80 a 10 10 0 0 1 -10 -10 Z"
-       id="path883" />
+       d="m 325,50 h 220 a 15,15 0 0 1 0,30 H 325 a 15,15 0 0 1 0,-30 z m -20,12 h 20 v 6 h -20 z m 240,0 h 20 v 6 h -20 z"
+       id="path3604" />
     <path
        class="cut"
-       d="M 10 0 v 40 h 4 v -40 Z M 25 0 v 40 h 4 v -40 Z M 40 0 v 40 h 4 v -40 Z M 55 0 v 40 h 4 v -40 Z M 70 0 v 40 h 4 v -40 Z M 85 0 v 40 h 4 v -40 Z"
-       id="path885" />
+       d="m 325,100 h 220 a 15,15 0 0 1 0,30 H 325 a 15,15 0 0 1 0,-30 z m -20,12 h 20 v 6 h -20 z m 240,0 h 20 v 6 h -20 z"
+       id="path3606" />
+    <path
+       class="cut"
+       d="m 325,150 h 220 a 15,15 0 0 1 0,30 H 325 a 15,15 0 0 1 0,-30 z m -20,12 h 20 v 6 h -20 z m 240,0 h 20 v 6 h -20 z"
+       id="path3608" />
+    <text
+       xml:space="preserve"
+       style="font-size:9.87777px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';text-align:center;text-anchor:middle;fill:#000014;stroke-width:0.3;stop-color:#000000"
+       x="418.71927"
+       y="167.1347"
+       id="text3747"><tspan
+         sodipodi:role="line"
+         id="tspan3745"
+         style="stroke-width:0.3"
+         x="418.71927"
+         y="167.1347">Shuttle</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:9.87777px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';text-align:center;text-anchor:middle;fill:#000014;stroke-width:0.3;stop-color:#000000"
+       x="421.37799"
+       y="116.75126"
+       id="text3747-1"><tspan
+         sodipodi:role="line"
+         id="tspan3745-0"
+         style="stroke-width:0.3"
+         x="421.37799"
+         y="116.75126">Shuttle</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:9.87777px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';text-align:center;text-anchor:middle;fill:#000014;stroke-width:0.3;stop-color:#000000"
+       x="424.01254"
+       y="68.577698"
+       id="text3747-1-6"><tspan
+         sodipodi:role="line"
+         id="tspan3745-0-3"
+         style="stroke-width:0.3"
+         x="424.01254"
+         y="68.577698">Shuttle</tspan></text>
   </g>
+  <path
+     class="cut"
+     d="m 314.07095,31.601083 h 20 V 551.60108 h -20 z"
+     id="path4777" />
+  <path
+     class="cut"
+     d="m 327.07095,71.601083 c 0,-3.999998 -6,-3.999998 -6,0 0,3.999998 6,3.999998 6,0 m 0,19 c 0,-3.999998 -6,-3.999998 -6,0 0,3.999998 6,3.999998 6,0 m 0,18.999997 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0 m 0,19 c 0,-4 -6,-4 -6,0 0,4 6,4 6,0"
+     id="path4779"
+     sodipodi:nodetypes="csccsccsccsccsccsccsccsccsccsccsccsccsccsccsccsccsccsccsccsccsccsc" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.1"
+     d="m 317.07095,71.601083 c 0,-3.865996 3.13401,-6.999997 7,-6.999997 3.86599,0 7,3.134001 7,6.999997 0,3.865996 -3.13401,6.999997 -7,6.999997 -3.86599,0 -7,-3.134001 -7,-6.999997 m 0,37.999997 c 0,-3.866 3.13401,-7 7,-7 3.86599,0 7,3.134 7,7 0,3.866 -3.13401,7 -7,7 -3.86599,0 -7,-3.134 -7,-7 m 0,38 c 0,-3.866 3.13401,-7 7,-7 3.86599,0 7,3.134 7,7 0,3.866 -3.13401,7 -7,7 -3.86599,0 -7,-3.134 -7,-7 m 0,38 c 0,-3.866 3.13401,-7 7,-7 3.86599,0 7,3.134 7,7 0,3.866 -3.13401,7 -7,7 -3.86599,0 -7,-3.134 -7,-7 m 0,38 c 0,-3.866 3.13401,-7 7,-7 3.86599,0 7,3.134 7,7 0,3.866 -3.13401,7 -7,7 -3.86599,0 -7,-3.134 -7,-7 m 0,38 c 0,-3.866 3.13401,-7 7,-7 3.86599,0 7,3.134 7,7 0,3.866 -3.13401,7 -7,7 -3.86599,0 -7,-3.134 -7,-7 m 0,38 c 0,-3.866 3.13401,-7 7,-7 3.86599,0 7,3.134 7,7 0,3.866 -3.13401,7 -7,7 -3.86599,0 -7,-3.134 -7,-7 m 0,38 c 0,-3.866 3.13401,-7 7,-7 3.86599,0 7,3.134 7,7 0,3.866 -3.13401,7 -7,7 -3.86599,0 -7,-3.134 -7,-7 m 0,38 c 1.03113,-9.97936 13.77606,-7.36791 14,0 0,3.866 -3.13401,7 -7,7 -3.86599,0 -7,-3.134 -7,-7 m 0,38 c 0,-3.866 3.13401,-7 7,-7 3.86599,0 7,3.134 7,7 0,3.866 -3.13401,7 -7,7 -3.86599,0 -7,-3.134 -7,-7 m 0,38 c 0,-3.866 3.13401,-7 7,-7 3.86599,0 7,3.134 7,7 0,3.866 -3.13401,7 -7,7 -3.86599,0 -7,-3.134 -7,-7"
+     id="etch3599"
+     sodipodi:nodetypes="csssccsssccsssccsssccsssccsssccsssccssscccsccsssccsssc" />
   <text
      xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="403.43597"
-     y="166.90723"
-     id="text1066"><tspan
+     style="font-size:9.87777px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';text-align:center;text-anchor:middle;fill:#000014;stroke-width:0.3;stop-color:#000000"
+     x="486.31659"
+     y="116.22292"
+     id="text4007"><tspan
        sodipodi:role="line"
-       id="tspan1064"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1"
-       x="403.43597"
-       y="166.90723">Shuttle</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="351.11734"
-     y="271.2775"
-     id="text1066-2"><tspan
-       sodipodi:role="line"
-       id="tspan1064-8"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1"
-       x="351.11734"
-       y="271.2775">Beater</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="-301.00589"
-     y="142.631"
-     id="text1066-2-3"
-     transform="rotate(-91.826859)"><tspan
-       sodipodi:role="line"
-       id="tspan1064-8-6"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1"
-       x="-301.00589"
-       y="142.631">Frame Loom</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="-299.77792"
-     y="154.24763"
-     id="text1066-2-3-1"
-     transform="rotate(-91.826859)"><tspan
-       sodipodi:role="line"
-       id="tspan1064-8-6-2"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1"
-       x="-299.77792"
-       y="154.24763">Top</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="-299.43457"
-     y="79.550369"
-     id="text1066-2-3-1-9"
-     transform="rotate(-91.826859)"><tspan
-       sodipodi:role="line"
-       id="tspan1064-8-6-2-3"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1"
-       x="-299.43457"
-       y="79.550369">Bottom</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="-294.57501"
-     y="25.378761"
-     id="text1066-2-3-1-9-1"
-     transform="rotate(-91.826859)"><tspan
-       sodipodi:role="line"
-       id="tspan1064-8-6-2-3-9"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1"
-       x="-294.57501"
-       y="25.378761">Side</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="-298.55692"
-     y="563.2804"
-     id="text1066-2-3-1-9-1-4"
-     transform="rotate(-91.826859)"><tspan
-       sodipodi:role="line"
-       id="tspan1064-8-6-2-3-9-7"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1"
-       x="-298.55692"
-       y="563.2804">Side</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="405.28848"
-     y="118.26865"
-     id="text1066-7"><tspan
-       sodipodi:role="line"
-       id="tspan1064-5"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1"
-       x="405.28848"
-       y="118.26865">Shuttle</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="407.39325"
-     y="67.506599"
-     id="text1066-7-9"><tspan
-       sodipodi:role="line"
-       id="tspan1064-5-2"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1"
-       x="407.39325"
-       y="67.506599">Shuttle</tspan></text>
-  <text
-     xml:space="preserve"
-     transform="scale(0.26458333)"
-     id="text2207"
-     style="-inkscape-font-specification:'Courier New, Normal';font-family:'Courier New';font-size:37.33333333px;fill:#000014;stop-color:#000000;text-align:center;stroke-width:1.13385827;stroke:none;stroke-opacity:1;fill-opacity:1;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;white-space:pre;shape-inside:url(#rect2209)" />
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87777px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="-294.73077"
-     y="208.4593"
-     id="text2215"
-     transform="rotate(-90)"><tspan
-       sodipodi:role="line"
-       id="tspan2213"
+       id="tspan4005"
        style="stroke-width:0.3"
-       x="-294.73077"
-       y="208.4593">Stiffener</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87777px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="-294.01575"
-     y="257.36523"
-     id="text2215-5"
-     transform="rotate(-90)"><tspan
-       sodipodi:role="line"
-       id="tspan2213-0"
-       style="stroke-width:0.3"
-       x="-294.01575"
-       y="257.36523">Stiffener</tspan></text>
+       x="486.31659"
+       y="116.22292">Beater</tspan></text>
+  <ellipse
+     style="vector-effect:non-scaling-stroke;fill:none;stroke:#ff0000;stroke-width:0.264583;stroke-dasharray:none;stroke-opacity:1;-inkscape-stroke:hairline;stop-color:#000000"
+     id="path5014"
+     cx="324.23505"
+     cy="489.07495"
+     rx="2.9044936"
+     ry="3.1240401" />
+  <ellipse
+     style="fill:none;stroke:#040000;stroke-width:0.238942;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000"
+     id="path5014-4"
+     cx="324.24442"
+     cy="489.01736"
+     rx="6.5791645"
+     ry="6.1019206" />
 </svg>
