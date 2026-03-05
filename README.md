@@ -1,6 +1,8 @@
 # Laser Cutting a Frame Loom
 
-Status: Untested Draft, has not yet been laser cut 5 March 2026
+Status:
+- Untested Draft, has not yet been laser cut 5 March 2026
+- No warranty of any kind applies. Use at your own risk. See Creative Commons License file.
 
 Description:
 This repo describes a Frame Loom, a weaving system optimized to be Laser Cut using: '6mm plywood and 600mm x 600mm plywood sheet' or other material. The design features a 560mm x 500mm interlocking H-frame with a "union joinery" architecture, utilizing dual outward-facing end-tabs and internal stiffening strips to resist the high compressive forces of warp tension across its 440mm internal span. The specification includes three D-profile open-notch shuttles for yarn loading and a tapered beater, alongside a short set of instructions for assembly, warping, and tensioning.
