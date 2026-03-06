@@ -1,3 +1,9 @@
+1. See CONTENT-LICENSE.txt for license text of SVGs, docs and generated content.
+
+2. Software components License:
+
+
+
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 

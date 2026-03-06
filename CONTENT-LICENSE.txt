@@ -1,3 +1,8 @@
+1. See SW-LICENSE.txt for license text of software components.
+
+2. All SVG, docs and other generated content:
+
+
 Creative Commons Legal Code
 
 CC0 1.0 Universal
