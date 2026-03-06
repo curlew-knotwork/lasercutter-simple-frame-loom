@@ -1,84 +1,59 @@
-# Laser Cutting a Frame Loom
+# Laser-cut Frame Loom
 
-Status:
-- Untested Draft, has not yet been laser cut 5 March 2026
-- No warranty of any kind applies. Use at your own risk. See Creative Commons License file.
+A parametric frame loom for weaving, designed as a gift. All geometry is generated from code — no hand-edited SVGs.
 
-Description:
-This repo describes a Frame Loom, a weaving system optimized to be Laser Cut using: '6mm plywood and 600mm x 600mm plywood sheet' or other material. The design features a 560mm x 500mm interlocking H-frame with a "union joinery" architecture, utilizing dual outward-facing end-tabs and internal stiffening strips to resist the high compressive forces of warp tension across its 440mm internal span. The specification includes three D-profile open-notch shuttles for yarn loading and a tapered beater, alongside a short set of instructions for assembly, warping, and tensioning.
+**Status:** Code-generated, not yet laser cut. Three SVG outputs in `output/`.
 
-The SVG file in this repo is for laser cutting the parts of the Frame Loom.
+## What it makes
 
-# 1. Pre-Assembly Audit (The Physics)
-Before applying glue, verify the physical dimensions of the components cut from your Laser Cutter.
+- **300×400mm weaving interior** (suitable for a scarf)
+- 6mm birch plywood, 600×600mm sheet
+- A-frame stand (3mm ply, same sheet as box)
+- Sliding-lid storage box that holds the disassembled loom flat
 
-Uprights (Sides): Ensure the four internal slots are clear of debris.
+## Outputs
 
-Cross-Members: Check that the 6.2mm end-tabs are square and free of excessive charring.
+| File | Sheet | Contents |
+|---|---|---|
+| `output/loom.svg` | 6mm ply 600×600mm | Rails (×2), stiles (×2), crossbars (×2), shuttle (×2), beater, heddle bar |
+| `output/box.svg` | 3mm ply 600×600mm | Box base, lid, 4 walls, stand-L, stand-R, stand spreader |
+| `output/test_cut.svg` | 3mm ply scrap | Fit-test pieces — cut this first to verify kerf assumption |
 
-Kerf Check: Perform a dry-fit. If the 6.0mm tabs do not enter the 6.1mm slots with light finger pressure, lightly sand the tab "cheeks" with 220-grit paper.
+## Generate SVGs
 
-# 2. Sequence-of-Operations: Frame Assembly
-To ensure the loom resists the compressive force of warp tension without "racking" (parallelogramming), follow this order:
+```bash
+python3 -m venv .venv && .venv/bin/pip install pytest
+.venv/bin/python3 -m src.loom     # → output/loom.svg
+.venv/bin/python3 -m src.box      # → output/box.svg
+```
 
-Orientation: Lay the two Uprights parallel on a flat workbench.
+## Run tests
 
-Primary Joinery: Insert the Header (Top) and Footer (Bottom) cross-members. Ensure the Warp Grooves are facing "inward" toward the center of the loom.
+```bash
+.venv/bin/python3 -m pytest tests/ -q
+```
 
-Structural Reinforcement: Insert the two Stiffening Strips into the remaining 1/3 and 2/3 interval slots.
+All geometry is validated by formal invariants at generation time. If any invariant fails the SVG is not written.
 
-Squaring: Measure diagonally from corner to corner. Adjust until the measurements are identical.
+## Docs
 
-Final Bond: Once square, apply a small amount of wood glue to the joints.
+All design documents are in `docs/`:
 
-Note: The tabs will protrude roughly 0.1mm–0.2mm beyond the uprights. Leave these proud; they provide structural "meat" that can be sanded flush after the glue cures.
+| Doc | Purpose |
+|---|---|
+| `DECISIONS.md` | Locked design decisions — authoritative |
+| `REQUIREMENTS.md` | User + system requirements |
+| `DESIGN.md` | Design questions and proposals |
+| `ARCHITECTURE.md` | Module structure and responsibilities |
+| `FAILURE_PATTERN_REGISTRY.md` | 28 failure patterns across 5 categories; session scan log |
+| `FAILURE_REGISTRY.md` | Specific defect instances with root cause |
 
-# 3. Warping Protocol (Constraint Delivery)
-The U-profile grooves on the Header and Footer are your primary tensioning anchors.
+Legacy files (old hand-drawn design, pre-code spec) are in `docs/archive/`.
 
-Initial Anchor: Tie a secure lark's head or clove hitch knot to the far-left groove of the Header.
+## Key design decisions
 
-The Path: * Bring the thread down to the far-left groove of the Footer.
-
-Pass the thread through the groove, wrap it around the back of the "tooth," and bring it back up to the second groove of the Header.
-
-Tension Maintenance: Maintain constant, firm pressure. Do not over-tighten; the goal is a consistent "thrum" when plucked, similar to a guitar string.
-
-Completion: Tie off the final thread to the far-right groove of the Footer.
-
-# 4. Tool Ergonomics: Shuttles & Beater
-Shuttle Loading: Wind your weft yarn lengthwise. The Open-Mouth D-Profile allows the yarn to sit deep in the notch, keeping the shuttle's profile slim enough to glide through a small "shed" (the gap between warp layers).
-
-The Beater (Comb): Use the tapered teeth to pack the weft. The "D" profile on the teeth prevents the tool from snagging or fraying the warp threads during high-tension weaving.
-
-# 5. Maintenance & Care
-Sanding: If using wool, ensure all laser-cut edges on the Beater and Warp Grooves are sanded smooth. Burrs or char can "grab" natural fibers.
-
-Storage: Store the loom flat. Even with stiffeners, 6mm plywood can develop a "set" or warp if leaned against a wall under high tension for months.
-
-# A. References
-
-## A1. Fundamental Warping & Setup
-These guides provide the primary sequence for tensioning a 500mm span.
-
-The Spruce Crafts: How to Warp a Frame Loom
-https://www.thesprucecrafts.com/warp-a-weaving-loom-4767104
-
-Weaving Nice Things: Frame Loom Setup
-https://weavingnicethings.com/blogs/news/how-to-warp-a-frame-loom
-
-## A2. Advanced Techniques & Tool Ergonomics
-Resources for utilizing the D-profile shuttles and tapered beater.
-
-The Weaving Loom: Technical Weaving Techniques
-https://www.theweavingloom.com/weaving-techniques/
-
-Interweave: Small-Looms Weaving Resources
-https://www.interweave.com/weaving/small-looms/
-
-## A3. Community & Design Databases
-Ravelry: Weaving Groups (Technical community for pattern data)
-https://www.ravelry.com/groups/browse/weaving
-
-Pinterest: Frame Loom Patterns (Visual reference for 50cm+ projects)
-https://www.pinterest.com/search/pins/?q=frame%20loom%20weaving%20patterns
+- **N=1 finger joint** per corner: tab 7.33mm > material 6mm ✓ (N=2 gives 4.4mm — too thin)
+- **31 warp notches** at 10mm pitch: (31−1)×10 = 300mm = interior width ✓
+- **Two crossbars** at 1/3 and 2/3 interior height, inner-face mortises, no prop mortises
+- **A-frame stand** from 3mm ply: independent of loom stiles, no mortise conflict
+- All parameters live in `src/params.py`; `assert_all()` enforces 12 geometric invariants at import

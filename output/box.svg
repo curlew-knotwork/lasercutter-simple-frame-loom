@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 600.0 600.0"
+     width="600.0mm" height="600.0mm">
+  <!-- BOX + STAND | 3mm BIRCH PLY 600x600mm | RED=CUT preview 0.1mm — change to 0.01mm for laser -->
+  <rect x="0" y="0" width="600.0" height="600.0" fill="#faf8f4" stroke="#aaaaaa" stroke-width="0.3"/>
+
+<g id="box_base">
+  <path id="box_base_outer" d="M 2.0000,2.0000 L 468.0000,2.0000 L 468.0000,266.0000 L 2.0000,266.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <text x="235.00" y="134.00" font-size="4.0" font-family="monospace" text-anchor="middle" fill="#000000">BOX BASE</text>
+</g>
+
+<g id="box_lid">
+  <path id="box_lid_outer" d="M 2.0000,268.0000 L 462.0000,268.0000 L 462.0000,526.0000 L 2.0000,526.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <text x="232.00" y="397.00" font-size="4.0" font-family="monospace" text-anchor="middle" fill="#000000">BOX LID</text>
+</g>
+
+<g id="box_long_wall_L">
+  <path id="box_long_wall_L_outer" d="M 470.0000,2.0000 L 482.0000,2.0000 L 482.0000,468.0000 L 470.0000,468.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <text x="476.00" y="235.00" font-size="4.0" font-family="monospace" text-anchor="middle" fill="#000000">LONG WALL L</text>
+</g>
+
+<g id="box_long_wall_R">
+  <path id="box_long_wall_R_outer" d="M 484.0000,2.0000 L 496.0000,2.0000 L 496.0000,468.0000 L 484.0000,468.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <text x="490.00" y="235.00" font-size="4.0" font-family="monospace" text-anchor="middle" fill="#000000">LONG WALL R</text>
+</g>
+
+<g id="box_short_wall_front">
+  <path id="box_short_wall_front_outer" d="M 2.0000,570.0000 L 260.0000,570.0000 L 260.0000,582.0000 L 2.0000,582.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <text x="131.00" y="576.00" font-size="4.0" font-family="monospace" text-anchor="middle" fill="#000000">SHORT WALL FR</text>
+</g>
+
+<g id="box_short_wall_back">
+  <path id="box_short_wall_back_outer" d="M 262.0000,570.0000 L 520.0000,570.0000 L 520.0000,582.0000 L 262.0000,582.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <text x="391.00" y="576.00" font-size="4.0" font-family="monospace" text-anchor="middle" fill="#000000">SHORT WALL BK</text>
+</g>
+
+<g id="stand_L">
+  <path id="stand_L_outer" d="M 498.0000,2.0000 L 506.7500,2.0000 L 506.7500,27.0000 L 529.2500,27.0000 L 529.2500,2.0000 L 538.0000,2.0000 L 538.0000,302.0000 L 498.0000,302.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <path id="stand_L_hole0" d="M 510.5000,270.4500 L 525.5000,270.4500 L 525.5000,273.5500 L 510.5000,273.5500 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <text x="518.00" y="152.00" font-size="4.0" font-family="monospace" text-anchor="middle" fill="#000000">STAND L</text>
+</g>
+
+<g id="stand_R">
+  <path id="stand_R_outer" d="M 580.0000,2.0000 L 571.2500,2.0000 L 571.2500,27.0000 L 548.7500,27.0000 L 548.7500,2.0000 L 540.0000,2.0000 L 540.0000,302.0000 L 580.0000,302.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <path id="stand_R_hole0" d="M 552.5000,270.4500 L 567.5000,270.4500 L 567.5000,273.5500 L 552.5000,273.5500 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <text x="560.00" y="152.00" font-size="4.0" font-family="monospace" text-anchor="middle" fill="#000000">STAND R</text>
+</g>
+
+<g id="stand_spreader">
+  <path id="stand_spreader_outer" d="M 2.0000,528.0000 L 376.0000,528.0000 L 376.0000,568.0000 L 2.0000,568.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <text x="189.00" y="548.00" font-size="4.0" font-family="monospace" text-anchor="middle" fill="#000000">STAND SPREADER</text>
+</g>
+
+</svg>
