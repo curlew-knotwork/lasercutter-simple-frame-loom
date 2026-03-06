@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 200.0 100.0"
+     width="200.0mm" height="100.0mm">
+  <!-- TEST CUT | 3mm SCRAP | Cut before full box sheet | RED=CUT preview 0.1mm -->
+  <rect x="0" y="0" width="200.0" height="100.0" fill="#faf8f4" stroke="#aaaaaa" stroke-width="0.3"/>
+
+<g id="tc_socket">
+  <path id="tc_socket_outer" d="M 2.0000,2.0000 L 6.0000,2.0000 L 6.0000,5.0000 L 10.0000,5.0000 L 10.0000,2.0000 L 14.0000,2.0000 L 14.0000,15.0000 L 17.0000,15.0000 L 17.0000,19.0000 L 14.0000,19.0000 L 14.0000,32.0000 L 2.0000,32.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <text x="9.50" y="17.00" font-size="3.0" font-family="monospace" text-anchor="middle" fill="#000000">CORNER SOCKET</text>
+</g>
+
+<g id="tc_tab">
+  <path id="tc_tab_outer" d="M 22.0000,2.0000 L 22.0000,2.8000 L 19.0000,2.8000 L 19.0000,6.8000 L 22.0000,6.8000 L 22.0000,10.8000 L 35.0000,10.8000 L 35.0000,13.8000 L 39.0000,13.8000 L 39.0000,10.8000 L 52.0000,10.8000 L 52.0000,6.8000 L 52.0000,2.8000 L 52.0000,2.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <text x="35.50" y="7.90" font-size="3.0" font-family="monospace" text-anchor="middle" fill="#000000">CORNER TAB</text>
+</g>
+
+<g id="tc_base_notch">
+  <path id="tc_base_notch_outer" d="M 2.0000,34.0000 L 2.0000,36.5000 L 5.0000,36.5000 L 5.0000,40.5000 L 2.0000,40.5000 L 2.0000,43.0000 L 32.0000,43.0000 L 32.0000,34.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <text x="17.00" y="38.50" font-size="3.0" font-family="monospace" text-anchor="middle" fill="#000000">BASE NOTCH</text>
+</g>
+
+<g id="tc_lid">
+  <path id="tc_lid_outer" d="M 34.0000,34.0000 L 64.0000,34.0000 L 64.0000,37.0000 L 34.0000,37.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <text x="49.00" y="35.50" font-size="3.0" font-family="monospace" text-anchor="middle" fill="#000000">LID STRIP</text>
+</g>
+
+<g id="tc_lid_slot">
+  <path id="tc_lid_slot_outer" d="M 54.0000,5.2000 L 66.0000,2.0000 L 66.0000,15.0000 L 69.0000,15.0000 L 69.0000,19.0000 L 66.0000,19.0000 L 66.0000,32.0000 L 54.0000,32.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <text x="61.50" y="17.00" font-size="3.0" font-family="monospace" text-anchor="middle" fill="#000000">LID SLOT</text>
+</g>
+
+</svg>

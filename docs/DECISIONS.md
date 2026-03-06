@@ -111,6 +111,14 @@ The following invariants must hold for every valid parameter set. Any parameter 
 - **Decision:** BOX_INTERIOR_H = 12mm (was MAT+2=8mm). Provides comfortable clearance for loom parts lying flat (all parts ≤ MAT=6mm thick when flat). Enables cleaner finger-joint geometry on 3mm ply box walls (tab = MAT3 = 3mm gives N=2 tabs on 12mm walls).
 - **Locked:** 2026-03-06
 
+### D-15 — Box joint design: wall-to-wall finger joints + wall-to-base edge tabs + sliding lid
+- **Wall-to-wall corners:** N=1 finger joint per corner (short wall has tab, long wall has socket). Tab = BOX_TAB_W = 4mm wide, MAT3 = 3mm deep. Already implemented.
+- **Wall-to-base:** Each wall bottom edge has N tabs protruding MAT3=3mm downward; base has matching edge notches (concave, opens at base perimeter edge). Long walls: BOX_BASE_NTABS_L = 3 tabs evenly spaced (at BOX_OUTER_L/4, /2, 3/4). Short walls: BOX_BASE_NTABS_S = 1 tab centered on body (at MAT3 + BOX_INTERIOR_W/2 from base edge). Tab width = BOX_TAB_W = 4mm for all base tabs.
+- **Lid:** Flat panel (BOX_INTERIOR_L × BOX_INTERIOR_W) slides through BOX_DADO_W = 3.2mm slots at top of short walls. Lid enters from one short-wall end.
+- **No glue, no hardware** — all joints press-fit. Kerf provides ~0.6mm net clearance (drawn dimension, laser removes 0.15mm/side).
+- **Assembly sequence:** Connect 4 walls at corners → lower base onto wall bottom tabs from above → slide lid in.
+- **Locked:** 2026-03-06
+
 ---
 
 ## Superseded Decisions

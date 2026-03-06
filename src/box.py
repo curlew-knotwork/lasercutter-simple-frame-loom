@@ -46,9 +46,47 @@ OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "..", "output", "box.svg")
 # ---------------------------------------------------------------------------
 
 def build_box_base(p: dict):
-    """Floor panel: BOX_OUTER_L × BOX_OUTER_W."""
-    pts = rect_pts(0.0, 0.0, p["BOX_OUTER_L"], p["BOX_OUTER_W"])
-    return pts, []
+    """
+    Floor panel: BOX_OUTER_L × BOX_OUTER_W with edge notches for wall bottom tabs.
+    Notches are concave (go inward from edge) — bbox unchanged.
+    Front/back edges: BOX_BASE_NTABS_L notches at L*i/(n+1) for i=1..n.
+    Left/right edges: BOX_BASE_NTABS_S notches centred on interior (MAT3 + INTERIOR_W/2).
+    """
+    L   = p["BOX_OUTER_L"]
+    W   = p["BOX_OUTER_W"]
+    nd  = p["MAT3"]                   # notch depth (inward)
+    tw2 = p["BOX_TAB_W"] / 2.0        # half notch width
+    nl  = p["BOX_BASE_NTABS_L"]
+    ns  = p["BOX_BASE_NTABS_S"]
+
+    tx = [L * i / (nl + 1) for i in range(1, nl + 1)]
+    ty = [p["MAT3"] + p["BOX_INTERIOR_W"] * i / (ns + 1) for i in range(1, ns + 1)]
+
+    # Front edge (y=0, left→right): notches step to y=+nd (inward)
+    front = [(0.0, 0.0)]
+    for cx in tx:
+        front += [(cx - tw2, 0.0), (cx - tw2, nd), (cx + tw2, nd), (cx + tw2, 0.0)]
+    front.append((L, 0.0))
+
+    # Right edge (x=L, top→bottom): notches step to x=L-nd (inward)
+    right = []
+    for cy in ty:
+        right += [(L, cy - tw2), (L - nd, cy - tw2), (L - nd, cy + tw2), (L, cy + tw2)]
+    right.append((L, W))
+
+    # Back edge (y=W, right→left): notches step to y=W-nd (inward), reversed order
+    back = []
+    for cx in reversed(tx):
+        back += [(cx + tw2, W), (cx + tw2, W - nd), (cx - tw2, W - nd), (cx - tw2, W)]
+    back.append((0.0, W))
+
+    # Left edge (x=0, bottom→top): notches step to x=+nd (inward), reversed order
+    left = []
+    for cy in reversed(ty):
+        left += [(0.0, cy + tw2), (nd, cy + tw2), (nd, cy - tw2), (0.0, cy - tw2)]
+    # Z closes (last pt) back to (0,0)
+
+    return front + right + back + left, []
 
 
 def build_box_lid(p: dict):
@@ -59,20 +97,77 @@ def build_box_lid(p: dict):
 
 def build_box_long_wall(p: dict):
     """
-    Long wall panel: placed in 'portrait' orientation on sheet.
-    Local coords: BOX_INTERIOR_H wide × BOX_OUTER_L tall.
-    (Rotate mentally when assembling: the 'tall' axis becomes the box length.)
+    Long wall: placed in portrait on sheet.
+    Local coords: BOX_INTERIOR_H wide (x) × BOX_OUTER_L tall (y).
+    N=1 corner socket at each end: MAT3 deep × BOX_TAB_W wide, centred on width.
+    Socket is concave — does not change bounding box.
     """
-    pts = rect_pts(0.0, 0.0, p["BOX_INTERIOR_H"], p["BOX_OUTER_L"])
+    l   = p["BOX_OUTER_L"]       # 466mm — long axis (y in portrait)
+    h   = p["BOX_INTERIOR_H"]    # 12mm — short axis (x in portrait)
+    t   = p["MAT3"]              # 3mm socket depth (y direction)
+    tw  = p["BOX_TAB_W"]         # 4mm socket width (x direction)
+    sx  = (h - tw) / 2.0         # 4mm — socket left x (centred on h=12)
+    ex  = sx + tw                 # 8mm — socket right x
+    # Bottom tabs on the right edge (x=h, the "base" side in assembly)
+    d    = p["MAT3"]              # tab protrusion = 3mm
+    n    = p["BOX_BASE_NTABS_L"]  # = 3
+    tw2  = p["BOX_TAB_W"] / 2.0   # half-tab-width = 2mm
+    right_edge = [(h, 0.0)]
+    for i in range(1, n + 1):
+        cy = l * i / (n + 1)
+        right_edge += [
+            (h,   cy - tw2), (h+d, cy - tw2),   # tab: step out
+            (h+d, cy + tw2), (h,   cy + tw2),   # tab: step back
+        ]
+    right_edge.append((h, l))
+
+    pts = [
+        (0.0, 0.0),
+        (sx,  0.0), (sx, t), (ex, t), (ex, 0.0),   # top socket
+        *right_edge,                                  # right edge with base tabs
+        (ex,  l), (ex, l-t), (sx, l-t), (sx, l),   # bottom socket
+        (0.0, l),
+        # Z closes to (0.0, 0.0)
+    ]
     return pts, []
 
 
 def build_box_short_wall(p: dict):
     """
-    Short wall panel: BOX_INTERIOR_W wide × BOX_INTERIOR_H tall.
-    Sits between the long walls at each end of the box.
+    Short wall: BOX_INTERIOR_W body, BOX_INTERIOR_H tall.
+    N=1 corner tabs at each side: MAT3 protrusion × BOX_TAB_W tall, centred on height.
+      → total bounding box width = BOX_INTERIOR_W + 2×MAT3 = BOX_OUTER_W.
+    Top slot (BOX_DADO_W deep, full width): allows lid to slide through.
+      → bounding box top at y=BOX_DADO_W (slot is open at y=0).
     """
-    pts = rect_pts(0.0, 0.0, p["BOX_INTERIOR_W"], p["BOX_INTERIOR_H"])
+    w   = p["BOX_INTERIOR_W"]    # 258mm body width
+    h   = p["BOX_INTERIOR_H"]    # 12mm total height
+    t   = p["MAT3"]              # 3mm tab protrusion
+    tw  = p["BOX_TAB_W"]         # 4mm tab height
+    dw  = p["BOX_DADO_W"]        # 3.2mm lid slot depth (from top)
+    sy  = (h - tw) / 2.0         # 4mm — tab top y (centred on 12mm)
+    ey  = sy + tw                 # 8mm — tab bottom y
+    # Bottom tabs on the bottom edge (y=h, the base side in assembly)
+    d_b  = p["MAT3"]              # tab protrusion = 3mm
+    n_b  = p["BOX_BASE_NTABS_S"]  # = 1
+    tw2b = p["BOX_TAB_W"] / 2.0   # 2mm
+    bot_edge = [(0.0, h)]
+    for i in range(1, n_b + 1):
+        cx = w * i / (n_b + 1)
+        bot_edge += [
+            (cx - tw2b, h),       (cx - tw2b, h + d_b),   # tab: step down
+            (cx + tw2b, h + d_b), (cx + tw2b, h),          # tab: step back
+        ]
+    bot_edge.append((w, h))
+
+    pts = [
+        (0.0, dw),
+        (0.0, sy), (-t, sy), (-t, ey), (0.0, ey),   # left tab
+        *bot_edge,                                     # bottom edge with base tab
+        (w, ey), (w+t, ey), (w+t, sy), (w, sy),      # right tab
+        (w, dw),
+        # Z closes to (0.0, dw)
+    ]
     return pts, []
 
 
@@ -144,53 +239,38 @@ def layout(p: dict) -> list:
         ("stand_spreader",    *build_stand_spreader(p), "STAND SPREADER"),
     ]
 
-    # ── Sheet positions (bounding-box top-left) ──────────────────────────
-    base_l  = p["BOX_OUTER_L"]                    # 466mm
-    base_w  = p["BOX_OUTER_W"]                    # 236mm
-    lid_l   = p["BOX_INTERIOR_L"]                 # 460mm
-    lid_w   = p["BOX_INTERIOR_W"]                 # 230mm
-    wall_h  = p["BOX_INTERIOR_H"]                 # 8mm (long wall portrait height)
-    wall_l  = p["BOX_OUTER_L"]                    # 466mm (long wall portrait length = tall dim)
-    sw_l    = p["BOX_INTERIOR_W"]                 # 230mm (short wall long dim)
-    leg_w   = p["STAND_LEG_W"]                    # 40mm
-    leg_l   = p["STAND_LEG_L"]                    # 300mm
-    spr_l   = p["STAND_SPREAD_L"] + 2.0 * p["STAND_SPREAD_TEN_L"]  # 374mm
-    spr_w   = p["STAND_SPREAD_W"]                 # 40mm
+    # ── Sheet positions (bounding-box top-left, passed to place()) ───────
+    # place() aligns the part's bounding box top-left to (sx, sy).
+    base_l       = p["BOX_OUTER_L"]                         # 466mm
+    base_w       = p["BOX_OUTER_W"]                         # 264mm
+    lid_w        = p["BOX_INTERIOR_W"]                      # 258mm
+    wall_pw      = p["BOX_INTERIOR_H"] + p["MAT3"]          # 15mm (long wall portrait bbox width, incl. base tab)
+    sw_bbox_w    = p["BOX_OUTER_W"]                         # 264mm (short wall bbox incl. corner tabs)
+    sw_total_h   = p["BOX_INTERIOR_H"] + p["MAT3"]          # 15mm (short wall full h incl. base tab)
+    leg_w        = p["STAND_LEG_W"]                         # 40mm
 
-    # Left column: base, lid (stacked vertically)
-    y_base = M
-    y_lid  = y_base + base_w + G      # 240mm
+    # Left column (x=M): base, lid, short walls; bottom strip: spreader
+    y_base = M                               # = 2
+    y_lid  = y_base + base_w  + G            # = 268
+    y_sw   = y_lid  + lid_w   + G            # = 528
+    y_spr  = y_sw   + sw_total_h + G         # = 545
 
-    # Right column (x ≥ 470): long walls in portrait + stand legs
-    x_right = M + base_l + G          # = 2+466+2 = 470mm
-    y_lwall = M                        # start at top
-
-    # Long wall portrait dims: wall_h wide, wall_l tall in local coords
-    x_lw1   = x_right
-    x_lw2   = x_lw1 + wall_h + G      # = 470+8+2 = 480mm
-
-    x_leg1  = x_lw2 + wall_h + G      # = 480+8+2 = 490mm
-    x_leg2  = x_leg1 + leg_w + G      # = 490+40+2 = 532mm
-
-    # Bottom strip (below lid, y ≥ y_lid + lid_w + G)
-    y_bottom = y_lid + lid_w + G       # = 240+230+2 = 472mm
-
-    y_spr   = y_bottom
-    y_sw    = y_spr + spr_w + G        # = 472+40+2 = 514mm
-
-    x_sw1   = M
-    x_sw2   = x_sw1 + sw_l + G        # = 2+230+2 = 234mm
+    # Right column (x=M+base_l+G): long walls portrait (w=wall_pw), then stand legs
+    x_right = M + base_l + G                 # = 470
+    x_lw2   = x_right + wall_pw + G          # = 487
+    x_leg1  = x_lw2   + wall_pw + G          # = 504
+    x_leg2  = x_leg1  + leg_w   + G          # = 546
 
     positions = {
-        "box_base":          (M,      y_base),
-        "box_lid":           (M,      y_lid),
-        "box_long_wall_L":   (x_lw1,  y_lwall),
-        "box_long_wall_R":   (x_lw2,  y_lwall),
-        "stand_L":           (x_leg1, y_lwall),
-        "stand_R":           (x_leg2, y_lwall),
-        "stand_spreader":    (M,      y_spr),
-        "box_short_wall_front": (x_sw1, y_sw),
-        "box_short_wall_back":  (x_sw2, y_sw),
+        "box_base":             (M,                  y_base),
+        "box_lid":              (M,                  y_lid),
+        "box_long_wall_L":      (x_right,            M),
+        "box_long_wall_R":      (x_lw2,              M),
+        "stand_L":              (x_leg1,             M),
+        "stand_R":              (x_leg2,             M),
+        "stand_spreader":       (M,                  y_spr),
+        "box_short_wall_front": (M,                  y_sw),
+        "box_short_wall_back":  (M + sw_bbox_w + G,  y_sw),
     }
 
     # ── Place all parts ───────────────────────────────────────────────────

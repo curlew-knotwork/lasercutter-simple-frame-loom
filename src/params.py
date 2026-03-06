@@ -188,9 +188,13 @@ def make_params(
     box_wall_t    = mat3
     box_outer_l   = box_interior_l + 2.0 * box_wall_t
     box_outer_w   = box_interior_w + 2.0 * box_wall_t
-    box_dado_d    = 2.0           # mm dado groove depth
-    box_dado_w    = mat3 + 0.2    # mm dado groove width (lid slides in with clearance)
-    box_lid_clear = 0.1           # mm clearance each side of lid in dado
+    box_dado_d    = 2.0             # mm dado groove depth (unused — slot is at wall top)
+    box_dado_w    = mat3 + 0.2      # mm lid slot depth in short walls (lid slides through)
+    box_lid_clear = 0.1             # mm clearance each side of lid
+    box_tab_w     = box_interior_h / 3.0  # mm N=1 finger joint tab: 12/3 = 4mm (D-15)
+    # Wall-to-base joint (D-15): tabs on wall bottom edges, edge notches in base
+    box_base_ntabs_l = 3            # tabs per long wall bottom edge
+    box_base_ntabs_s = 1            # tabs per short wall bottom edge (centered on body)
 
     # ------------------------------------------------------------------
     # Assemble params dict
@@ -299,6 +303,9 @@ def make_params(
         "BOX_DADO_D":          box_dado_d,
         "BOX_DADO_W":          box_dado_w,
         "BOX_LID_CLEAR":       box_lid_clear,
+        "BOX_TAB_W":           box_tab_w,
+        "BOX_BASE_NTABS_L":    box_base_ntabs_l,
+        "BOX_BASE_NTABS_S":    box_base_ntabs_s,
     }
 
     # Validate before returning — fail fast, no silent bad geometry

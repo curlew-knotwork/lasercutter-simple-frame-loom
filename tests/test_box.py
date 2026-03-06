@@ -69,25 +69,109 @@ class TestPartBuilders:
             f"Long wall long dimension {long_dim:.2f} != BOX_OUTER_L={p['BOX_OUTER_L']:.2f}"
 
     def test_box_long_wall_height(self):
+        """Long wall short dimension = BOX_INTERIOR_H + MAT3 (wall height + base tab protrusion)."""
         pts, _ = build_box_long_wall(p)
         bb = bounding_box(pts)
         short_dim = min(bb[2] - bb[0], bb[3] - bb[1])
-        assert abs(short_dim - p["BOX_INTERIOR_H"]) < 0.1, \
-            f"Long wall short dimension {short_dim:.2f} != BOX_INTERIOR_H={p['BOX_INTERIOR_H']:.2f}"
+        expected = p["BOX_INTERIOR_H"] + p["MAT3"]
+        assert abs(short_dim - expected) < 0.1, \
+            f"Long wall short dimension {short_dim:.2f} != BOX_INTERIOR_H+MAT3={expected:.2f}"
 
     def test_box_short_wall_length(self):
+        """Short wall total width (including corner tabs) = BOX_OUTER_W."""
         pts, _ = build_box_short_wall(p)
         bb = bounding_box(pts)
         long_dim = max(bb[2] - bb[0], bb[3] - bb[1])
-        assert abs(long_dim - p["BOX_INTERIOR_W"]) < 0.1, \
-            f"Short wall long dim {long_dim:.2f} != BOX_INTERIOR_W={p['BOX_INTERIOR_W']:.2f}"
+        assert abs(long_dim - p["BOX_OUTER_W"]) < 0.1, \
+            f"Short wall long dim {long_dim:.2f} != BOX_OUTER_W={p['BOX_OUTER_W']:.2f}"
 
     def test_box_short_wall_height(self):
+        """Short wall bbox height = BOX_INTERIOR_H + MAT3 - BOX_DADO_W (solid + base tab - lid slot)."""
         pts, _ = build_box_short_wall(p)
         bb = bounding_box(pts)
         short_dim = min(bb[2] - bb[0], bb[3] - bb[1])
-        assert abs(short_dim - p["BOX_INTERIOR_H"]) < 0.1, \
-            f"Short wall short dim {short_dim:.2f} != BOX_INTERIOR_H={p['BOX_INTERIOR_H']:.2f}"
+        expected = p["BOX_INTERIOR_H"] + p["MAT3"] - p["BOX_DADO_W"]
+        assert abs(short_dim - expected) < 0.1, \
+            f"Short wall bbox height {short_dim:.2f} != BOX_INTERIOR_H+MAT3-BOX_DADO_W={expected:.2f}"
+
+    def test_long_wall_has_corner_sockets(self):
+        """Long wall has N=1 finger sockets at both ends (for short wall tabs).
+        Portrait orientation: sockets open at y=0 and y=BOX_OUTER_L."""
+        pts, _ = build_box_long_wall(p)
+        ys = [pt[1] for pt in pts]
+        # Socket back walls at y=MAT3 (top socket) and y=BOX_OUTER_L-MAT3 (bottom socket)
+        assert any(abs(y - p["MAT3"]) < 1e-3 for y in ys), \
+            f"No top socket back wall at y=MAT3={p['MAT3']:.1f}mm"
+        assert any(abs(y - (p["BOX_OUTER_L"] - p["MAT3"])) < 1e-3 for y in ys), \
+            f"No bottom socket back wall at y=BOX_OUTER_L-MAT3={p['BOX_OUTER_L']-p['MAT3']:.1f}mm"
+
+    def test_short_wall_total_width_includes_tabs(self):
+        """Short wall with corner tabs: total width = BOX_OUTER_W (not BOX_INTERIOR_W)."""
+        pts, _ = build_box_short_wall(p)
+        bb = bounding_box(pts)
+        total_w = bb[2] - bb[0]
+        assert abs(total_w - p["BOX_OUTER_W"]) < 0.1, \
+            f"Short wall total width {total_w:.2f} != BOX_OUTER_W={p['BOX_OUTER_W']:.2f}"
+
+    def test_short_wall_has_lid_slot_at_top(self):
+        """Short wall bbox height = BOX_INTERIOR_H + MAT3 - BOX_DADO_W (full span minus open slot)."""
+        pts, _ = build_box_short_wall(p)
+        bb = bounding_box(pts)
+        solid_h = bb[3] - bb[1]
+        expected = p["BOX_INTERIOR_H"] + p["MAT3"] - p["BOX_DADO_W"]
+        assert abs(solid_h - expected) < 0.1, \
+            f"Short wall bbox height {solid_h:.2f} != expected {expected:.2f}"
+
+    def test_long_wall_has_bottom_tabs(self):
+        """Long wall portrait bbox width = BOX_INTERIOR_H + MAT3 (base tabs protrude)."""
+        pts, _ = build_box_long_wall(p)
+        bb = bounding_box(pts)
+        short_dim = min(bb[2] - bb[0], bb[3] - bb[1])
+        expected = p["BOX_INTERIOR_H"] + p["MAT3"]
+        assert abs(short_dim - expected) < 0.1, \
+            f"Long wall short dim {short_dim:.2f} != BOX_INTERIOR_H+MAT3={expected:.2f}"
+
+    def test_long_wall_bottom_tab_count(self):
+        """Long wall has BOX_BASE_NTABS_L bottom tabs: that many x-values at h+MAT3."""
+        pts, _ = build_box_long_wall(p)
+        tab_x = p["BOX_INTERIOR_H"] + p["MAT3"]
+        count = sum(1 for pt in pts if abs(pt[0] - tab_x) < 1e-3)
+        # Each tab contributes 2 points at x=h+MAT3 (the far corners of the tab)
+        assert count == 2 * p["BOX_BASE_NTABS_L"], \
+            f"Expected {2*p['BOX_BASE_NTABS_L']} pts at x={tab_x:.1f}, got {count}"
+
+    def test_short_wall_has_bottom_tab(self):
+        """Short wall has BOX_BASE_NTABS_S bottom tab: pts include y=BOX_INTERIOR_H+MAT3."""
+        pts, _ = build_box_short_wall(p)
+        tab_y = p["BOX_INTERIOR_H"] + p["MAT3"]
+        count = sum(1 for pt in pts if abs(pt[1] - tab_y) < 1e-3)
+        assert count == 2 * p["BOX_BASE_NTABS_S"], \
+            f"Expected {2*p['BOX_BASE_NTABS_S']} pts at y={tab_y:.1f}, got {count}"
+
+    def test_base_has_front_back_notches(self):
+        """Base outline includes y=MAT3 (front notch) and y=BOX_OUTER_W-MAT3 (back notch)."""
+        pts, _ = build_box_base(p)
+        ys = [pt[1] for pt in pts]
+        assert any(abs(y - p["MAT3"]) < 1e-3 for y in ys), \
+            f"No front edge notch at y=MAT3={p['MAT3']:.1f}"
+        assert any(abs(y - (p["BOX_OUTER_W"] - p["MAT3"])) < 1e-3 for y in ys), \
+            f"No back edge notch at y=BOX_OUTER_W-MAT3={p['BOX_OUTER_W']-p['MAT3']:.1f}"
+
+    def test_base_has_left_right_notches(self):
+        """Base outline includes x=MAT3 (left notch) and x=BOX_OUTER_L-MAT3 (right notch)."""
+        pts, _ = build_box_base(p)
+        xs = [pt[0] for pt in pts]
+        assert any(abs(x - p["MAT3"]) < 1e-3 for x in xs), \
+            f"No left edge notch at x=MAT3={p['MAT3']:.1f}"
+        assert any(abs(x - (p["BOX_OUTER_L"] - p["MAT3"])) < 1e-3 for x in xs), \
+            f"No right edge notch at x=BOX_OUTER_L-MAT3={p['BOX_OUTER_L']-p['MAT3']:.1f}"
+
+    def test_base_bbox_unchanged(self):
+        """Base edge notches are concave — bbox remains BOX_OUTER_L × BOX_OUTER_W."""
+        pts, _ = build_box_base(p)
+        bb = bounding_box(pts)
+        assert abs((bb[2] - bb[0]) - p["BOX_OUTER_L"]) < 0.1
+        assert abs((bb[3] - bb[1]) - p["BOX_OUTER_W"]) < 0.1
 
     def test_stand_leg_dimensions(self):
         pts, _ = build_stand_leg(p)
