@@ -78,7 +78,7 @@ Repeat: Go back the other way (reversing the over-under pattern).
 
 ## Hardware & DIY Looms
 SPEERLoom: sites.google.com
-Asli Aydin Aksan’s 4-Shaft Loom: asliaydinaksan.github.io
+Asli Aydin Aksan’s 4-Shaft Loom: https://asliaydinaksan.github.io/portfolio/2022-12-23-4-shaft-weaving-loom/
 OSLoom (Open Source Loom): github.com
 Thingiverse (3D Printable Looms): www.thingiverse.com
 
