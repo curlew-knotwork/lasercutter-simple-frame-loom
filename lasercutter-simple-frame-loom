@@ -1,242 +1,53 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   width="600mm"
-   height="600mm"
-   viewBox="0 0 600 600"
-   version="1.1"
-   id="svg889"
-   sodipodi:docname="gem_frame_loom.svg"
-   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
-  <defs
-     id="defs893">
-    <rect
-       x="1499.7678"
-       y="1331.1125"
-       width="6.1594343"
-       height="72.476736"
-       id="rect2209" />
-  </defs>
-  <sodipodi:namedview
-     id="namedview891"
-     pagecolor="#ffffff"
-     bordercolor="#000000"
-     borderopacity="0.25"
-     inkscape:showpageshadow="2"
-     inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#d1d1d1"
-     inkscape:document-units="mm"
-     showgrid="false"
-     inkscape:zoom="0.35895139"
-     inkscape:cx="1066.9968"
-     inkscape:cy="1133.8583"
-     inkscape:window-width="1854"
-     inkscape:window-height="1011"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="svg889" />
-  <desc
-     id="desc855">Lumen Loom V8 - Vertical Nesting Corrected - 6mm Plywood - Red: Cut</desc>
-  <style
-     id="style857">
-    .cut { fill: none; stroke: #FF0000; stroke-width: 0.1; }
-  </style>
-  <path
-     class="cut"
-     d="M 10 20 h 40 v 560 h -40 Z                         M 27 55 h 6.1 v 30 h -6.1 Z                         M 27 205 h 6.1 v 20 h -6.1 Z                         M 27 355 h 6.1 v 20 h -6.1 Z                         M 27 515 h 6.1 v 30 h -6.1 Z"
-     id="path859" />
-  <path
-     class="cut"
-     d="M 550 20 h 40 v 560 h -40 Z                         M 567 55 h 6.1 v 30 h -6.1 Z                         M 567 205 h 6.1 v 20 h -6.1 Z                         M 567 355 h 6.1 v 20 h -6.1 Z                         M 567 515 h 6.1 v 30 h -6.1 Z"
-     id="path861" />
-  <path
-     class="cut"
-     d="M 75 50 v -6.2 h 30 v 6.2 h 5 v 480 h -5 v 6.2 h -30 v -6.2 h -5 v -480 h 5 Z"
-     id="path863" />
-  <path
-     class="cut"
-     d="M 110 80 h -6 v 2 h 6 M 110 100 h -6 v 2 h 6 M 110 120 h -6 v 2 h 6 M 110 140 h -6 v 2 h 6 M 110 160 h -6 v 2 h 6 M 110 180 h -6 v 2 h 6 M 110 200 h -6 v 2 h 6 M 110 220 h -6 v 2 h 6 M 110 240 h -6 v 2 h 6 M 110 260 h -6 v 2 h 6 M 110 280 h -6 v 2 h 6 M 110 300 h -6 v 2 h 6 M 110 320 h -6 v 2 h 6 M 110 340 h -6 v 2 h 6 M 110 360 h -6 v 2 h 6 M 110 380 h -6 v 2 h 6 M 110 400 h -6 v 2 h 6 M 110 420 h -6 v 2 h 6 M 110 440 h -6 v 2 h 6 M 110 460 h -6 v 2 h 6"
-     id="path865" />
-  <path
-     class="cut"
-     d="M 135 50 v -6.2 h 30 v 6.2 h 5 v 480 h -5 v 6.2 h -30 v -6.2 h -5 v -480 h 5 Z"
-     id="path867" />
-  <path
-     class="cut"
-     d="m 129.7083,80 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6 m 0,18 h 6 v 2 h -6"
-     id="path869" />
-  <path
-     class="cut"
-     d="M 195 50 v -6.2 h 20 v 6.2 h 5 v 460 h -5 v 6.2 h -20 v -6.2 h -5 v -460 h 5 Z"
-     id="path871" />
-  <path
-     class="cut"
-     d="M 245 50 v -6.2 h 20 v 6.2 h 5 v 460 h -5 v 6.2 h -20 v -6.2 h -5 v -460 h 5 Z"
-     id="path873" />
-  <g
-     transform="translate(288.88746,50)"
-     id="g881">
-    <path
-       class="cut"
-       d="m 15,0 h 220 a 15,15 0 0 1 0,30 H 15 A 15,15 0 0 1 15,0 Z M -5,12 h 20 v 6 H -5 Z m 240,0 h 20 v 6 h -20 z"
-       id="path875" />
-    <path
-       class="cut"
-       d="m 15,50 h 220 a 15,15 0 0 1 0,30 H 15 A 15,15 0 0 1 15,50 Z M -5,62 h 20 v 6 H -5 Z m 240,0 h 20 v 6 h -20 z"
-       id="path877" />
-    <path
-       class="cut"
-       d="m 15,100 h 220 a 15,15 0 0 1 0,30 H 15 a 15,15 0 0 1 0,-30 z m -20,12 h 20 v 6 H -5 Z m 240,0 h 20 v 6 h -20 z"
-       id="path879" />
-  </g>
-  <g
-     transform="translate(300, 200)"
-     id="g887">
-    <path
-       class="cut"
-       d="M 0 0 h 100 v 80 a 10 10 0 0 1 -10 10 h -80 a 10 10 0 0 1 -10 -10 Z"
-       id="path883" />
-    <path
-       class="cut"
-       d="M 10 0 v 40 h 4 v -40 Z M 25 0 v 40 h 4 v -40 Z M 40 0 v 40 h 4 v -40 Z M 55 0 v 40 h 4 v -40 Z M 70 0 v 40 h 4 v -40 Z M 85 0 v 40 h 4 v -40 Z"
-       id="path885" />
-  </g>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="403.43597"
-     y="166.90723"
-     id="text1066"><tspan
-       sodipodi:role="line"
-       id="tspan1064"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1"
-       x="403.43597"
-       y="166.90723">Shuttle</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="351.11734"
-     y="271.2775"
-     id="text1066-2"><tspan
-       sodipodi:role="line"
-       id="tspan1064-8"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1"
-       x="351.11734"
-       y="271.2775">Beater</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="-301.00589"
-     y="142.631"
-     id="text1066-2-3"
-     transform="rotate(-91.826859)"><tspan
-       sodipodi:role="line"
-       id="tspan1064-8-6"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1"
-       x="-301.00589"
-       y="142.631">Frame Loom</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="-299.77792"
-     y="154.24763"
-     id="text1066-2-3-1"
-     transform="rotate(-91.826859)"><tspan
-       sodipodi:role="line"
-       id="tspan1064-8-6-2"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1"
-       x="-299.77792"
-       y="154.24763">Top</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="-299.43457"
-     y="79.550369"
-     id="text1066-2-3-1-9"
-     transform="rotate(-91.826859)"><tspan
-       sodipodi:role="line"
-       id="tspan1064-8-6-2-3"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1"
-       x="-299.43457"
-       y="79.550369">Bottom</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="-294.57501"
-     y="25.378761"
-     id="text1066-2-3-1-9-1"
-     transform="rotate(-91.826859)"><tspan
-       sodipodi:role="line"
-       id="tspan1064-8-6-2-3-9"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1"
-       x="-294.57501"
-       y="25.378761">Side</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="-298.55692"
-     y="563.2804"
-     id="text1066-2-3-1-9-1-4"
-     transform="rotate(-91.826859)"><tspan
-       sodipodi:role="line"
-       id="tspan1064-8-6-2-3-9-7"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1"
-       x="-298.55692"
-       y="563.2804">Side</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="405.28848"
-     y="118.26865"
-     id="text1066-7"><tspan
-       sodipodi:role="line"
-       id="tspan1064-5"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1"
-       x="405.28848"
-       y="118.26865">Shuttle</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="407.39325"
-     y="67.506599"
-     id="text1066-7-9"><tspan
-       sodipodi:role="line"
-       id="tspan1064-5-2"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87778px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1"
-       x="407.39325"
-       y="67.506599">Shuttle</tspan></text>
-  <text
-     xml:space="preserve"
-     transform="scale(0.26458333)"
-     id="text2207"
-     style="-inkscape-font-specification:'Courier New, Normal';font-family:'Courier New';font-size:37.33333333px;fill:#000014;stop-color:#000000;text-align:center;stroke-width:1.13385827;stroke:none;stroke-opacity:1;fill-opacity:1;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;white-space:pre;shape-inside:url(#rect2209)" />
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87777px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="-294.73077"
-     y="208.4593"
-     id="text2215"
-     transform="rotate(-90)"><tspan
-       sodipodi:role="line"
-       id="tspan2213"
-       style="stroke-width:0.3"
-       x="-294.73077"
-       y="208.4593">Stiffener</tspan></text>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9.87777px;font-family:'Courier New';-inkscape-font-specification:'Courier New, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;fill:#000014;fill-opacity:1;stroke:none;stroke-width:0.3;stroke-opacity:1;stop-color:#000000"
-     x="-294.01575"
-     y="257.36523"
-     id="text2215-5"
-     transform="rotate(-90)"><tspan
-       sodipodi:role="line"
-       id="tspan2213-0"
-       style="stroke-width:0.3"
-       x="-294.01575"
-       y="257.36523">Stiffener</tspan></text>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 600 600"
+     width="600mm" height="600mm">
+  <!--
+    FRAME LOOM v6 — 6mm Birch Plywood — 600x600mm sheet
+    CorelDraw / Epilog: RED hairline = CUT, (preview at 0.1mm, change to 0.01mm for laser)
+    EVERY PART IS A SINGLE UNIFIED OUTLINE PATH
+    T=6mm | Finger: N=2, W=4.4mm, L=6mm | Tab=6.0mm | Socket=6.1mm
+    Warp: 20 notches x 10mm pitch | Interior: 200x250mm
+    Stretcher: 200mm body + 15mm tenons = 230mm total
+    Props: LEFT+RIGHT mirror image, 150mm, 25deg lean, 11mm tenon
+    Text/instructions on separate MDF sheet (not included here)
+  -->
+  <rect x="0" y="0" width="600" height="600" fill="#faf8f4" stroke="#aaa" stroke-width="0.3"/>
+  <text x="10" y="10" font-size="5" fill="#555" font-family="monospace" font-weight="bold">FRAME LOOM v6 — 6mm BIRCH PLY — 600×600mm</text>
+  <text x="10" y="17" font-size="3" fill="#999" font-family="monospace">RED=CUT 0.1mm preview (use 0.01mm for laser) | Parts: 2 rails, 2 stiles, stretcher, shuttle, beater, 2 props</text>
+  <g id="top_rail" transform="translate(8.0000,22.0000)">
+  <path d="M 0.0000 0.0000 L 244.0000 0.0000 L 244.0000 7.3333 L 250.1000 7.3333 L 250.1000 14.6667 L 244.0000 14.6667 L 244.0000 22.0000 L 222.0000 22.0000 L 219.0000 22.0000 L 219.0000 27.0000 L 215.0000 27.0000 L 215.0000 22.0000 L 209.0000 22.0000 L 209.0000 27.0000 L 205.0000 27.0000 L 205.0000 22.0000 L 199.0000 22.0000 L 199.0000 27.0000 L 195.0000 27.0000 L 195.0000 22.0000 L 189.0000 22.0000 L 189.0000 27.0000 L 185.0000 27.0000 L 185.0000 22.0000 L 179.0000 22.0000 L 179.0000 27.0000 L 175.0000 27.0000 L 175.0000 22.0000 L 169.0000 22.0000 L 169.0000 27.0000 L 165.0000 27.0000 L 165.0000 22.0000 L 159.0000 22.0000 L 159.0000 27.0000 L 155.0000 27.0000 L 155.0000 22.0000 L 149.0000 22.0000 L 149.0000 27.0000 L 145.0000 27.0000 L 145.0000 22.0000 L 139.0000 22.0000 L 139.0000 27.0000 L 135.0000 27.0000 L 135.0000 22.0000 L 129.0000 22.0000 L 129.0000 27.0000 L 125.0000 27.0000 L 125.0000 22.0000 L 119.0000 22.0000 L 119.0000 27.0000 L 115.0000 27.0000 L 115.0000 22.0000 L 109.0000 22.0000 L 109.0000 27.0000 L 105.0000 27.0000 L 105.0000 22.0000 L 99.0000 22.0000 L 99.0000 27.0000 L 95.0000 27.0000 L 95.0000 22.0000 L 89.0000 22.0000 L 89.0000 27.0000 L 85.0000 27.0000 L 85.0000 22.0000 L 79.0000 22.0000 L 79.0000 27.0000 L 75.0000 27.0000 L 75.0000 22.0000 L 69.0000 22.0000 L 69.0000 27.0000 L 65.0000 27.0000 L 65.0000 22.0000 L 59.0000 22.0000 L 59.0000 27.0000 L 55.0000 27.0000 L 55.0000 22.0000 L 49.0000 22.0000 L 49.0000 27.0000 L 45.0000 27.0000 L 45.0000 22.0000 L 39.0000 22.0000 L 39.0000 27.0000 L 35.0000 27.0000 L 35.0000 22.0000 L 29.0000 22.0000 L 29.0000 27.0000 L 25.0000 27.0000 L 25.0000 22.0000 L 0.0000 22.0000 L 0.0000 14.6667 L -6.1000 14.6667 L -6.1000 7.3333 L 0.0000 7.3333 L 0.0000 0.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <circle cx="36.0000" cy="11.0000" r="4.0000" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <circle cx="208.0000" cy="11.0000" r="4.0000" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+</g>
+  <g id="bottom_rail" transform="translate(8.0000,60.0000)">
+  <path d="M 0.0000 0.0000 L 22.0000 0.0000 L 25.0000 0.0000 L 25.0000 -5.0000 L 29.0000 -5.0000 L 29.0000 0.0000 L 35.0000 0.0000 L 35.0000 -5.0000 L 39.0000 -5.0000 L 39.0000 0.0000 L 45.0000 0.0000 L 45.0000 -5.0000 L 49.0000 -5.0000 L 49.0000 0.0000 L 55.0000 0.0000 L 55.0000 -5.0000 L 59.0000 -5.0000 L 59.0000 0.0000 L 65.0000 0.0000 L 65.0000 -5.0000 L 69.0000 -5.0000 L 69.0000 0.0000 L 75.0000 0.0000 L 75.0000 -5.0000 L 79.0000 -5.0000 L 79.0000 0.0000 L 85.0000 0.0000 L 85.0000 -5.0000 L 89.0000 -5.0000 L 89.0000 0.0000 L 95.0000 0.0000 L 95.0000 -5.0000 L 99.0000 -5.0000 L 99.0000 0.0000 L 105.0000 0.0000 L 105.0000 -5.0000 L 109.0000 -5.0000 L 109.0000 0.0000 L 115.0000 0.0000 L 115.0000 -5.0000 L 119.0000 -5.0000 L 119.0000 0.0000 L 125.0000 0.0000 L 125.0000 -5.0000 L 129.0000 -5.0000 L 129.0000 0.0000 L 135.0000 0.0000 L 135.0000 -5.0000 L 139.0000 -5.0000 L 139.0000 0.0000 L 145.0000 0.0000 L 145.0000 -5.0000 L 149.0000 -5.0000 L 149.0000 0.0000 L 155.0000 0.0000 L 155.0000 -5.0000 L 159.0000 -5.0000 L 159.0000 0.0000 L 165.0000 0.0000 L 165.0000 -5.0000 L 169.0000 -5.0000 L 169.0000 0.0000 L 175.0000 0.0000 L 175.0000 -5.0000 L 179.0000 -5.0000 L 179.0000 0.0000 L 185.0000 0.0000 L 185.0000 -5.0000 L 189.0000 -5.0000 L 189.0000 0.0000 L 195.0000 0.0000 L 195.0000 -5.0000 L 199.0000 -5.0000 L 199.0000 0.0000 L 205.0000 0.0000 L 205.0000 -5.0000 L 209.0000 -5.0000 L 209.0000 0.0000 L 215.0000 0.0000 L 215.0000 -5.0000 L 219.0000 -5.0000 L 219.0000 0.0000 L 244.0000 0.0000 L 244.0000 7.3333 L 250.1000 7.3333 L 250.1000 14.6667 L 244.0000 14.6667 L 244.0000 22.0000 L 0.0000 22.0000 L 0.0000 14.6667 L -6.1000 14.6667 L -6.1000 7.3333 L 0.0000 7.3333 L 0.0000 0.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+</g>
+  <g id="stile_L" transform="translate(25.0000,94.0000)">
+  <path d="M 0.0000 0.0000 L 7.3333 0.0000 L 7.3333 -6.0000 L 14.6667 -6.0000 L 14.6667 0.0000 L 22.0000 0.0000 L 22.0000 0.0000 L 22.0000 143.9500 L 37.0000 143.9500 L 37.0000 150.0500 L 22.0000 150.0500 L 22.0000 294.0000 L 14.6667 294.0000 L 14.6667 300.0000 L 7.3333 300.0000 L 7.3333 294.0000 L 0.0000 294.0000 L 0.0000 294.0000 L 0.0000 147.0500 L -11.0000 147.0500 L -11.0000 140.9500 L 0.0000 140.9500 L 0.0000 0.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+</g>
+  <g id="stile_R" transform="translate(79.0000,94.0000)">
+  <path d="M 0.0000 0.0000 L 7.3333 0.0000 L 7.3333 -6.0000 L 14.6667 -6.0000 L 14.6667 0.0000 L 22.0000 0.0000 L 22.0000 0.0000 L 22.0000 140.9500 L 33.0000 140.9500 L 33.0000 147.0500 L 22.0000 147.0500 L 22.0000 294.0000 L 14.6667 294.0000 L 14.6667 300.0000 L 7.3333 300.0000 L 7.3333 294.0000 L 0.0000 294.0000 L 0.0000 294.0000 L 0.0000 150.0500 L -15.0000 150.0500 L -15.0000 143.9500 L 0.0000 143.9500 L 0.0000 0.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+</g>
+  <g id="stretcher" transform="translate(23.0000,400.0000)">
+  <path d="M -15.0000 0.0000 L 0.0000 0.0000 L 0.0000 0.0000 L 200.0000 0.0000 L 200.0000 0.0000 L 215.0000 0.0000 L 215.0000 6.0000 L 200.0000 6.0000 L 200.0000 6.0000 L 0.0000 6.0000 L 0.0000 6.0000 L -15.0000 6.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+</g>
+  <g id="shuttle" transform="translate(278.0000,22.0000)">
+  <path d="M 22.0000 0.0000 L 158.0000 0.0000 L 180.0000 9.0000 L 175.0000 14.0000 L 180.0000 19.0000 L 158.0000 28.0000 L 22.0000 28.0000 L 0.0000 19.0000 L 5.0000 14.0000 L 0.0000 9.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <ellipse cx="90.0000" cy="14.0000" rx="55.0000" ry="6.0000" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+</g>
+  <g id="beater" transform="translate(278.0000,56.0000)">
+  <path d="M 0.0000 0.0000 L 210.0000 0.0000 L 210.0000 22.0000 L 205.0000 22.0000 L 202.0000 22.0000 L 202.0000 42.0000 L 198.0000 42.0000 L 198.0000 22.0000 L 192.0000 22.0000 L 192.0000 22.0000 L 192.0000 42.0000 L 188.0000 42.0000 L 188.0000 22.0000 L 182.0000 22.0000 L 182.0000 22.0000 L 182.0000 42.0000 L 178.0000 42.0000 L 178.0000 22.0000 L 172.0000 22.0000 L 172.0000 22.0000 L 172.0000 42.0000 L 168.0000 42.0000 L 168.0000 22.0000 L 162.0000 22.0000 L 162.0000 22.0000 L 162.0000 42.0000 L 158.0000 42.0000 L 158.0000 22.0000 L 152.0000 22.0000 L 152.0000 22.0000 L 152.0000 42.0000 L 148.0000 42.0000 L 148.0000 22.0000 L 142.0000 22.0000 L 142.0000 22.0000 L 142.0000 42.0000 L 138.0000 42.0000 L 138.0000 22.0000 L 132.0000 22.0000 L 132.0000 22.0000 L 132.0000 42.0000 L 128.0000 42.0000 L 128.0000 22.0000 L 122.0000 22.0000 L 122.0000 22.0000 L 122.0000 42.0000 L 118.0000 42.0000 L 118.0000 22.0000 L 112.0000 22.0000 L 112.0000 22.0000 L 112.0000 42.0000 L 108.0000 42.0000 L 108.0000 22.0000 L 102.0000 22.0000 L 102.0000 22.0000 L 102.0000 42.0000 L 98.0000 42.0000 L 98.0000 22.0000 L 92.0000 22.0000 L 92.0000 22.0000 L 92.0000 42.0000 L 88.0000 42.0000 L 88.0000 22.0000 L 82.0000 22.0000 L 82.0000 22.0000 L 82.0000 42.0000 L 78.0000 42.0000 L 78.0000 22.0000 L 72.0000 22.0000 L 72.0000 22.0000 L 72.0000 42.0000 L 68.0000 42.0000 L 68.0000 22.0000 L 62.0000 22.0000 L 62.0000 22.0000 L 62.0000 42.0000 L 58.0000 42.0000 L 58.0000 22.0000 L 52.0000 22.0000 L 52.0000 22.0000 L 52.0000 42.0000 L 48.0000 42.0000 L 48.0000 22.0000 L 42.0000 22.0000 L 42.0000 22.0000 L 42.0000 42.0000 L 38.0000 42.0000 L 38.0000 22.0000 L 32.0000 22.0000 L 32.0000 22.0000 L 32.0000 42.0000 L 28.0000 42.0000 L 28.0000 22.0000 L 22.0000 22.0000 L 22.0000 22.0000 L 22.0000 42.0000 L 18.0000 42.0000 L 18.0000 22.0000 L 12.0000 22.0000 L 12.0000 22.0000 L 12.0000 42.0000 L 8.0000 42.0000 L 8.0000 22.0000 L 8.0000 22.0000 L 0.0000 22.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <ellipse cx="52.5000" cy="11.0000" rx="8.0000" ry="3.5000" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <ellipse cx="105.0000" cy="11.0000" rx="8.0000" ry="3.5000" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <ellipse cx="157.5000" cy="11.0000" rx="8.0000" ry="3.5000" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+</g>
+  <g id="prop_L" transform="translate(278.0000,104.0000)">
+  <path d="M 7.9500 0.0000 L 14.0500 0.0000 L 14.0500 11.0000 L 22.0000 11.0000 L 22.0000 139.7412 L 11.0000 150.0000 L 0.0000 150.0000 L 0.0000 11.0000 L 7.9500 11.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <ellipse cx="11.0000" cy="80.5000" rx="4.0000" ry="30.5800" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+</g>
+  <g id="prop_R" transform="translate(306.0000,104.0000)">
+  <path d="M 7.9500 0.0000 L 14.0500 0.0000 L 14.0500 11.0000 L 22.0000 11.0000 L 22.0000 150.0000 L 11.0000 150.0000 L 0.0000 139.7412 L 0.0000 11.0000 L 7.9500 11.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+  <ellipse cx="11.0000" cy="80.5000" rx="4.0000" ry="30.5800" fill="none" stroke="#ff0000" stroke-width="0.1"/>
+</g>
 </svg>
