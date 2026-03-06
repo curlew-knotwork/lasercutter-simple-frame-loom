@@ -20,7 +20,7 @@ Assembly is press-fit with no hardware required. A second 3 mm plywood sheet pro
 | Loom sheet | 6 mm birch plywood, 600×600 mm |
 | Box sheet | 3 mm birch plywood, 600×600 mm |
 | Fit test sheet | 3 mm birch plywood, scrap (~90×32 mm) |
-| Heddle rod | 8 mm diameter hardwood dowel, cut to 240 mm |
+| Heddle rod | 6 mm (thick) x 8mm x 240 mm laser cut part |
 | Kerf (assumed) | 0.15 mm (verify with fit test before full cut) |
 
 ---
@@ -126,7 +126,7 @@ Bottom rail notches open **upward** (toward weaving interior).
 
 ## 8. Heddle Rod Dowel Holes
 
-Two holes in the **top rail** accept an 8 mm diameter dowel as the heddle rod. String heddles are tied to the rod and loop around alternate warp threads to create a shed.
+Two holes? notches? slots? in the **top rail** accept an 6mm x 8 mm laser cut heddle rod. String heddles are tied to the rod and loop around alternate warp threads to create a shed.
 
 | Parameter | Value |
 |---|---|
