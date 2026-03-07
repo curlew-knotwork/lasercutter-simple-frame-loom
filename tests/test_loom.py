@@ -37,6 +37,25 @@ class TestPartBuilders:
         pts, holes = build_top_rail(p)
         assert len(holes) == 2, f"Expected 2 heddle holes, got {len(holes)}"
 
+    def test_top_rail_includes_stand_tabs(self):
+        """Top rail bounding box must be FRAME_OUTER_W + 2*STAND_RAIL_TAB_L wide (D-17)."""
+        pts, _ = build_top_rail(p)
+        bb = bounding_box(pts)
+        expected_w = p["FRAME_OUTER_W"] + 2.0 * p["STAND_RAIL_TAB_L"]
+        actual_w = bb[2] - bb[0]
+        assert abs(actual_w - expected_w) < 0.1, \
+            f"Top rail width {actual_w:.2f} != {expected_w:.2f}"
+
+    def test_heddle_bar_holes_staggered(self):
+        """Even holes at cy-HEDDLE_BAR_OFFSET, odd holes at cy+HEDDLE_BAR_OFFSET."""
+        _, holes = build_heddle_bar(p)
+        offset = p["HEDDLE_BAR_OFFSET"]
+        cy = p["HEDDLE_BAR_W"] / 2.0
+        for i, h in enumerate(holes):
+            expected_y = cy - offset if i % 2 == 0 else cy + offset
+            assert abs(h[2] - expected_y) < 1e-6, \
+                f"Hole {i} y={h[2]:.4f} != {expected_y:.4f}"
+
     def test_bottom_rail_has_no_holes(self):
         _, holes = build_bottom_rail(p)
         assert holes == []
@@ -191,8 +210,10 @@ class TestLayout:
         assert abs((bb[3] - bb[1]) - p["STILE_TOTAL_H"]) < 0.1
 
     def test_top_rail_width(self):
+        """Top rail bbox includes stand tab extensions on each end (D-17)."""
         bb = self.by_id["top_rail"]["bbox"]
-        assert abs((bb[2] - bb[0]) - p["FRAME_OUTER_W"]) < 0.1
+        expected = p["FRAME_OUTER_W"] + 2.0 * p["STAND_RAIL_TAB_L"]
+        assert abs((bb[2] - bb[0]) - expected) < 0.1
 
     def test_bottom_rail_width(self):
         bb = self.by_id["bottom_rail"]["bbox"]

@@ -328,24 +328,26 @@ def inv_crossbar_geometry(p: dict) -> tuple:
 
 def inv_stand_notch_geometry(p: dict) -> tuple:
     """
-    I-5c: Stand side-piece notch must comfortably accept the stile.
-    STAND_NOTCH_W >= STILE_W + 0.3mm (clearance fit, not press-fit).
-    STAND_NOTCH_W <= STILE_W + 1.0mm (not so loose the loom wobbles).
-    STAND_NOTCH_D >= MAT (notch deep enough to retain stile under warp tension).
+    I-5c: Stand edge-notch geometry (D-18).
+    STAND_NOTCH_W in [STAND_SPREAD_W+0.05, STAND_SPREAD_W+0.5] (clearance fit for cross member).
+    STAND_NOTCH_D >= 10mm (enough retention depth).
+    STAND_STILE_SLOT_W in [STILE_W+0.3, STILE_W+1.0] (clearance fit for loom stile).
     """
-    sw = p["STILE_W"]
+    spread_w = p["STAND_SPREAD_W"]
     nw = p["STAND_NOTCH_W"]
     nd = p["STAND_NOTCH_D"]
-    mat = p["MAT"]
+    ssw = p["STAND_STILE_SLOT_W"]
+    stile_w = p["STILE_W"]
 
-    ok_min = nw >= sw + 0.3
-    ok_max = nw <= sw + 1.0
-    ok_depth = nd >= mat
-    ok = ok_min and ok_max and ok_depth
+    ok_nw = spread_w + 0.05 <= nw <= spread_w + 0.5
+    ok_nd = nd >= 10.0
+    ok_ssw = stile_w + 0.3 <= ssw <= stile_w + 1.0
+    ok = ok_nw and ok_nd and ok_ssw
 
     detail = (
-        f"notch_w={nw:.2f} in [{sw+0.3:.2f}, {sw+1.0:.2f}]={'OK' if (ok_min and ok_max) else 'FAIL'}; "
-        f"notch_d={nd:.2f}>={mat:.2f}={'OK' if ok_depth else 'FAIL'}"
+        f"notch_w={nw:.2f} in [{spread_w+0.05:.2f},{spread_w+0.5:.2f}]={'OK' if ok_nw else 'FAIL'}; "
+        f"notch_d={nd:.2f}>=10={'OK' if ok_nd else 'FAIL'}; "
+        f"stile_slot_w={ssw:.2f} in [{stile_w+0.3:.2f},{stile_w+1.0:.2f}]={'OK' if ok_ssw else 'FAIL'}"
     )
     return (_pass("I-5c", detail) if ok else _fail("I-5c", detail))
 

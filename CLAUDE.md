@@ -7,9 +7,10 @@
 
 ## KEY FACTS
 
-**Three SVG outputs:**
+**Four SVG outputs:**
 - `output/loom.svg` — 6mm birch ply, 600×600mm, all loom parts
-- `output/box.svg` — 3mm birch ply, 600×600mm, box panels + A-frame stand
+- `output/optional_box.svg` — 3mm birch ply, 600×600mm, box panels (D-17: renamed from box.svg)
+- `output/optional_loom_stand.svg` — 6mm birch ply, 600×600mm, D-17 L-bracket stand (6 parts)
 - `output/test_cut.svg` — 3mm scrap, calibration/fit test (not yet written)
 
 **Interior:** 300×400mm (scarf). Frame outer: 344×444mm. Stile total height: 456mm.
@@ -44,9 +45,6 @@
 - SVG preamble is `<?xml...><svg...>`, not `<svg...>`. Use `"<svg " in svg`.
 
 ## STAGE STATUS
-- Stages 0–5 complete: sparring, proofs, params, geometry, loom.py, box.py (basic)
-- 171 tests passing
-- **Open design questions** (surface before touching code):
-  - D-07 REVISION CANDIDATE: crossbar through-hole (stile broad face) vs. open edge mortise
-  - Box assembly: butt-joint walls need finger joints or labelling as glue-only
-  - Stand: assembly fit and function not yet verified by eye
+- Stages 0–6 complete: sparring, proofs, params, geometry, loom.py, box.py, stand.py (D-17)
+- 273 tests passing
+- **Pending:** src/test_cut.py, USER_ASSEMBLY_INSTRUCTIONS.md

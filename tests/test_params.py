@@ -221,6 +221,44 @@ class TestDefaultParams:
             f"Right heddle hole edge at {right_hole_x + r:.2f} overlaps socket zone"
         )
 
+    # D-18 stand params
+    def test_stand_rail_tab_l_zero(self, p):
+        """D-18: no top-rail tabs. STAND_RAIL_TAB_L=0."""
+        assert abs(p["STAND_RAIL_TAB_L"]) < 1e-9, \
+            f"STAND_RAIL_TAB_L={p['STAND_RAIL_TAB_L']}, expected 0"
+
+    def test_stand_mort_y_mid_present(self, p):
+        """D-18: middle rear cross member at y=210."""
+        assert "STAND_MORT_Y_MID" in p, "STAND_MORT_Y_MID missing from params"
+        assert abs(p["STAND_MORT_Y_MID"] - 210.0) < 1e-9, \
+            f"STAND_MORT_Y_MID={p['STAND_MORT_Y_MID']}, expected 210"
+
+    def test_stand_stile_slot_params(self, p):
+        """D-18: stile slot width = STILE_W + 0.5 = 22.5mm, depth = 15mm."""
+        assert "STAND_STILE_SLOT_W" in p, "STAND_STILE_SLOT_W missing"
+        assert "STAND_STILE_SLOT_D" in p, "STAND_STILE_SLOT_D missing"
+        expected_w = p["STILE_W"] + 0.5
+        assert abs(p["STAND_STILE_SLOT_W"] - expected_w) < 1e-9, \
+            f"STAND_STILE_SLOT_W={p['STAND_STILE_SLOT_W']}, expected {expected_w}"
+        assert abs(p["STAND_STILE_SLOT_D"] - 15.0) < 1e-9
+
+    def test_stand_notch_fits_cross_member(self, p):
+        """D-18: edge notch width accepts cross member: STAND_NOTCH_W ≈ STAND_SPREAD_W + 0.1."""
+        expected = p["STAND_SPREAD_W"] + 0.1
+        assert abs(p["STAND_NOTCH_W"] - expected) < 0.05, \
+            f"STAND_NOTCH_W={p['STAND_NOTCH_W']:.3f}, expected {expected:.3f}"
+
+    def test_stand_mort_y_positions_ordered(self, p):
+        """D-18: STAND_MORT_Y_TOP < STAND_MORT_Y_MID < STAND_MORT_Y_BOT."""
+        assert p["STAND_MORT_Y_TOP"] < p["STAND_MORT_Y_MID"] < p["STAND_MORT_Y_BOT"]
+
+    def test_stand_base_notch_positions(self, p):
+        """D-18: base notch positions at x=80 and x=160 from back end."""
+        assert "STAND_BASE_NOTCH_X1" in p, "STAND_BASE_NOTCH_X1 missing"
+        assert "STAND_BASE_NOTCH_X2" in p, "STAND_BASE_NOTCH_X2 missing"
+        assert abs(p["STAND_BASE_NOTCH_X1"] - 80.0) < 1e-9
+        assert abs(p["STAND_BASE_NOTCH_X2"] - 160.0) < 1e-9
+
 
 # ---------------------------------------------------------------------------
 # Unhappy-path tests: broken params must fail the right invariants
@@ -305,3 +343,50 @@ class TestUnhappyPath:
         bad = _mutate(p, STAND_NOTCH_W=p["STILE_W"] + 5.0)
         ok, trace = inv_stand_notch_geometry(bad)
         assert not ok, f"Expected I-5c to fail for loose notch: {trace}"
+
+    def test_stand_spread_mort_fits_cross_member(self, p):
+        """D-18: edge notch fits cross member body. STAND_SPREAD_MORT_W = STAND_SPREAD_W + 0.1."""
+        expected = p["STAND_SPREAD_W"] + 0.1
+        assert abs(p["STAND_SPREAD_MORT_W"] - expected) < 1e-9, \
+            f"STAND_SPREAD_MORT_W={p['STAND_SPREAD_MORT_W']:.4f} != STAND_SPREAD_W+0.1={expected:.4f}"
+
+
+class TestStandTriangleParams:
+
+    def test_stand_upright_h(self, p):
+        """Upright height = 420mm (D-18)."""
+        assert abs(p["STAND_UPRIGHT_H"] - 420.0) < 1e-9
+
+    def test_stand_base_l(self, p):
+        """Base length = 240mm (D-18)."""
+        assert abs(p["STAND_BASE_L"] - 240.0) < 1e-9
+
+    def test_stand_notch_d(self, p):
+        """Edge notch depth = 15mm (D-18 cross member retention)."""
+        assert abs(p["STAND_NOTCH_D"] - 15.0) < 1e-9
+
+
+class TestHeddleBarParams:
+
+    def test_heddle_bar_offset(self, p):
+        """HEDDLE_BAR_OFFSET = 2.5mm alternating hole stagger for rigid heddle."""
+        assert abs(p["HEDDLE_BAR_OFFSET"] - 2.5) < 1e-9
+
+
+class TestBoxBaseTabsParams:
+
+    def test_ntabs_l_formula(self, p):
+        """Long wall tabs: max(8, round(BOX_OUTER_L / 22)) — 1 tab per ~22mm."""
+        expected = max(8, round(p["BOX_OUTER_L"] / 22.0))
+        assert p["BOX_BASE_NTABS_L"] == expected
+
+    def test_ntabs_s_formula(self, p):
+        """Short wall tabs: max(8, round(BOX_INTERIOR_W / 22)) — 1 tab per ~22mm."""
+        expected = max(8, round(p["BOX_INTERIOR_W"] / 22.0))
+        assert p["BOX_BASE_NTABS_S"] == expected
+
+    def test_ntabs_l_minimum(self, p):
+        assert p["BOX_BASE_NTABS_L"] >= 8
+
+    def test_ntabs_s_minimum(self, p):
+        assert p["BOX_BASE_NTABS_S"] >= 8

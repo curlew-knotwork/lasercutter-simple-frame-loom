@@ -189,75 +189,98 @@ def etch_text(x: float, y: float, text: str,
 # ---------------------------------------------------------------------------
 
 def rail_pts(
-    rail_w: float,      # outer width of rail = FRAME_OUTER_W
-    rail_h: float,      # height of rail = RAIL_W (= STILE_W)
-    sock_w: float,      # finger joint socket opening width (= TAB_W; must == TAB_W)
-    sock_d: float,      # socket depth (= TAB_L = MAT)
-    notch_cxs: list,    # list of notch centreline x positions (in local rail coords)
-    notch_w: float,     # notch width
-    notch_d: float,     # notch depth
-    notches_open_down: bool = True,  # True for top rail; False for bottom rail
+    rail_w: float,          # outer width of rail = FRAME_OUTER_W
+    rail_h: float,          # height of rail = RAIL_W (= STILE_W)
+    sock_w: float,          # finger joint socket opening width (= TAB_W)
+    sock_d: float,          # socket depth (= TAB_L = MAT)
+    notch_cxs: list,        # list of notch centreline x positions (in local rail coords)
+    notch_w: float,         # notch width
+    notch_d: float,         # notch depth
+    notches_open_down: bool = True,   # True for top rail; False for bottom rail
+    stand_tab_l: float = 0.0,         # D-17: stand tab extension past each stile face (top rail only)
 ) -> list:
     """
     Build closed point list for a rail (top or bottom).
 
-    Local origin: top-left corner of rail outer bounding box.
+    Local origin: top-left corner of bounding box.
+    When stand_tab_l > 0, the bbox is (-stand_tab_l, 0, rail_w+stand_tab_l, rail_h).
 
-    Right end: finger socket (slot going LEFT from right face into body).
-    Left end: finger socket (slot going RIGHT from left face into body).
-    Inner edge: warp notches (up or down depending on notches_open_down).
+    Right end: stile finger socket at x=rail_w (step LEFT by sock_d), centred on rail_h.
+    Left end: stile finger socket at x=0 (step RIGHT by sock_d), centred on rail_h.
+    With stand_tab_l > 0: stand tab protrudes an additional stand_tab_l beyond each end,
+    connected to the socket via horizontal ledges at the socket y limits — E-shape ends.
 
-    Socket position: centred on the 22mm height axis.
-    sock_y_top = (rail_h - sock_w) / 2
-    sock_y_bot = sock_y_top + sock_w
-
+    Inner edge: warp notches (open direction depends on notches_open_down).
     Returns clockwise winding (outer boundary).
     """
     sy_top = (rail_h - sock_w) / 2.0
     sy_bot = sy_top + sock_w
     notch_edge_y = rail_h if notches_open_down else 0.0
-    notch_dir    = +1.0  if notches_open_down else -1.0  # sign for y
+    notch_dir    = +1.0  if notches_open_down else -1.0
 
     pts = []
 
-    # ── Top edge (y=0), left to right ──────────────────────────────────────
-    pts.append((0.0, 0.0))
-    pts.append((rail_w, 0.0))
+    if stand_tab_l <= 0.0:
+        # ── No stand tabs — original geometry ────────────────────────────
+        pts.append((0.0, 0.0))
+        pts.append((rail_w, 0.0))
+        pts.append((rail_w, sy_top))
+        pts.append((rail_w - sock_d, sy_top))
+        pts.append((rail_w - sock_d, sy_bot))
+        pts.append((rail_w, sy_bot))
+        pts.append((rail_w, rail_h))
+    else:
+        # ── Right stand tab + socket (E-shape end) ────────────────────────
+        # Start at bounding-box top-left, go right across full width
+        pts.append((-stand_tab_l, 0.0))
+        pts.append((rail_w + stand_tab_l, 0.0))
+        # Right stand tab: down to socket top ledge
+        pts.append((rail_w + stand_tab_l, sy_top))
+        # Ledge left to socket face
+        pts.append((rail_w, sy_top))
+        # Socket carved left by sock_d
+        pts.append((rail_w - sock_d, sy_top))
+        pts.append((rail_w - sock_d, sy_bot))
+        pts.append((rail_w, sy_bot))
+        # Ledge right back to stand tab face
+        pts.append((rail_w + stand_tab_l, sy_bot))
+        # Down to bottom of stand tab
+        pts.append((rail_w + stand_tab_l, rail_h))
+        # Return to rail body bottom-right
+        pts.append((rail_w, rail_h))
 
-    # ── Right end (x=rail_w), top to bottom, with socket ───────────────────
-    pts.append((rail_w, sy_top))
-    pts.append((rail_w - sock_d, sy_top))   # step LEFT (into body)
-    pts.append((rail_w - sock_d, sy_bot))
-    pts.append((rail_w, sy_bot))
-    pts.append((rail_w, rail_h))
-
-    # ── Inner edge (y=rail_h for top rail), right to left, with notches ────
-    # Build notch centrelines sorted right-to-left
-    sorted_cxs = sorted(notch_cxs, reverse=True)
-
-    cur_x = rail_w
-    for cx in sorted_cxs:
+    # ── Inner edge, right to left, with notches ───────────────────────────
+    for cx in sorted(notch_cxs, reverse=True):
         nxr = cx + notch_w / 2.0
         nxl = cx - notch_w / 2.0
-        # Straight to right edge of notch
         pts.append((nxr, notch_edge_y))
-        # Down (or up) into notch
         pts.append((nxr, notch_edge_y + notch_dir * notch_d))
         pts.append((nxl, notch_edge_y + notch_dir * notch_d))
-        # Back to inner edge y
         pts.append((nxl, notch_edge_y))
-        cur_x = nxl
 
-    # Continue to left end
-    pts.append((0.0, rail_h))
+    # ── Left end ──────────────────────────────────────────────────────────
+    if stand_tab_l <= 0.0:
+        pts.append((0.0, rail_h))
+        pts.append((0.0, sy_bot))
+        pts.append((sock_d, sy_bot))
+        pts.append((sock_d, sy_top))
+        pts.append((0.0, sy_top))
+    else:
+        # Left body bottom, then left stand tab + socket (E-shape, mirrored)
+        pts.append((0.0, rail_h))
+        pts.append((-stand_tab_l, rail_h))
+        # Up to socket bottom ledge
+        pts.append((-stand_tab_l, sy_bot))
+        # Ledge right to socket face
+        pts.append((0.0, sy_bot))
+        # Socket carved right by sock_d
+        pts.append((sock_d, sy_bot))
+        pts.append((sock_d, sy_top))
+        pts.append((0.0, sy_top))
+        # Ledge left back to stand tab face
+        pts.append((-stand_tab_l, sy_top))
+        # Up to top of stand tab (close to start via Z)
 
-    # ── Left end (x=0), bottom to top, with socket ─────────────────────────
-    pts.append((0.0, sy_bot))
-    pts.append((sock_d, sy_bot))             # step RIGHT (into body)
-    pts.append((sock_d, sy_top))
-    pts.append((0.0, sy_top))
-
-    # Back to start (implicit via Z, but we return the list without start repeat)
     return pts
 
 
@@ -501,33 +524,80 @@ def place(local_pts: list, local_holes: list, sx: float, sy: float):
     return sheet_pts, sheet_holes
 
 
-def stand_leg_pts(
-    leg_w: float,     # = STAND_LEG_W = 40mm
-    leg_l: float,     # = STAND_LEG_L = 300mm
-    notch_w: float,   # = STAND_NOTCH_W = 22.5mm (stile width + clearance)
-    notch_d: float,   # = STAND_NOTCH_D = 25mm
+def triangle_pts(
+    upright_h: float,         # STAND_UPRIGHT_H = 420mm (rear/left edge height)
+    base_l: float,            # STAND_BASE_L = 240mm (bottom edge length)
+    upright_notch_ys: list,   # y-centres of edge notches in upright (left) edge
+    base_notch_xs: list,      # x-centres of edge notches in base (bottom) edge
+    notch_w: float,           # notch opening width (fits cross member body)
+    notch_d: float,           # notch depth into body
+    notch_entry: float = 0.0,       # D-19: extra height above captive zone for L-shaped entry
+    notch_entry_d: float = 0.0,     # D-19: partial depth of entry zone (< notch_d)
+    hyp_notch_pts: list = None,     # D-19: 4 (x,y) pts for parallelogram notch on hypotenuse
 ) -> list:
     """
-    Stand leg: rectangle with U-notch at top for loom stile.
+    Solid right-triangle side piece for D-18/D-19 stand.
 
-    Local origin: top-left of bounding box.
-    Notch is open at y=0 (top of piece), centred on leg_w.
-    Notch dips DOWN to y=notch_d.
+    Local origin: (0,0) = top-back corner.
+    Right angle at (0, upright_h) bottom-back.
+    Third corner at (base_l, upright_h) bottom-front.
+    Hypotenuse: diagonal from (base_l, upright_h) back to (0, 0).
 
-    Clockwise winding (outer boundary).
+    Upright (left) edge: x=0, traversed top-to-bottom, notches go INTO body (+x).
+      With notch_entry>0: each upright notch is L-shaped — a (notch_w+notch_entry) tall
+      entry zone at partial depth notch_entry_d, then the captive zone at full notch_d.
+      Assembly: slide cross member in at entry level, step at x=notch_entry_d blocks
+      further travel until cross member drops notch_entry mm (gravity) into captive zone.
+    Base (bottom) edge: y=upright_h, traversed left-to-right, notches go INTO body (-y).
+      Plain rectangular (no L-shape).
+    Hyp edge: if hyp_notch_pts given, 4 points interrupt the hypotenuse line.
+    All notches are concave. Clockwise winding.
     """
-    nx0 = (leg_w - notch_w) / 2.0   # left wall of notch
-    nx1 = (leg_w + notch_w) / 2.0   # right wall of notch
-    return [
-        (0.0,   0.0),       # top-left
-        (nx0,   0.0),       # left of notch opening
-        (nx0,   notch_d),   # notch bottom-left
-        (nx1,   notch_d),   # notch bottom-right
-        (nx1,   0.0),       # right of notch opening
-        (leg_w, 0.0),       # top-right
-        (leg_w, leg_l),     # bottom-right
-        (0.0,   leg_l),     # bottom-left
-    ]
+    pts = [(0.0, 0.0)]   # top-back corner
+
+    # Traverse down left (upright) edge with concave notches
+    y_cur = 0.0
+    for ny in sorted(upright_notch_ys):
+        ny0 = ny - notch_w / 2.0        # top of captive zone
+        ny1 = ny + notch_w / 2.0        # bottom of captive zone
+        if notch_entry > 1e-9 and notch_entry_d > 1e-9:
+            # L-shaped entry: entry zone is notch_entry mm above captive zone, at partial depth
+            entry_top = ny0 - notch_entry
+            if entry_top > y_cur + 1e-9:
+                pts.append((0.0, entry_top))        # top of entry zone at edge
+            pts.append((notch_entry_d, entry_top))  # top-right of entry zone
+            pts.append((notch_entry_d, ny0))        # step: transition entry→captive
+            pts.append((notch_d, ny0))              # top of captive at full depth
+        else:
+            if ny0 > y_cur + 1e-9:
+                pts.append((0.0, ny0))
+            pts.append((notch_d, ny0))
+        pts.append((notch_d, ny1))
+        pts.append((0.0, ny1))
+        y_cur = ny1
+    if y_cur < upright_h - 1e-9:
+        pts.append((0.0, upright_h))
+
+    # Traverse right along base edge with concave notches (go UP = -y direction)
+    x_cur = 0.0
+    for nx in sorted(base_notch_xs):
+        nx0 = nx - notch_w / 2.0
+        nx1 = nx + notch_w / 2.0
+        if nx0 > x_cur + 1e-9:
+            pts.append((nx0, upright_h))
+        pts.append((nx0, upright_h - notch_d))
+        pts.append((nx1, upright_h - notch_d))
+        pts.append((nx1, upright_h))
+        x_cur = nx1
+    if x_cur < base_l - 1e-9:
+        pts.append((base_l, upright_h))
+
+    # Hypotenuse: optional parallelogram notch interrupts the line from (base_l, upright_h) to (0,0)
+    if hyp_notch_pts is not None:
+        pts.extend(hyp_notch_pts)   # 4 pts: P_before, P_before_inner, P_after_inner, P_after
+    # Z closes back to (0, 0)
+
+    return pts
 
 
 def prop_pts(

@@ -141,29 +141,40 @@ def make_params(
     heddle_bar_hole_r = 3.5  # mm
     heddle_bar_hole_pitch = notch_pitch
     heddle_bar_hole_count = notch_count
+    heddle_bar_offset = 2.5  # mm — alternating hole stagger for rigid heddle two-shed (D-17 answer)
 
     # ------------------------------------------------------------------
-    # A-frame stand (D-10, D-09) — 3mm ply
-    # Stand side pieces have angled U-notch to cradle loom stile at 65° from horizontal
-    # (= 25° lean from vertical)
+    # Triangle stand (D-18 + D-19) — 6mm ply, optional separate sheet
+    # Two solid right-triangle side pieces + 6 cross members (3 rear, 2 base, 1 hyp).
     # ------------------------------------------------------------------
-    stand_lean_deg    = 25.0                                     # from vertical
-    stand_lean_rad    = math.radians(stand_lean_deg)
-    stand_leg_l       = 300.0                                    # mm leg body length
-    stand_leg_w       = 40.0                                     # mm leg width (for stability)
-    stand_foot_l      = 180.0                                    # mm foot extends back from leg
-    stand_notch_w     = stile_w + 0.5                           # = 22.5mm clearance fit
-    stand_notch_d     = 25.0                                     # mm notch depth
-    # Spreader spans frame outer width; positions the two stand legs at the stile faces
-    stand_spread_l    = frame_outer_w
-    stand_spread_w    = 40.0
-    stand_spread_ten_l = 15.0
-    stand_spread_mort_w = mat3 + 0.1                             # mortise for 3mm tenon
-    stand_spread_mort_d = stand_spread_ten_l
-
-    # Geometry proof: at 65° lean, loom bottom at table, notch contact point height:
-    # h_notch = d_from_bottom * sin(65°) where d_from_bottom is measured along the stile
-    # This is resolved in verify_assembly.py; stand_leg_l is set conservatively.
+    stand_upright_h   = 420.0    # mm triangle upright height (rear/left edge)
+    stand_base_l      = 240.0    # mm triangle base length (bottom edge)
+    stand_rail_tab_l  = 0.0      # D-18: no top-rail tabs; top rail = FRAME_OUTER_W
+    # Edge notch in triangle for cross member (30mm wide × 15mm deep)
+    stand_spread_l    = frame_outer_w   # = 344mm cross member body span
+    stand_spread_w    = 30.0            # mm cross member height (stands on edge)
+    stand_spread_ten_l = 15.0           # mm each end sits in edge notch
+    stand_notch_w     = stand_spread_w + 0.1   # = 30.1mm notch height (fits cross member + 0.1 clearance)
+    stand_notch_d     = 15.0                   # mm edge notch depth
+    stand_spread_mort_w = stand_notch_w        # = 30.1mm (same as notch width)
+    stand_spread_mort_d = stand_notch_d        # = 15mm (same as notch depth)
+    # D-19: L-shaped drop-Z entry on upright edge notches
+    stand_notch_entry   = 2.0   # mm extra height above captive zone (wide entry allows 2mm vertical play)
+    stand_notch_entry_d = 8.0   # mm partial depth of entry zone (step at x=8 forces 2mm drop before x=15)
+    # Upright edge notch y-centres from top (rear cross member positions)
+    stand_mort_y_top  = 60.0    # mm — upper rear cross centre from upright top
+    stand_mort_y_mid  = 210.0   # mm — middle rear cross centre from upright top
+    stand_mort_y_bot  = 360.0   # mm — lower rear cross centre from upright top
+    # Base edge notch x-centres from back end (base cross member positions)
+    stand_base_notch_x1 = 80.0  # mm — base cross 1 centre from back of base
+    stand_base_notch_x2 = 160.0 # mm — base cross 2 centre from back of base
+    # Stile slots in rear cross members 1 and 3 (loom stile drop-in)
+    stand_stile_slot_w = stile_w + 0.5   # = 22.5mm (STILE_W + 0.5mm clearance each side)
+    stand_stile_slot_d = 15.0            # mm slot depth from loom-facing edge
+    # D-19: hypotenuse cross member — notch on hyp edge at t=0.25 from top vertex
+    stand_hyp_t  = 0.25
+    stand_hyp_cx = stand_hyp_t * stand_base_l      # = 60.0mm from upright (back)
+    stand_hyp_cy = stand_hyp_t * stand_upright_h   # = 105.0mm from top
 
     # ------------------------------------------------------------------
     # Box (D-09) — 3mm ply, holds all loom parts flat in a single layer
@@ -193,8 +204,9 @@ def make_params(
     box_lid_clear = 0.1             # mm clearance each side of lid
     box_tab_w     = box_interior_h / 3.0  # mm N=1 finger joint tab: 12/3 = 4mm (D-15)
     # Wall-to-base joint (D-15): tabs on wall bottom edges, edge notches in base
-    box_base_ntabs_l = 3            # tabs per long wall bottom edge
-    box_base_ntabs_s = 1            # tabs per short wall bottom edge (centered on body)
+    # 1 tab per ~22mm, minimum 8 (sparring round 2 answer)
+    box_base_ntabs_l = max(8, round(box_outer_l / 22.0))
+    box_base_ntabs_s = max(8, round(box_interior_w / 22.0))
 
     # ------------------------------------------------------------------
     # Assemble params dict
@@ -277,20 +289,31 @@ def make_params(
         "HEDDLE_BAR_HOLE_R":     heddle_bar_hole_r,
         "HEDDLE_BAR_HOLE_PITCH": heddle_bar_hole_pitch,
         "HEDDLE_BAR_HOLE_COUNT": heddle_bar_hole_count,
+        "HEDDLE_BAR_OFFSET":     heddle_bar_offset,
 
-        # Stand (3mm ply)
-        "STAND_LEAN_DEG":       stand_lean_deg,
-        "STAND_LEAN_RAD":       stand_lean_rad,
-        "STAND_LEG_L":          stand_leg_l,
-        "STAND_LEG_W":          stand_leg_w,
-        "STAND_FOOT_L":         stand_foot_l,
-        "STAND_NOTCH_W":        stand_notch_w,
-        "STAND_NOTCH_D":        stand_notch_d,
-        "STAND_SPREAD_L":       stand_spread_l,
-        "STAND_SPREAD_W":       stand_spread_w,
-        "STAND_SPREAD_TEN_L":   stand_spread_ten_l,
-        "STAND_SPREAD_MORT_W":  stand_spread_mort_w,
-        "STAND_SPREAD_MORT_D":  stand_spread_mort_d,
+        # Stand (6mm ply, D-18 — optional separate sheet)
+        "STAND_UPRIGHT_H":       stand_upright_h,
+        "STAND_BASE_L":          stand_base_l,
+        "STAND_RAIL_TAB_L":      stand_rail_tab_l,
+        "STAND_NOTCH_W":         stand_notch_w,
+        "STAND_NOTCH_D":         stand_notch_d,
+        "STAND_SPREAD_L":        stand_spread_l,
+        "STAND_SPREAD_W":        stand_spread_w,
+        "STAND_SPREAD_TEN_L":    stand_spread_ten_l,
+        "STAND_SPREAD_MORT_W":   stand_spread_mort_w,
+        "STAND_SPREAD_MORT_D":   stand_spread_mort_d,
+        "STAND_MORT_Y_TOP":      stand_mort_y_top,
+        "STAND_MORT_Y_MID":      stand_mort_y_mid,
+        "STAND_MORT_Y_BOT":      stand_mort_y_bot,
+        "STAND_BASE_NOTCH_X1":   stand_base_notch_x1,
+        "STAND_BASE_NOTCH_X2":   stand_base_notch_x2,
+        "STAND_STILE_SLOT_W":    stand_stile_slot_w,
+        "STAND_STILE_SLOT_D":    stand_stile_slot_d,
+        "STAND_NOTCH_ENTRY":     stand_notch_entry,
+        "STAND_NOTCH_ENTRY_D":   stand_notch_entry_d,
+        "STAND_HYP_T":           stand_hyp_t,
+        "STAND_HYP_CX":          stand_hyp_cx,
+        "STAND_HYP_CY":          stand_hyp_cy,
 
         # Box (3mm ply)
         "BOX_PACK_W_ESTIMATE": pack_w_estimate,

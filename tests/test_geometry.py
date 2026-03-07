@@ -10,7 +10,7 @@ from src.geometry import (
     circle_path, ellipse_path, rect_pts, bboxes_overlap,
     rail_pts, stile_pts, crossbar_pts, beater_pts,
     rect_hole, translate_hole, hole_to_path,
-    stand_leg_pts,
+    triangle_pts,
 )
 from src.params import DEFAULT as p
 
@@ -287,52 +287,96 @@ class TestRectHole:
 
 
 # ---------------------------------------------------------------------------
-# stand_leg_pts
+# triangle_pts (D-18 — solid right-triangle stand side piece)
 # ---------------------------------------------------------------------------
 
-class TestStandLegPts:
+class TestTrianglePts:
 
     def setup_method(self):
-        self.pts = stand_leg_pts(
-            p["STAND_LEG_W"], p["STAND_LEG_L"],
+        # Use D-18 stand params
+        upright_notch_ys = [
+            p["STAND_MORT_Y_TOP"], p["STAND_MORT_Y_MID"], p["STAND_MORT_Y_BOT"]
+        ]
+        base_notch_xs = [p["STAND_BASE_NOTCH_X1"], p["STAND_BASE_NOTCH_X2"]]
+        self.pts = triangle_pts(
+            p["STAND_UPRIGHT_H"], p["STAND_BASE_L"],
+            upright_notch_ys, base_notch_xs,
             p["STAND_NOTCH_W"], p["STAND_NOTCH_D"],
         )
         self.bb = bounding_box(self.pts)
 
-    def test_x_span(self):
-        """Stand leg spans 0 to STAND_LEG_W in x."""
-        xmin, _, xmax, _ = self.bb
-        assert abs(xmin) < 1e-6
-        assert abs(xmax - p["STAND_LEG_W"]) < 1e-6
+    def test_bbox_width(self):
+        """Bounding box width = STAND_BASE_L = 240mm."""
+        assert abs((self.bb[2] - self.bb[0]) - p["STAND_BASE_L"]) < 1e-6
 
-    def test_y_span(self):
-        """Stand leg spans 0 to STAND_LEG_L in y."""
-        _, ymin, _, ymax = self.bb
-        assert abs(ymin) < 1e-6
-        assert abs(ymax - p["STAND_LEG_L"]) < 1e-6
+    def test_bbox_height(self):
+        """Bounding box height = STAND_UPRIGHT_H = 420mm."""
+        assert abs((self.bb[3] - self.bb[1]) - p["STAND_UPRIGHT_H"]) < 1e-6
 
-    def test_notch_depth(self):
-        """Notch dips to y = STAND_NOTCH_D from top."""
-        notch_pts = [pt for pt in self.pts if abs(pt[1] - p["STAND_NOTCH_D"]) < 1e-6]
-        assert len(notch_pts) >= 2, \
-            f"Expected >= 2 points at notch depth y={p['STAND_NOTCH_D']}, got {len(notch_pts)}"
+    def test_top_back_corner(self):
+        """Origin point (0, 0) present in polygon."""
+        assert any(abs(pt[0]) < 1e-9 and abs(pt[1]) < 1e-9 for pt in self.pts), \
+            "Origin (0,0) not in polygon"
 
-    def test_notch_width(self):
-        """Notch has two vertical walls at x = (leg_w ± notch_w) / 2."""
-        notch_x0 = (p["STAND_LEG_W"] - p["STAND_NOTCH_W"]) / 2.0
-        notch_x1 = (p["STAND_LEG_W"] + p["STAND_NOTCH_W"]) / 2.0
-        xs = [pt[0] for pt in self.pts]
-        assert any(abs(x - notch_x0) < 1e-4 for x in xs), \
-            f"No point at notch left wall x={notch_x0:.4f}"
-        assert any(abs(x - notch_x1) < 1e-4 for x in xs), \
-            f"No point at notch right wall x={notch_x1:.4f}"
+    def test_bottom_front_corner(self):
+        """Bottom-front corner (STAND_BASE_L, STAND_UPRIGHT_H) present."""
+        bl = p["STAND_BASE_L"]
+        uh = p["STAND_UPRIGHT_H"]
+        assert any(abs(pt[0] - bl) < 1e-9 and abs(pt[1] - uh) < 1e-9
+                   for pt in self.pts), "Bottom-front corner not found"
 
-    def test_notch_is_concave_at_top(self):
-        """Notch goes INTO body — no y < 0."""
-        ys = [pt[1] for pt in self.pts]
-        assert min(ys) >= -1e-9, f"Points above y=0 (notch is convex): min_y={min(ys):.4f}"
-
-    def test_no_point_outside_width(self):
+    def test_upright_notches_concave(self):
+        """Upright (left) notches go INTO body: no x < 0."""
         xs = [pt[0] for pt in self.pts]
         assert min(xs) >= -1e-9
-        assert max(xs) <= p["STAND_LEG_W"] + 1e-9
+
+    def test_base_notches_concave(self):
+        """Base (bottom) notches go INTO body: no y > STAND_UPRIGHT_H."""
+        ys = [pt[1] for pt in self.pts]
+        assert max(ys) <= p["STAND_UPRIGHT_H"] + 1e-9
+
+    def test_upright_notch_depth(self):
+        """Upright notches reach STAND_NOTCH_D from left edge."""
+        nd = p["STAND_NOTCH_D"]
+        pts_at_depth = [pt for pt in self.pts if abs(pt[0] - nd) < 1e-6]
+        # 3 notches × 2 points at depth = 6
+        assert len(pts_at_depth) >= 6, \
+            f"Expected ≥6 pts at upright notch depth x={nd}, got {len(pts_at_depth)}"
+
+    def test_base_notch_depth(self):
+        """Base notches reach STAND_NOTCH_D up from bottom."""
+        nd = p["STAND_NOTCH_D"]
+        uh = p["STAND_UPRIGHT_H"]
+        pts_at_depth = [pt for pt in self.pts if abs(pt[1] - (uh - nd)) < 1e-6]
+        # 2 notches × 2 points at depth = 4
+        assert len(pts_at_depth) >= 4, \
+            f"Expected ≥4 pts at base notch depth y={uh-nd:.2f}, got {len(pts_at_depth)}"
+
+    def test_upright_notch_y_positions(self):
+        """All three upright notch centres appear as edge points."""
+        nw = p["STAND_NOTCH_W"]
+        nd = p["STAND_NOTCH_D"]
+        for cy in [p["STAND_MORT_Y_TOP"], p["STAND_MORT_Y_MID"], p["STAND_MORT_Y_BOT"]]:
+            # Expect pts at (0, cy-nw/2) and (0, cy+nw/2) on the left edge
+            y0_ok = any(abs(pt[0]) < 1e-9 and abs(pt[1] - (cy - nw/2)) < 0.01
+                        for pt in self.pts)
+            y1_ok = any(abs(pt[0]) < 1e-9 and abs(pt[1] - (cy + nw/2)) < 0.01
+                        for pt in self.pts)
+            assert y0_ok and y1_ok, \
+                f"Notch edge pts missing at y-centre {cy}: y0={cy-nw/2}, y1={cy+nw/2}"
+
+    def test_base_notch_x_positions(self):
+        """Both base notch centres appear as edge points."""
+        nw = p["STAND_NOTCH_W"]
+        uh = p["STAND_UPRIGHT_H"]
+        for cx in [p["STAND_BASE_NOTCH_X1"], p["STAND_BASE_NOTCH_X2"]]:
+            x0_ok = any(abs(pt[1] - uh) < 1e-9 and abs(pt[0] - (cx - nw/2)) < 0.01
+                        for pt in self.pts)
+            x1_ok = any(abs(pt[1] - uh) < 1e-9 and abs(pt[0] - (cx + nw/2)) < 0.01
+                        for pt in self.pts)
+            assert x0_ok and x1_ok, \
+                f"Base notch edge pts missing at x-centre {cx}: x0={cx-nw/2}, x1={cx+nw/2}"
+
+    def test_no_plain_rectangle(self):
+        """Triangle with 5 notches has >3 polygon vertices."""
+        assert len(self.pts) > 3, f"Expected >3 pts, got {len(self.pts)}"

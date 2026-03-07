@@ -1,24 +1,17 @@
 """
-src/box.py — Box + A-frame stand SVG generator.
+src/box.py — Box SVG generator.
 
-Generates output/box.svg: all box panels and stand pieces on a single
-600×600mm 3mm ply sheet.
+Generates output/box.svg: all box panels on a single 600×600mm 3mm ply sheet.
+Stand pieces are NOT included here — see src/stand.py → output/optional_loom_stand.svg (D-16).
 
 Parts:
-  Box (6 panels, glue assembly):
-    - box_base:          BOX_OUTER_L × BOX_OUTER_W (floor panel)
-    - box_lid:           BOX_INTERIOR_L × BOX_INTERIOR_W (rests on top)
-    - box_long_wall_L/R: BOX_OUTER_L × BOX_INTERIOR_H (×2)
-    - box_short_wall_front/back: BOX_INTERIOR_W × BOX_INTERIOR_H (×2)
+  Box (6 panels, press-fit assembly):
+    - box_base:              BOX_OUTER_L × BOX_OUTER_W (floor panel, edge notches)
+    - box_lid:               BOX_INTERIOR_L × BOX_INTERIOR_W (slides through short-wall dado)
+    - box_long_wall_L/R:     BOX_OUTER_L × BOX_INTERIOR_H (×2, corner sockets + base tabs)
+    - box_short_wall_front/back: BOX_OUTER_W × BOX_INTERIOR_H (×2, corner tabs + dado slot)
 
-  A-frame stand (3 pieces, press-fit assembly):
-    - stand_L:           leg with U-notch at top + spreader mortise hole
-    - stand_R:           mirror_x of stand_L
-    - stand_spreader:    flat bar with tenons each end
-
-Assembly note:
-  Box walls butt-joint to base (glue). Lid rests on top.
-  Stand legs press-fit onto spreader tenons; loom stile rests in U-notch.
+Assembly: connect 4 walls at corners → lower base onto wall bottom tabs → slide lid in.
 
 Usage:
   python3 -m src.box            → writes output/box.svg, prints report
@@ -34,11 +27,11 @@ from src.params import DEFAULT, make_params
 from src.geometry import (
     bounding_box, bboxes_overlap, translate, mirror_x, place,
     pts_to_path, cut_path, etch_text, svg_open, svg_close, svg_group,
-    rect_pts, stand_leg_pts,
+    rect_pts,
     rect_hole, hole_to_path,
 )
 
-OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "..", "output", "box.svg")
+OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "..", "output", "optional_box.svg")
 
 
 # ---------------------------------------------------------------------------
@@ -171,106 +164,55 @@ def build_box_short_wall(p: dict):
     return pts, []
 
 
-def build_stand_leg(p: dict):
-    """
-    Stand leg: 40×300mm rectangle with U-notch at top (for loom stile)
-    and a rectangular mortise hole near the bottom (for spreader tenon).
-
-    Local origin: top-left bounding box corner.
-    Notch open at y=0 (top of piece).
-    Mortise hole: STAND_SPREAD_MORT_D × STAND_SPREAD_MORT_W, centred on x,
-    at 30mm from bottom.
-    """
-    pts = stand_leg_pts(
-        p["STAND_LEG_W"], p["STAND_LEG_L"],
-        p["STAND_NOTCH_W"], p["STAND_NOTCH_D"],
-    )
-    # Rectangular mortise for spreader tenon — centred on leg width
-    mort_d = p["STAND_SPREAD_MORT_D"]   # 15mm (tenon length, along x)
-    mort_w = p["STAND_SPREAD_MORT_W"]   # 3.1mm (tenon thickness, along y)
-    mort_x = (p["STAND_LEG_W"] - mort_d) / 2.0          # = 12.5mm
-    mort_y = p["STAND_LEG_L"] - 30.0 - mort_w / 2.0     # 30mm from bottom
-    holes = [rect_hole(mort_x, mort_y, mort_d, mort_w)]
-    return pts, holes
-
-
-def build_stand_spreader(p: dict):
-    """
-    Stand spreader: flat bar spanning frame outer width, with tenons each end.
-    Full-height tenons (ten_w == spread_w) → simple rectangle.
-    Total length: STAND_SPREAD_L + 2×STAND_SPREAD_TEN_L.
-    """
-    total_l = p["STAND_SPREAD_L"] + 2.0 * p["STAND_SPREAD_TEN_L"]
-    pts = rect_pts(0.0, 0.0, total_l, p["STAND_SPREAD_W"])
-    return pts, []
-
-
 # ---------------------------------------------------------------------------
 # Layout
 # ---------------------------------------------------------------------------
 
 def layout(p: dict) -> list:
     """
-    Place all 9 parts on the 600×600mm 3mm ply sheet.
+    Place all 6 box parts on the 600×600mm 3mm ply sheet.
 
     Returns list of dicts: { 'id', 'label', 'sheet_pts', 'sheet_holes', 'bbox' }
     Raises ValueError if any part exceeds sheet bounds or parts overlap.
 
     Sheet layout (all measurements in mm, origin top-left):
-      Column A (x=2..): base, lid, long walls stacked; bottom strip for spreader+short walls
-      Column B (x=470..): long walls in portrait; stand legs beside them
+      Column A (x=M):        base, lid stacked vertically; short walls + spreader in bottom strip
+      Column B (x=M+base_l+G): two long walls in portrait orientation
     """
     M  = p["MARGIN"]   # = 2mm
     G  = 2.0           # inter-part gap
 
-    # ── Part local builds ───────────────────────────────────────────────────
-    leg_pts, leg_holes = build_stand_leg(p)
-    leg_pts_r = mirror_x(leg_pts, p["STAND_LEG_W"] / 2.0)
-
     parts_local = [
-        ("box_base",          *build_box_base(p),      "BOX BASE"),
-        ("box_lid",           *build_box_lid(p),       "BOX LID"),
-        ("box_long_wall_L",   *build_box_long_wall(p), "LONG WALL L"),
-        ("box_long_wall_R",   *build_box_long_wall(p), "LONG WALL R"),
+        ("box_base",             *build_box_base(p),      "BOX BASE"),
+        ("box_lid",              *build_box_lid(p),       "BOX LID"),
+        ("box_long_wall_L",      *build_box_long_wall(p), "LONG WALL L"),
+        ("box_long_wall_R",      *build_box_long_wall(p), "LONG WALL R"),
         ("box_short_wall_front", *build_box_short_wall(p), "SHORT WALL FR"),
         ("box_short_wall_back",  *build_box_short_wall(p), "SHORT WALL BK"),
-        ("stand_L",           leg_pts,   leg_holes,    "STAND L"),
-        ("stand_R",           leg_pts_r, leg_holes,    "STAND R"),
-        ("stand_spreader",    *build_stand_spreader(p), "STAND SPREADER"),
     ]
 
-    # ── Sheet positions (bounding-box top-left, passed to place()) ───────
-    # place() aligns the part's bounding box top-left to (sx, sy).
-    base_l       = p["BOX_OUTER_L"]                         # 466mm
-    base_w       = p["BOX_OUTER_W"]                         # 264mm
-    lid_w        = p["BOX_INTERIOR_W"]                      # 258mm
-    wall_pw      = p["BOX_INTERIOR_H"] + p["MAT3"]          # 15mm (long wall portrait bbox width, incl. base tab)
-    sw_bbox_w    = p["BOX_OUTER_W"]                         # 264mm (short wall bbox incl. corner tabs)
-    sw_total_h   = p["BOX_INTERIOR_H"] + p["MAT3"]          # 15mm (short wall full h incl. base tab)
-    leg_w        = p["STAND_LEG_W"]                         # 40mm
+    # ── Sheet positions ────────────────────────────────────────────────────
+    base_l    = p["BOX_OUTER_L"]                         # 466mm
+    base_w    = p["BOX_OUTER_W"]                         # 264mm
+    lid_w     = p["BOX_INTERIOR_W"]                      # 258mm
+    wall_pw   = p["BOX_INTERIOR_H"] + p["MAT3"]          # 15mm (long wall portrait width)
+    sw_bbox_w = p["BOX_OUTER_W"]                         # 264mm (short wall incl. corner tabs)
+    sw_total_h = p["BOX_INTERIOR_H"] + p["MAT3"]         # 15mm (short wall full height)
 
-    # Left column (x=M): base, lid, short walls; bottom strip: spreader
-    y_base = M                               # = 2
-    y_lid  = y_base + base_w  + G            # = 268
-    y_sw   = y_lid  + lid_w   + G            # = 528
-    y_spr  = y_sw   + sw_total_h + G         # = 545
+    y_base = M
+    y_lid  = y_base + base_w + G
+    y_sw   = y_lid  + lid_w  + G
 
-    # Right column (x=M+base_l+G): long walls portrait (w=wall_pw), then stand legs
-    x_right = M + base_l + G                 # = 470
-    x_lw2   = x_right + wall_pw + G          # = 487
-    x_leg1  = x_lw2   + wall_pw + G          # = 504
-    x_leg2  = x_leg1  + leg_w   + G          # = 546
+    x_right = M + base_l + G
+    x_lw2   = x_right + wall_pw + G
 
     positions = {
-        "box_base":             (M,                  y_base),
-        "box_lid":              (M,                  y_lid),
-        "box_long_wall_L":      (x_right,            M),
-        "box_long_wall_R":      (x_lw2,              M),
-        "stand_L":              (x_leg1,             M),
-        "stand_R":              (x_leg2,             M),
-        "stand_spreader":       (M,                  y_spr),
-        "box_short_wall_front": (M,                  y_sw),
-        "box_short_wall_back":  (M + sw_bbox_w + G,  y_sw),
+        "box_base":             (M,                 y_base),
+        "box_lid":              (M,                 y_lid),
+        "box_long_wall_L":      (x_right,           M),
+        "box_long_wall_R":      (x_lw2,             M),
+        "box_short_wall_front": (M,                 y_sw),
+        "box_short_wall_back":  (M + sw_bbox_w + G, y_sw),
     }
 
     # ── Place all parts ───────────────────────────────────────────────────
@@ -397,9 +339,6 @@ def verify(placed: list, p: dict) -> list:
         ("box_base height", "box_base",
          lambda bb: abs((bb[3] - bb[1]) - p["BOX_OUTER_W"]) < 0.1,
          f"expected {p['BOX_OUTER_W']:.1f}mm"),
-        ("stand_L height",  "stand_L",
-         lambda bb: abs((bb[3] - bb[1]) - p["STAND_LEG_L"]) < 0.1,
-         f"expected {p['STAND_LEG_L']:.1f}mm"),
     ]
     for name, pid, check_fn, expected in checks:
         if pid in part_by_id:

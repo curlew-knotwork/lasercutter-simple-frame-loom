@@ -52,6 +52,7 @@ def build_top_rail(p: dict):
         p["SOCK_W"], p["TAB_L"],
         _notch_cxs(p), p["NOTCH_W"], p["NOTCH_D"],
         notches_open_down=True,
+        stand_tab_l=p["STAND_RAIL_TAB_L"],
     )
     # Heddle holes: centred on rail height (y = RAIL_W/2 in local rail coords).
     # Local origin is the rail top-left bounding box corner (y=0 at outer edge).
@@ -135,13 +136,19 @@ def build_beater(p: dict):
 
 def build_heddle_bar(p: dict):
     pts = rect_pts(0.0, 0.0, p["HEDDLE_BAR_L"], p["HEDDLE_BAR_W"])
-    # Holes centred on bar, pitch-aligned with warp notches
+    # Holes pitch-aligned with warp notches; alternating y-offset for rigid heddle two-shed
     count = p["HEDDLE_BAR_HOLE_COUNT"]
     pitch = p["HEDDLE_BAR_HOLE_PITCH"]
     span = (count - 1) * pitch
     x0 = (p["HEDDLE_BAR_L"] - span) / 2.0   # x of first hole in local coords
     cy = p["HEDDLE_BAR_W"] / 2.0
-    holes = [circle_hole(x0 + i * pitch, cy, p["HEDDLE_BAR_HOLE_R"]) for i in range(count)]
+    offset = p["HEDDLE_BAR_OFFSET"]
+    holes = [
+        circle_hole(x0 + i * pitch,
+                    cy - offset if i % 2 == 0 else cy + offset,
+                    p["HEDDLE_BAR_HOLE_R"])
+        for i in range(count)
+    ]
     return pts, holes
 
 
@@ -346,8 +353,8 @@ def verify(placed: list, p: dict) -> list:
          lambda bb: abs((bb[2] - bb[0]) - p["STILE_W"]) < 0.1,
          f"expected {p['STILE_W']:.1f}mm"),
         ("top_rail width", "top_rail",
-         lambda bb: abs((bb[2] - bb[0]) - p["FRAME_OUTER_W"]) < 0.1,
-         f"expected {p['FRAME_OUTER_W']:.1f}mm"),
+         lambda bb: abs((bb[2] - bb[0]) - (p["FRAME_OUTER_W"] + 2.0 * p["STAND_RAIL_TAB_L"])) < 0.1,
+         f"expected {p['FRAME_OUTER_W'] + 2.0 * p['STAND_RAIL_TAB_L']:.1f}mm"),
         ("crossbar_1 length", "crossbar_1",
          lambda bb: abs((bb[2] - bb[0]) - p["CROSS_TOTAL_L"]) < 0.1,
          f"expected {p['CROSS_TOTAL_L']:.1f}mm"),

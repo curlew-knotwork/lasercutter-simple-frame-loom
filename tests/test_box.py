@@ -1,4 +1,4 @@
-"""Tests for src/box.py — box panels + A-frame stand layout on 3mm ply sheet."""
+"""Tests for src/box.py — box panels only (D-16: stand moved to src/stand.py)."""
 
 import os
 import sys
@@ -16,15 +16,12 @@ from src.box import (
     layout, render, verify, generate, write,
     build_box_base, build_box_lid,
     build_box_long_wall, build_box_short_wall,
-    build_stand_leg, build_stand_spreader,
 )
 
 EXPECTED_IDS = {
     "box_base", "box_lid",
     "box_long_wall_L", "box_long_wall_R",
     "box_short_wall_front", "box_short_wall_back",
-    "stand_L", "stand_R",
-    "stand_spreader",
 }
 
 
@@ -173,58 +170,6 @@ class TestPartBuilders:
         assert abs((bb[2] - bb[0]) - p["BOX_OUTER_L"]) < 0.1
         assert abs((bb[3] - bb[1]) - p["BOX_OUTER_W"]) < 0.1
 
-    def test_stand_leg_dimensions(self):
-        pts, _ = build_stand_leg(p)
-        bb = bounding_box(pts)
-        assert abs((bb[2] - bb[0]) - p["STAND_LEG_W"]) < 0.1
-        assert abs((bb[3] - bb[1]) - p["STAND_LEG_L"]) < 0.1
-
-    def test_stand_leg_has_mortise_hole(self):
-        """Stand leg must have a rectangular mortise hole for the spreader tenon."""
-        _, holes = build_stand_leg(p)
-        assert len(holes) >= 1, "Stand leg needs at least 1 mortise hole for spreader tenon"
-        rect_holes = [h for h in holes if h[0] == 'rect']
-        assert len(rect_holes) >= 1, f"Need at least 1 rect hole; got holes: {holes}"
-
-    def test_stand_leg_mortise_dimensions(self):
-        """Mortise hole must match stand spreader mort dimensions."""
-        _, holes = build_stand_leg(p)
-        rect_holes = [h for h in holes if h[0] == 'rect']
-        # Find a hole with the expected mortise dimensions
-        mort_d = p["STAND_SPREAD_MORT_D"]   # = 15mm (depth/length of tenon)
-        mort_w = p["STAND_SPREAD_MORT_W"]   # = 3.1mm (width of slot)
-        found = False
-        for h in rect_holes:
-            _, x, y, w, h_dim = h
-            if (abs(w - mort_d) < 0.2 and abs(h_dim - mort_w) < 0.2) or \
-               (abs(h_dim - mort_d) < 0.2 and abs(w - mort_w) < 0.2):
-                found = True
-                break
-        assert found, \
-            f"No mortise hole matching {mort_d:.1f}×{mort_w:.1f}mm; holes={rect_holes}"
-
-    def test_stand_R_mirrors_L(self):
-        """Stand-R bounding box must be same size as Stand-L."""
-        pts_l, _ = build_stand_leg(p)
-        pts_r, _ = build_stand_leg(p)  # same function; layout mirrors it
-        bb_l = bounding_box(pts_l)
-        bb_r = bounding_box(pts_r)
-        assert abs((bb_l[2] - bb_l[0]) - (bb_r[2] - bb_r[0])) < 1e-6
-        assert abs((bb_l[3] - bb_l[1]) - (bb_r[3] - bb_r[1])) < 1e-6
-
-    def test_stand_spreader_total_length(self):
-        pts, _ = build_stand_spreader(p)
-        bb = bounding_box(pts)
-        total_l = p["STAND_SPREAD_L"] + 2.0 * p["STAND_SPREAD_TEN_L"]
-        long_dim = max(bb[2] - bb[0], bb[3] - bb[1])
-        assert abs(long_dim - total_l) < 0.1, \
-            f"Spreader total length {long_dim:.2f} != {total_l:.2f}"
-
-    def test_stand_spreader_width(self):
-        pts, _ = build_stand_spreader(p)
-        bb = bounding_box(pts)
-        short_dim = min(bb[2] - bb[0], bb[3] - bb[1])
-        assert abs(short_dim - p["STAND_SPREAD_W"]) < 0.1
 
 
 # ---------------------------------------------------------------------------
@@ -269,11 +214,6 @@ class TestLayout:
         bb = self.by_id["box_base"]["bbox"]
         assert abs((bb[2] - bb[0]) - p["BOX_OUTER_L"]) < 0.1
         assert abs((bb[3] - bb[1]) - p["BOX_OUTER_W"]) < 0.1
-
-    def test_stand_L_and_R_not_overlapping(self):
-        sl = self.by_id["stand_L"]["bbox"]
-        sr = self.by_id["stand_R"]["bbox"]
-        assert not bboxes_overlap(sl, sr)
 
     def test_parts_have_bbox_key(self):
         for part in self.placed:
@@ -362,6 +302,12 @@ class TestWrite:
             write(p, path=path)
             assert os.path.getsize(path) > 500
 
+    def test_output_path_is_optional_box(self):
+        """Box output must be optional_box.svg, not box.svg."""
+        from src.box import OUTPUT_PATH
+        assert "optional_box.svg" in OUTPUT_PATH, \
+            f"OUTPUT_PATH '{OUTPUT_PATH}' does not contain 'optional_box.svg'"
+
 
 # ---------------------------------------------------------------------------
 # Unhappy-path tests
@@ -386,3 +332,10 @@ class TestUnhappyPath:
         svg = generate(alt)
         assert "<svg " in svg
         assert svg.rstrip().endswith("</svg>")
+
+    def test_stand_not_in_box_layout(self):
+        """D-16: stand pieces are on the loom sheet, not the box sheet."""
+        placed = layout(p)
+        ids = {pt["id"] for pt in placed}
+        for sid in ("stand_L", "stand_R", "stand_spreader"):
+            assert sid not in ids, f"'{sid}' must not appear in box layout (moved to loom sheet)"

@@ -62,11 +62,9 @@ Decisions are immutable once locked. If a decision must change, add a supersedin
 - **Rationale:** Eliminates the mortise overlap problem (DEF-002, DEF-005). Cleaner stile geometry. More robust and stable stand.
 - **Locked:** 2026-03-06
 
-### D-09 — Stand material: 3mm birch plywood; stand on box sheet
-- **Decision:** The easel stand is cut from 3mm birch plywood. Stand pieces are nested on the box SVG sheet (not the loom sheet). If they do not fit on the box sheet, a third 3mm sheet is used.
-- **Rationale:** User confirmed 3mm is sufficiently stable. 3mm stand shares material with the box, reducing sheet count.
-- **Total sheets:** loom.svg (6mm), box.svg (3mm, includes stand pieces), test_cut.svg (3mm scrap).
-- **Locked:** 2026-03-06
+### ~~D-09 — Stand material: 3mm birch plywood; stand on box sheet~~ SUPERSEDED by D-16
+- **Original decision:** Stand on box sheet (3mm ply).
+- **Superseded:** 2026-03-07 → see D-16.
 
 ### D-10 — Stand type: A-frame easel, three pieces
 - **Decision:** Stand consists of Stand-L, Stand-R (mirror), and Stand-Spreader. Stand-L and Stand-R each have an angled U-notch (25° from vertical = 65° from horizontal) that cradles one stile. The spreader connects the two side pieces to prevent splay. Loom rests in the notches by gravity; warp tension holds it in place.
@@ -121,6 +119,56 @@ The following invariants must hold for every valid parameter set. Any parameter 
 
 ---
 
+### D-16 — Stand: separate optional SVG, 6mm ply, two spreaders
+- **Decision:** The A-frame stand is optional. It is generated as `output/optional_loom_stand.svg`, a separate 600×600mm 6mm birch ply sheet. It is not included on the loom or box sheets.
+- **Rationale:** Not everyone will use the stand. Making it optional avoids wasting material. 6mm ply (same as loom) gives better rigidity than 3mm. Removing stand from box sheet simplifies that layout. Keeping the default loom at 300×400mm (scarf size) remains the primary output.
+- **Material:** MAT = 6mm (same sheet stock as the loom).
+- **Parts:** Stand-L, Stand-R (mirror), Stand-Spreader × 2 (same piece cut twice).
+- **Two spreaders:** one near the top of each leg (centre 50mm from leg top, below U-notch), one near the bottom (centre 30mm from leg bottom). Two spreaders at different heights triangulate the frame, eliminating the racking mode that a single spreader cannot resist. Same spreader piece cut twice.
+- **Leg mortises:** two rectangular holes per leg, same width `STAND_SPREAD_MORT_W = MAT + 0.1 = 6.1mm`, same depth `STAND_SPREAD_MORT_D = 15mm`. Upper mortise centre at `STAND_MORT_Y_TOP = 50mm` from leg top; lower mortise centre at `STAND_MORT_Y_BOT = 30mm` from leg bottom.
+- **Mortise change from D-09:** `STAND_SPREAD_MORT_W = MAT + 0.1 = 6.1mm` (was MAT3+0.1=3.1mm).
+- **Generator:** `src/stand.py` → `output/optional_loom_stand.svg`.
+- **Total sheets:** loom.svg (6mm), box.svg (3mm), optional_loom_stand.svg (6mm, cut only if wanted), test_cut.svg (3mm scrap).
+- **Locked:** 2026-03-07
+
+### D-17 — Stand: triangle L-bracket, top rail slot connection
+- **Supersedes:** D-16.
+- **SUPERSEDED BY D-18.**
+- **Locked:** 2026-03-07
+
+### D-18 — Stand: solid right-triangle side pieces, edge-notch cross members
+- **Supersedes:** D-17.
+- **Design:** Two solid right-triangle side pieces (Stand-L, Stand-R mirror) + 5 cross members. Output: `output/optional_loom_stand.svg`, 6mm birch ply, 600×600mm.
+- **Triangle geometry:** Right angle at bottom-back corner. Vertices (local): (0,0) top-back, (0,420) bottom-back, (240,420) bottom-front. Bounding box: STAND_BASE_L=240mm × STAND_UPRIGHT_H=420mm. 3 rectangular edge notches in upright (rear/left) edge: STAND_NOTCH_W=30.1mm wide × STAND_NOTCH_D=15mm deep, centred at y=60, 210, 360mm from top (STAND_MORT_Y_TOP, STAND_MORT_Y_MID, STAND_MORT_Y_BOT). 2 edge notches in base (bottom) edge: same dimensions, centred at x=80, 160mm from back end (STAND_BASE_NOTCH_X1, STAND_BASE_NOTCH_X2). Stand-R is mirror of Stand-L about its own centre x.
+- **Cross members (×5, same cut dimensions):** STAND_SPREAD_L + 2×STAND_SPREAD_TEN_L = 344+30 = 374mm total × STAND_SPREAD_W=30mm wide. The 15mm each end slides into the triangle edge notch (edge-notch joinery, no separate tenon geometry). No holes.
+  - stand_rear_cross_1 (y=60): WITH stile slots.
+  - stand_rear_cross_2 (y=210): structural only, no stile slots.
+  - stand_rear_cross_3 (y=360): WITH stile slots.
+  - stand_base_cross_1 (base at x=80): no stile slots.
+  - stand_base_cross_2 (base at x=160): no stile slots.
+- **Stile slots** (in loom-facing/top edge of rear cross 1 and 3): STAND_STILE_SLOT_W=22.5mm × STAND_STILE_SLOT_D=15mm concave cutouts. Centres at x=STAND_SPREAD_TEN_L+STAND_STILE_SLOT_W/2 (left) and x=total_l−STAND_SPREAD_TEN_L−STAND_STILE_SLOT_W/2 (right). Slot aligns with STILE_W=22mm loom stile + 0.25mm clearance each side.
+- **Loom connection:** Loom stiles drop into stile slots of rear cross members. No top-rail extensions needed. STAND_RAIL_TAB_L=0 (top rail reverts to FRAME_OUTER_W=344mm).
+- **STAND_SPREAD_MORT_W=30.1mm, STAND_SPREAD_MORT_D=15mm** (edge notch fit for cross member body).
+- **Sheet layout:** Triangles side-by-side at y=2..422 (×2); 5 cross members stacked at y=424..582. All within 600×600mm sheet.
+- **Box rename:** `output/box.svg` → `output/optional_box.svg` (carried forward from D-17).
+- **Locked:** 2026-03-07
+
+### D-19 — Stand joint redesign: L-shaped drop-Z upright notches + hypotenuse cross member
+- **Supersedes:** D-18 joint geometry (notch shape and cross member count only; triangle shape and dimensions unchanged).
+- **Upright edge notches — L-shaped entry:** Each upright-edge notch gains a 2mm-tall entry zone (STAND_NOTCH_ENTRY=2mm) at partial depth (STAND_NOTCH_ENTRY_D=8mm). Cross member slides in horizontally; at x=8mm the step blocks further entry until cross member drops 2mm (gravity); cross member then seats in 30.1mm captive zone at full 15mm depth. Prevents vibration/loosening during use.
+- **STAND_NOTCH_W unchanged at 30.1mm.** This matches the 30mm cross member HEIGHT (not thickness). The 6mm cross member thickness leaves 9mm of play in the notch depth direction; the L-shape eliminates vertical play.
+- **Hypotenuse cross member:** One additional plain cross member (same cut dimensions: 374×30mm) connecting the two triangles via a parallelogram notch cut into each triangle's hypotenuse edge. Centre at t=0.25 from top vertex: local (STAND_HYP_CX=60mm, STAND_HYP_CY=105mm). Notch is a parallelogram (4 pts rotated 29.7° from horizontal), width STAND_NOTCH_W=30.1mm × depth STAND_NOTCH_D=15mm, perpendicular to hyp. Prevents triangle tops from spreading/leaning under loom load.
+- **REAR X0 (y=40mm) NOT added:** Notch at y=40 overlaps REAR X1 at y=60 (30.1mm notch width; gap between notch edges = -10mm). Hyp cross member provides equivalent top constraint.
+- **Total cross members: 6** (REAR X1/X2/X3 + BASE X1/X2 + HYP).
+- **Layout:** 5 horizontal cross members stacked below triangles; 1 hyp cross member placed rotated 90° to the right of both triangles (30mm wide × 374mm tall on sheet).
+- **Base edge notches:** plain rectangular (unchanged); assembly = triangles drop onto base cross members, no L-shape needed.
+- **Locked:** 2026-03-07
+
+---
+
 ## Superseded Decisions
 
 - D-07 (original crossbar design): superseded by D-13.
+- D-09 (stand on box sheet, 3mm ply): superseded by D-16.
+- D-16 (rectangular leg stand, rail U-notch for stile): superseded by D-17.
+- D-17 (L-bracket stand, top-rail tabs, X stiffener bars): superseded by D-18.
