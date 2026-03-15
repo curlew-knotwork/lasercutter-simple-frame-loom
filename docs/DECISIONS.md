@@ -66,9 +66,9 @@ Decisions are immutable once locked. If a decision must change, add a supersedin
 - **Original decision:** Stand on box sheet (3mm ply).
 - **Superseded:** 2026-03-07 → see D-16.
 
-### D-10 — Stand type: A-frame easel, three pieces
-- **Decision:** Stand consists of Stand-L, Stand-R (mirror), and Stand-Spreader. Stand-L and Stand-R each have an angled U-notch (25° from vertical = 65° from horizontal) that cradles one stile. The spreader connects the two side pieces to prevent splay. Loom rests in the notches by gravity; warp tension holds it in place.
-- **Locked:** 2026-03-06
+### ~~D-10 — Stand type: A-frame easel, three pieces~~ SUPERSEDED by D-18
+- **Original decision:** Stand-L, Stand-R (mirror), Stand-Spreader. Each leg with angled U-notch (25° from vertical) to cradle a loom stile. Never implemented.
+- **Superseded:** 2026-03-07 → see D-18 (solid right-triangle sides + 6 cross members).
 
 ### D-11 — Each cut piece is a single unified closed-outline path
 - **Decision:** Every laser-cut piece has exactly one outer boundary path (a single closed polygon). Internal voids (holes, lightening ellipses, grip holes) are separate closed paths nested inside the outer boundary path. No piece is represented as a collection of overlapping rectangles or open paths.
@@ -110,12 +110,15 @@ The following invariants must hold for every valid parameter set. Any parameter 
 - **Locked:** 2026-03-06
 
 ### D-15 — Box joint design: wall-to-wall finger joints + wall-to-base edge tabs + sliding lid
-- **Wall-to-wall corners:** N=1 finger joint per corner (short wall has tab, long wall has socket). Tab = BOX_TAB_W = 4mm wide, MAT3 = 3mm deep. Already implemented.
-- **Wall-to-base:** Each wall bottom edge has N tabs protruding MAT3=3mm downward; base has matching edge notches (concave, opens at base perimeter edge). Long walls: BOX_BASE_NTABS_L = 3 tabs evenly spaced (at BOX_OUTER_L/4, /2, 3/4). Short walls: BOX_BASE_NTABS_S = 1 tab centered on body (at MAT3 + BOX_INTERIOR_W/2 from base edge). Tab width = BOX_TAB_W = 4mm for all base tabs.
+- **Wall-to-wall corners:** N=1 finger joint per corner (short wall has tab, long wall has socket). Tab = BOX_TAB_W = 4mm wide, MAT3 = 3mm deep.
+- **Wall-to-base:** Each wall bottom edge has N tabs protruding MAT3=3mm downward; base has matching edge notches (concave, opens at base perimeter edge). Tab width = BOX_TAB_W = 4mm for all base tabs.
+  - Long walls: BOX_BASE_NTABS_L = **15** tabs evenly spaced.
+  - Short walls: BOX_BASE_NTABS_S = **5** tabs evenly spaced.
+  - (Previous D-15 text said 3/1; code used max(8, round(len/22)) giving 21/12. Corrected to 15/5 by D-20 decision.)
 - **Lid:** Flat panel (BOX_INTERIOR_L × BOX_INTERIOR_W) slides through BOX_DADO_W = 3.2mm slots at top of short walls. Lid enters from one short-wall end.
-- **No glue, no hardware** — all joints press-fit. Kerf provides ~0.6mm net clearance (drawn dimension, laser removes 0.15mm/side).
+- **No glue, no hardware** — all joints press-fit.
 - **Assembly sequence:** Connect 4 walls at corners → lower base onto wall bottom tabs from above → slide lid in.
-- **Locked:** 2026-03-06
+- **Locked:** 2026-03-06; tab counts corrected 2026-03-08 per D-20.
 
 ---
 
@@ -136,7 +139,7 @@ The following invariants must hold for every valid parameter set. Any parameter 
 - **SUPERSEDED BY D-18.**
 - **Locked:** 2026-03-07
 
-### D-18 — Stand: solid right-triangle side pieces, edge-notch cross members
+### ~~D-18 — Stand: solid right-triangle side pieces, edge-notch cross members~~ SUPERSEDED by D-22
 - **Supersedes:** D-17.
 - **Design:** Two solid right-triangle side pieces (Stand-L, Stand-R mirror) + 5 cross members. Output: `output/optional_loom_stand.svg`, 6mm birch ply, 600×600mm.
 - **Triangle geometry:** Right angle at bottom-back corner. Vertices (local): (0,0) top-back, (0,420) bottom-back, (240,420) bottom-front. Bounding box: STAND_BASE_L=240mm × STAND_UPRIGHT_H=420mm. 3 rectangular edge notches in upright (rear/left) edge: STAND_NOTCH_W=30.1mm wide × STAND_NOTCH_D=15mm deep, centred at y=60, 210, 360mm from top (STAND_MORT_Y_TOP, STAND_MORT_Y_MID, STAND_MORT_Y_BOT). 2 edge notches in base (bottom) edge: same dimensions, centred at x=80, 160mm from back end (STAND_BASE_NOTCH_X1, STAND_BASE_NOTCH_X2). Stand-R is mirror of Stand-L about its own centre x.
@@ -153,7 +156,7 @@ The following invariants must hold for every valid parameter set. Any parameter 
 - **Box rename:** `output/box.svg` → `output/optional_box.svg` (carried forward from D-17).
 - **Locked:** 2026-03-07
 
-### D-19 — Stand joint redesign: L-shaped drop-Z upright notches + hypotenuse cross member
+### ~~D-19 — Stand joint redesign: L-shaped drop-Z upright notches + hypotenuse cross member~~ SUPERSEDED by D-22
 - **Supersedes:** D-18 joint geometry (notch shape and cross member count only; triangle shape and dimensions unchanged).
 - **Upright edge notches — L-shaped entry:** Each upright-edge notch gains a 2mm-tall entry zone (STAND_NOTCH_ENTRY=2mm) at partial depth (STAND_NOTCH_ENTRY_D=8mm). Cross member slides in horizontally; at x=8mm the step blocks further entry until cross member drops 2mm (gravity); cross member then seats in 30.1mm captive zone at full 15mm depth. Prevents vibration/loosening during use.
 - **STAND_NOTCH_W unchanged at 30.1mm.** This matches the 30mm cross member HEIGHT (not thickness). The 6mm cross member thickness leaves 9mm of play in the notch depth direction; the L-shape eliminates vertical play.
@@ -164,6 +167,44 @@ The following invariants must hold for every valid parameter set. Any parameter 
 - **Base edge notches:** plain rectangular (unchanged); assembly = triangles drop onto base cross members, no L-shape needed.
 - **Locked:** 2026-03-07
 
+### ~~D-20 — Stand: easel lean, upright base cross members~~ SUPERSEDED by D-21, then D-22
+- **Decision:** Stand functions as easel. BASE cross members oriented upright (30mm height vertical, 6mm on table). Triangle base notches: STAND_BASE_NOTCH_W = MAT+0.1 = 6.1mm. Stile slots removed from all cross members. Loom bottom rail on BASE X2 front face (~24°); stile back on REAR X1 face.
+- **Superseded by D-21.**
+- **Locked:** 2026-03-08
+
+### ~~D-21 — Stand: BASE cross members lie flat, shallow base notches~~ SUPERSEDED by D-22
+- **Supersedes:** D-20 base notch geometry only. Easel lean and stile slot removal unchanged.
+- **Problem with D-20:** Upright base cross members elevated both triangles 15mm above table on narrow feet — unstable and incorrect.
+- **Decision:** BASE cross members lie **flat** (same 2D cut as REAR — 374×30mm rectangle, no change to shape). Triangle base edge notches: STAND_BASE_NOTCH_W = STAND_NOTCH_W = 30.1mm (grips 30mm face), STAND_BASE_NOTCH_D = MAT = 6mm (shallow — cross member seated flush with base edge). No L-shaped entry on base notches — open at floor, gravity retains.
+- **Result:** Triangle base edges and cross member bottom faces all coplanar at floor level. Lean geometry unchanged: BASE X2 front face at x≈175mm from back → ~24° lean.
+- **Locked:** 2026-03-08
+
+### ~~D-22 — Stand: 2-piece Standing X easel (supersedes D-18/D-19/D-20/D-21)~~ SUPERSEDED by D-23
+- **Supersedes:** D-18, D-19, D-20, D-21 (all prior stand geometry).
+- **Design:** Two identical 6mm ply pieces, cross-halving half-lap joint at centre. Output: `output/optional_loom_stand.svg`, 6mm birch ply, 600×600mm.
+- **Piece geometry (STAND_X_L × STAND_X_W = 450×80mm):** Rectangle with two concave notches:
+  1. **Cross-halving slot:** top edge (y=0), centred at x=L/2=225mm, STAND_X_SLOT_W=6.1mm wide × STAND_X_SLOT_D=40mm deep. One piece assembled with slot-up, the other flipped 180° (slot-down). They interlock to form the X.
+  2. **Rail notch:** bottom-left corner, STAND_X_RAIL_NOTCH_W=22.5mm wide × STAND_X_RAIL_NOTCH_D=6mm deep. Captures loom bottom rail (RAIL_W=22mm) on the rear arm foot. When piece is flipped for front arm, notch is at upper harmless position.
+- **Assembly:** Stand fits inside loom interior (300mm wide, stand is 80mm wide). Loom frame provides left-right stability. Lean angle (~24°) set naturally by weight distribution.
+- **Flat-pack:** Two pieces (450×80mm each) fit side-by-side in box layer 2 (6mm above loom parts): 450×160mm < BOX_INTERIOR_L×BOX_INTERIOR_W ✓. Pieces store WITH the loom in its box.
+- **Sheet layout:** Both pieces horizontal, stacked vertically on 600×600mm sheet. Leaves significant space on sheet (pieces are 450×160mm total).
+- **Params:** STAND_X_L=450mm, STAND_X_W=80mm, STAND_X_SLOT_W=MAT+0.1=6.1mm, STAND_X_SLOT_D=STAND_X_W/2=40mm, STAND_X_RAIL_NOTCH_W=RAIL_W+0.5=22.5mm, STAND_X_RAIL_NOTCH_D=MAT=6mm.
+- **Locked:** 2026-03-08
+
+### D-23 — Stand: 2-piece triangular X easel (supersedes D-22)
+- **Supersedes:** D-22 (rectangular piece geometry).
+- **Design:** ONE cut pattern, TWO identical pieces cut from it. One piece is flipped 180° in the plane for assembly. Output: `output/optional_loom_stand.svg`, 6mm birch ply, 600×600mm. Layout = 2 copies of the same polygon; no separate piece-B function.
+- **Piece geometry (right triangle + hypotenuse foot tab + bump):**
+  - **Triangle:** Right angle at (0,0). Top edge horizontal: (0,0)→(L,0). Hypotenuse: (L,0)→(0,W). Foot edge vertical: (0,W)→(0,0).
+  - **Cross-halving slot:** from top edge (y=0) at x=L/2=225mm, STAND_X_SLOT_W=6.1mm wide × STAND_X_SLOT_D=W/4=20mm deep. At x=L/2, triangle height=W/2=40mm; slot depth=half that=20mm. Piece A slot-up, piece B flipped 180° so slot opens downward. They interlock at the crossing.
+  - **Foot tab:** protrudes from the HYPOTENUSE edge at the foot end (near (0,W)), outward (away from triangle interior, in +y direction). Tab is a rectangular protrusion from the hyp body — connected along the hyp edge, not at a corner point — so it has material support. Tab depth (along hyp) = STAND_X_TAB_L=25mm; tab height (perpendicular to hyp, into +y) = STAND_X_TAB_H=20mm.
+  - **Bump:** Mechanical stop at outer end of tab. STAND_X_BUMP_L=5mm × STAND_X_BUMP_H=5mm step at tip of tab. Prevents loom bottom rail from sliding off.
+- **Assembly:** Piece B is piece A rotated 180° in-plane. Slots interlock at x=L/2. Stand stands on short legs; foot tabs on hypotenuse cradle loom bottom rail.
+- **Flat-pack:** Each piece bbox ≈ STAND_X_L × (STAND_X_W + STAND_X_TAB_H) = 450×100mm (approx; exact from geometry). Two pieces stacked with gap.
+- **Sheet layout:** Both pieces horizontal, stacked vertically at y=MARGIN and y=MARGIN+piece_h+GAP.
+- **Params:** STAND_X_L=450mm, STAND_X_W=80mm, STAND_X_SLOT_W=MAT+0.1=6.1mm, STAND_X_SLOT_D=STAND_X_W/4=20mm, STAND_X_TAB_L=25mm, STAND_X_TAB_H=20mm, STAND_X_BUMP_L=5mm, STAND_X_BUMP_H=5mm.
+- **Locked:** 2026-03-15
+
 ---
 
 ## Superseded Decisions
@@ -172,3 +213,8 @@ The following invariants must hold for every valid parameter set. Any parameter 
 - D-09 (stand on box sheet, 3mm ply): superseded by D-16.
 - D-16 (rectangular leg stand, rail U-notch for stile): superseded by D-17.
 - D-17 (L-bracket stand, top-rail tabs, X stiffener bars): superseded by D-18.
+- D-10 (A-frame easel, U-notch stile cradle): superseded by D-18.
+- D-18 (triangle side pieces + 6 cross members): superseded by D-22.
+- D-19 (L-shaped upright notches + hyp cross member): superseded by D-22.
+- D-20 (upright base cross members, STAND_BASE_NOTCH_W=6.1mm): superseded by D-21, then D-22.
+- D-21 (BASE cross members flat, wide shallow notches): superseded by D-22.

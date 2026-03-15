@@ -81,6 +81,8 @@ Any YES: surface it immediately. Do not proceed until addressed.
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 2026-03-06 | Stage 0 — sparring | YES | YES | — | — | YES | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | All in OLD spec; new design eliminates them |
 | 2026-03-06 | Stage 1–5 — proofs→loom.py→tests | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES(F-003) | NO | NO | NO | NO | NO | YES(F-004,F-005) | NO | YES* | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | *T3: test_loom.py written after loom.py (not before) |
+| 2026-03-07 | Session recheck — D-19 + MD rewrites committed | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | 285 tests pass; all 3 generators ALL PASS; D-10 not marked superseded (doc only, no code impact) |
+| 2026-03-15 | D-23 tab direction + 2-piece fix | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | NO | NO | NO | NO | YES | P-C1: ledge hung off corner point with no material support (mechanically incoherent). P-S2: silently generated two different cut functions instead of surfacing "should these be identical pieces?". P-Q4: committed without user review. |
 
 ---
 
@@ -100,7 +102,7 @@ Any YES: surface it immediately. Do not proceed until addressed.
 | P-G8 Box undersized | 0 | — |
 | P-G9 Notch depth | 0 | — |
 | P-G10 Open path | 0 | — |
-| P-C1 Sign/direction | 1 | F-003 (stile_pts) |
+| P-C1 Sign/direction | 2 | 2026-03-15 (ledge at corner, no material support) |
 | P-C2 Off-by-one | 0 | — |
 | P-C3 Coord confusion | 0 | — |
 | P-C4 Hole direction | 0 | — |
@@ -112,13 +114,13 @@ Any YES: surface it immediately. Do not proceed until addressed.
 | P-T4 Wrong import | 0 | — |
 | P-T5 Verify not called | 0 | — |
 | P-S1 Invariant after fact | 0 | — |
-| P-S2 Silent arch choice | 0 | — |
+| P-S2 Silent arch choice | 1 | 2026-03-15 (two different cut functions vs. one identical piece) |
 | P-S3 Param not locked | 0 | — |
 | P-S4 Missing mating pair | 0 | — |
 | P-Q1 SVG/spec mismatch | 0 | — |
 | P-Q2 Cut/etch confusion | 0 | — |
 | P-Q3 Artifact in /tmp | 0 | — |
-| P-Q4 Unverified output | 0 | — |
+| P-Q4 Unverified output | 1 | 2026-03-15 (committed stand SVG without user review) |
 
 ---
 
