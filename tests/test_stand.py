@@ -1,13 +1,20 @@
 """
-tests/test_stand.py — Triangle stand generator (src/stand.py), D-18.
+tests/test_stand.py — 2-piece triangular X easel stand (src/stand.py), D-23.
 
-D-18: Solid right-triangle side pieces + 5 cross members.
-Parts: Stand-L, Stand-R, rear_cross_1/2/3 (3), base_cross_1/2 (2). Total: 7.
+D-23: Two identical 6mm ply pieces (right triangles), cross-halving joint at centre.
+Piece B is piece A flipped horizontally for assembly.
+
+Piece geometry (piece-local coords, L=STAND_X_L, W=STAND_X_W):
+  Right triangle: (0,0), (L,0), (0,W). 12-point polygon with:
+    1. Cross-halving slot from top (y=0) at x=L/2, width=SLOT_W, depth=W/4.
+    2. Foot tab: protrudes −x from foot end (x<0), TAB_L wide × TAB_H tall.
+    3. Bump: step at outer end of tab, BUMP_L wide × BUMP_H tall.
 """
 
 import re
 import os
 import sys
+import math
 import tempfile
 
 import pytest
@@ -18,8 +25,8 @@ from src.params import DEFAULT as p
 from src.geometry import bounding_box, bboxes_overlap
 
 from src.stand import (
-    build_stand_triangle,
-    build_stand_cross,
+    build_stand_x_piece,
+    build_stand_x_piece_b,
     layout,
     render,
     verify,
@@ -27,178 +34,256 @@ from src.stand import (
     write,
 )
 
-EXPECTED_IDS = {
-    "stand_L", "stand_R",
-    "stand_rear_cross_1", "stand_rear_cross_2", "stand_rear_cross_3",
-    "stand_base_cross_1", "stand_base_cross_2",
-    "hyp_cross",
-}
+EXPECTED_IDS = {"stand_x_a", "stand_x_b"}
 
 
 # ---------------------------------------------------------------------------
 # Part builder tests
 # ---------------------------------------------------------------------------
 
-class TestBuildStandTriangle:
+class TestBuildStandXPiece:
 
     def setup_method(self):
-        self.pts, self.holes = build_stand_triangle(p)
+        self.pts, self.holes = build_stand_x_piece(p)
         self.bb = bounding_box(self.pts)
 
-    def test_bounding_box_width(self):
-        """Triangle bbox width = STAND_BASE_L = 240mm."""
-        w = self.bb[2] - self.bb[0]
-        assert abs(w - p["STAND_BASE_L"]) < 0.1, f"bbox w={w:.2f} != {p['STAND_BASE_L']}"
-
-    def test_bounding_box_height(self):
-        """Triangle bbox height = STAND_UPRIGHT_H = 420mm."""
-        h = self.bb[3] - self.bb[1]
-        assert abs(h - p["STAND_UPRIGHT_H"]) < 0.1, f"bbox h={h:.2f} != {p['STAND_UPRIGHT_H']}"
-
     def test_no_holes(self):
-        """Triangle has no rect_hole — all notches are in the outer polygon."""
+        """X piece has no separate hole paths — all features are polygon vertices."""
         assert self.holes == []
 
-    def test_upright_notch_depths(self):
-        """3 upright notches each reach STAND_NOTCH_D from x=0 into body."""
-        nd = p["STAND_NOTCH_D"]
-        depth_pts = [pt for pt in self.pts if abs(pt[0] - nd) < 1e-6]
-        assert len(depth_pts) >= 6, \
-            f"Expected ≥6 points at notch depth x={nd} (2 per notch × 3), got {len(depth_pts)}"
+    def test_polygon_point_count(self):
+        """Triangular piece polygon has 12 points (slot 4 + triangle 2 + tab+bump 6)."""
+        assert len(self.pts) == 12, f"Expected 12 pts, got {len(self.pts)}: {self.pts}"
 
-    def test_upright_notch_concave(self):
-        """Upright notches go INTO body (x > 0); no point at x < 0."""
-        xs = [pt[0] for pt in self.pts]
-        assert min(xs) >= -1e-9, f"Upright notch convex: min x={min(xs):.4f}"
+    def test_bounding_box_length(self):
+        """Piece bbox width = STAND_X_L (triangle body, not counting tab)."""
+        # x range: from -(TAB_L+BUMP_L) to L
+        expected_w = p["STAND_X_L"] + p["STAND_X_TAB_L"] + p["STAND_X_BUMP_L"]
+        actual_w = self.bb[2] - self.bb[0]
+        assert abs(actual_w - expected_w) < 0.1, \
+            f"bbox width={actual_w:.3f} != L+TAB_L+BUMP_L={expected_w}"
 
-    def test_base_notch_depths(self):
-        """2 base notches each reach STAND_NOTCH_D up from y=STAND_UPRIGHT_H."""
-        nd = p["STAND_NOTCH_D"]
-        uh = p["STAND_UPRIGHT_H"]
-        depth_pts = [pt for pt in self.pts if abs(pt[1] - (uh - nd)) < 1e-6]
-        assert len(depth_pts) >= 4, \
-            f"Expected ≥4 points at base notch depth y={uh-nd:.2f} (2 per notch × 2), got {len(depth_pts)}"
+    def test_bounding_box_height(self):
+        """Piece bbox height = STAND_X_W."""
+        actual_h = self.bb[3] - self.bb[1]
+        assert abs(actual_h - p["STAND_X_W"]) < 0.1, \
+            f"bbox height={actual_h:.3f} != STAND_X_W={p['STAND_X_W']}"
 
-    def test_base_notch_concave(self):
-        """Base notches go INTO body (y < STAND_UPRIGHT_H); no point beyond upright_h."""
+    def test_triangle_tip_at_L_0(self):
+        """Triangle tip at (STAND_X_L, 0) — top-right corner."""
+        L = p["STAND_X_L"]
+        tip = [pt for pt in self.pts if abs(pt[0] - L) < 1e-6 and abs(pt[1]) < 1e-6]
+        assert len(tip) == 1, f"Expected tip at (L,0); found: {tip}"
+
+    def test_hypotenuse_foot_corner_at_0_W(self):
+        """Hypotenuse meets foot edge at (0, STAND_X_W)."""
+        W = p["STAND_X_W"]
+        corner = [pt for pt in self.pts if abs(pt[0]) < 1e-6 and abs(pt[1] - W) < 1e-6]
+        assert len(corner) == 1, f"Expected (0,W) corner; found: {corner}"
+
+    def test_cross_halving_slot_centred(self):
+        """Slot centred at x = STAND_X_L / 2."""
+        slot_d = p["STAND_X_SLOT_D"]
+        cx = p["STAND_X_L"] / 2.0
+        depth_pts = sorted(
+            [pt for pt in self.pts if abs(pt[1] - slot_d) < 1e-6],
+            key=lambda pt: pt[0],
+        )
+        assert len(depth_pts) >= 2, f"No points at slot_d y={slot_d}"
+        measured_cx = (depth_pts[0][0] + depth_pts[-1][0]) / 2.0
+        assert abs(measured_cx - cx) < 0.1, \
+            f"Slot centre x={measured_cx:.3f} != L/2={cx}"
+
+    def test_cross_halving_slot_width(self):
+        """Slot is STAND_X_SLOT_W wide."""
+        slot_d = p["STAND_X_SLOT_D"]
+        slot_w = p["STAND_X_SLOT_W"]
+        depth_pts = sorted(
+            [pt for pt in self.pts if abs(pt[1] - slot_d) < 1e-6],
+            key=lambda pt: pt[0],
+        )
+        assert len(depth_pts) >= 2, "No slot depth points"
+        measured_w = depth_pts[-1][0] - depth_pts[0][0]
+        assert abs(measured_w - slot_w) < 0.1, \
+            f"Slot width={measured_w:.3f} != SLOT_W={slot_w}"
+
+    def test_slot_depth_is_quarter_width(self):
+        """Slot depth = STAND_X_W / 4 (half of triangle height at slot x = L/2)."""
+        expected = p["STAND_X_W"] / 4.0
+        assert abs(p["STAND_X_SLOT_D"] - expected) < 0.1, \
+            f"STAND_X_SLOT_D={p['STAND_X_SLOT_D']:.3f} != W/4={expected:.3f}"
+
+    def test_slot_within_triangle_body(self):
+        """Slot bottom is below the hypotenuse at that x (slot doesn't escape the piece)."""
+        slot_d = p["STAND_X_SLOT_D"]
+        slot_cx = p["STAND_X_L"] / 2.0
+        # Triangle height at slot_cx: W × (1 − slot_cx/L)
+        triangle_h_at_cx = p["STAND_X_W"] * (1.0 - slot_cx / p["STAND_X_L"])
+        assert slot_d < triangle_h_at_cx - 1e-6, \
+            f"Slot_d={slot_d:.3f} not < triangle_h={triangle_h_at_cx:.3f} at x={slot_cx}"
+
+    def test_slot_concave_from_top(self):
+        """No slot point at y < 0 — slot is concave from top edge."""
         ys = [pt[1] for pt in self.pts]
-        assert max(ys) <= p["STAND_UPRIGHT_H"] + 1e-9, \
-            f"Base notch convex: max y={max(ys):.4f}"
+        assert min(ys) >= -1e-9, f"Point below y=0: min y={min(ys):.4f}"
 
-    def test_five_notches_total(self):
-        """Triangle has 3 upright + 2 base = 5 edge notches (polygon is non-rectangular)."""
-        # Plain triangle has 3 points; each notch adds 3 more → 3 + 5*3 = 18 minimum
-        assert len(self.pts) >= 18, f"Expected ≥18 pts for 5 notches, got {len(self.pts)}"
+    def test_piece_does_not_exceed_W(self):
+        """No point at y > STAND_X_W."""
+        W = p["STAND_X_W"]
+        ys = [pt[1] for pt in self.pts]
+        assert max(ys) <= W + 1e-9, f"Point exceeds W: max y={max(ys):.4f}"
 
-    def test_upright_notch_entry_zone(self):
-        """Upright notches have L-shaped entry: points at STAND_NOTCH_ENTRY_D (partial depth). D-19."""
-        entry_d = p["STAND_NOTCH_ENTRY_D"]   # KeyError until params updated
-        pts_at_entry = [pt for pt in self.pts if abs(pt[0] - entry_d) < 1e-6]
-        # 2 points per upright notch at entry depth (step-top and step-bot), 3 notches → ≥6
-        assert len(pts_at_entry) >= 6, \
-            f"Expected ≥6 pts at entry_d x={entry_d} (2 per notch × 3 notches), got {len(pts_at_entry)}"
+    def test_foot_tab_protrudes_in_minus_x(self):
+        """Tab protrudes from foot (x=0) in -x direction."""
+        xs = [pt[0] for pt in self.pts]
+        assert min(xs) < -1e-6, f"No tab protrusion in -x: min x={min(xs):.4f}"
 
-    def test_hyp_notch_in_triangle(self):
-        """Triangle has hyp-edge notch: ≥4 points not on upright/base boundary. D-19."""
-        cx = p["STAND_HYP_CX"]   # KeyError until params updated
-        nd = p["STAND_NOTCH_D"]
-        uh = p["STAND_UPRIGHT_H"]
-        # Hyp notch points: interior (x > 0, y < upright_h) and NOT at x == notch_d (upright notch pts)
-        interior = [
-            pt for pt in self.pts
-            if pt[0] > 1e-6
-            and pt[1] < uh - 1e-6
-            and abs(pt[0] - nd) > 0.5
+    def test_foot_tab_length(self):
+        """Tab protrudes STAND_X_TAB_L + STAND_X_BUMP_L from x=0."""
+        expected = -(p["STAND_X_TAB_L"] + p["STAND_X_BUMP_L"])
+        xs = [pt[0] for pt in self.pts]
+        assert abs(min(xs) - expected) < 0.1, \
+            f"Tab outer x={min(xs):.3f} != {expected:.3f}"
+
+    def test_foot_tab_height(self):
+        """Tab top face at y = STAND_X_W - STAND_X_TAB_H."""
+        W = p["STAND_X_W"]
+        TAB_H = p["STAND_X_TAB_H"]
+        tab_top_y = W - TAB_H
+        # There should be at least 2 points at the tab top y (inner and outer)
+        tab_top_pts = [pt for pt in self.pts if abs(pt[1] - tab_top_y) < 1e-6]
+        assert len(tab_top_pts) >= 2, \
+            f"Expected ≥2 points at tab top y={tab_top_y:.2f}, got {tab_top_pts}"
+
+    def test_bump_at_tab_outer_end(self):
+        """Bump step present at x = -(STAND_X_TAB_L + STAND_X_BUMP_L)."""
+        outer_x = -(p["STAND_X_TAB_L"] + p["STAND_X_BUMP_L"])
+        outer_pts = [pt for pt in self.pts if abs(pt[0] - outer_x) < 1e-6]
+        assert len(outer_pts) >= 2, \
+            f"Expected ≥2 points at outer x={outer_x:.2f}; got {outer_pts}"
+
+    def test_bump_height(self):
+        """Bump rises STAND_X_BUMP_H above tab top face."""
+        W = p["STAND_X_W"]
+        TAB_H = p["STAND_X_TAB_H"]
+        BUMP_H = p["STAND_X_BUMP_H"]
+        bump_top_y = W - TAB_H - BUMP_H
+        bump_pts = [pt for pt in self.pts if abs(pt[1] - bump_top_y) < 1e-6]
+        assert len(bump_pts) >= 2, \
+            f"Expected ≥2 pts at bump top y={bump_top_y:.2f}; got {bump_pts}"
+
+
+# ---------------------------------------------------------------------------
+# Piece B — slot from hypotenuse (mating cross-halving joint)
+# ---------------------------------------------------------------------------
+
+class TestBuildStandXPieceB:
+
+    def setup_method(self):
+        self.pts_a, _ = build_stand_x_piece(p)
+        self.pts_b, _ = build_stand_x_piece_b(p)
+
+    def test_piece_b_top_edge_no_slot(self):
+        """Piece B top edge (y=0) is continuous — no slot: only pts at x=0 and x=L."""
+        top_pts = [(x, y) for x, y in self.pts_b if abs(y) < 1e-6]
+        xs = sorted(x for x, y in top_pts)
+        assert len(top_pts) == 2, \
+            f"Expected 2 pts at y=0 (foot top and tip), got {len(top_pts)}: {top_pts}"
+        assert abs(xs[0]) < 1e-6, f"Expected x=0 at foot top, got {xs[0]:.3f}"
+        assert abs(xs[1] - p["STAND_X_L"]) < 1e-6, \
+            f"Expected x=L at tip, got {xs[1]:.3f}"
+
+    def test_piece_b_slot_bottom_at_slot_d(self):
+        """Piece B slot bottom is at y=STAND_X_SLOT_D (same as piece A — slots mate there)."""
+        slot_d = p["STAND_X_SLOT_D"]
+        slot_cx = p["STAND_X_L"] / 2.0
+        slot_w = p["STAND_X_SLOT_W"]
+        bottom_pts = [
+            (x, y) for x, y in self.pts_b
+            if abs(y - slot_d) < 0.5 and (slot_cx - slot_w) < x < (slot_cx + slot_w)
         ]
-        assert len(interior) >= 4, \
-            f"Expected ≥4 hyp-notch interior pts, got {len(interior)}: {interior[:6]}"
+        assert len(bottom_pts) >= 2, \
+            f"Expected ≥2 slot-bottom pts at y≈{slot_d} near x={slot_cx}, got {bottom_pts}"
 
-    def test_upright_notch_y_positions(self):
-        """Upright notch centres at STAND_MORT_Y_TOP, STAND_MORT_Y_MID, STAND_MORT_Y_BOT."""
-        nw = p["STAND_NOTCH_W"]
-        nd_depth = p["STAND_NOTCH_D"]
-        for key in ("STAND_MORT_Y_TOP", "STAND_MORT_Y_MID", "STAND_MORT_Y_BOT"):
-            cy = p[key]
-            # At notch depth, we expect two y-coords: cy-nw/2 and cy+nw/2
-            pts_at_depth = [pt for pt in self.pts if abs(pt[0] - nd_depth) < 1e-6]
-            ys_at_depth = {round(pt[1], 4) for pt in pts_at_depth}
-            y0 = round(cy - nw / 2.0, 4)
-            y1 = round(cy + nw / 2.0, 4)
-            assert y0 in ys_at_depth or any(abs(y - (cy - nw/2)) < 0.1 for y in ys_at_depth), \
-                f"No notch top at y={cy-nw/2:.2f} for {key}={cy}"
+    def test_piece_b_has_hyp_slot_points(self):
+        """Piece B has points at the hypotenuse y-values where the slot opens."""
+        slot_cx = p["STAND_X_L"] / 2.0
+        slot_w = p["STAND_X_SLOT_W"]
+        L = p["STAND_X_L"]
+        W = p["STAND_X_W"]
+        hyp_y_left  = W * (1.0 - (slot_cx - slot_w / 2.0) / L)
+        hyp_y_right = W * (1.0 - (slot_cx + slot_w / 2.0) / L)
+        hyp_pts = [
+            (x, y) for x, y in self.pts_b
+            if (
+                (abs(x - (slot_cx - slot_w / 2.0)) < 0.1 and abs(y - hyp_y_left)  < 0.5)
+                or
+                (abs(x - (slot_cx + slot_w / 2.0)) < 0.1 and abs(y - hyp_y_right) < 0.5)
+            )
+        ]
+        assert len(hyp_pts) >= 2, \
+            f"Expected ≥2 pts at hyp y near slot (≈{hyp_y_right:.1f}–{hyp_y_left:.1f}), got {hyp_pts}"
+
+    def test_slots_mate_no_gap_no_overlap(self):
+        """At x=L/2: piece A slot covers y=0..slot_d; piece B slot covers slot_d..hyp_y; no gap."""
+        slot_d = p["STAND_X_SLOT_D"]
+        slot_cx = p["STAND_X_L"] / 2.0
+        L = p["STAND_X_L"]
+        W = p["STAND_X_W"]
+        hyp_y = W * (1.0 - slot_cx / L)  # = W/2 = 40mm
+        # Piece A: slot y=0..slot_d; material y=slot_d..hyp_y
+        # Piece B: slot y=slot_d..hyp_y; material y=0..slot_d
+        # Together: slot_d (A bottom) == slot_d (B top): no gap, no overlap
+        assert abs(hyp_y - 2.0 * slot_d) < 1e-6, \
+            f"hyp_y={hyp_y:.3f} != 2×slot_d={2*slot_d:.3f}: slots will not fully mate"
 
 
-class TestBuildStandCross:
+# ---------------------------------------------------------------------------
+# Param sanity tests
+# ---------------------------------------------------------------------------
 
-    def test_plain_cross_dimensions(self):
-        """Cross member without stile slots: 374×30mm bounding box."""
-        pts, holes = build_stand_cross(p, with_stile_slots=False)
-        bb = bounding_box(pts)
-        total_l = p["STAND_SPREAD_L"] + 2.0 * p["STAND_SPREAD_TEN_L"]
-        assert abs((bb[2] - bb[0]) - total_l) < 0.1, f"width {bb[2]-bb[0]:.2f} != {total_l}"
-        assert abs((bb[3] - bb[1]) - p["STAND_SPREAD_W"]) < 0.1
-        assert holes == []
+class TestStandXParams:
 
-    def test_plain_cross_is_rectangle(self):
-        """Cross without stile slots: exactly 4 polygon points."""
-        pts, _ = build_stand_cross(p, with_stile_slots=False)
-        assert len(pts) == 4, f"Expected 4 pts for plain rect, got {len(pts)}"
+    def test_slot_w_is_clearance_fit(self):
+        """STAND_X_SLOT_W = MAT + 0.1mm clearance (cross-halving fit)."""
+        expected = p["MAT"] + 0.1
+        assert abs(p["STAND_X_SLOT_W"] - expected) < 0.05
 
-    def test_slotted_cross_dimensions(self):
-        """Cross with stile slots: bounding box still 374×30mm."""
-        pts, holes = build_stand_cross(p, with_stile_slots=True)
-        bb = bounding_box(pts)
-        total_l = p["STAND_SPREAD_L"] + 2.0 * p["STAND_SPREAD_TEN_L"]
-        assert abs((bb[2] - bb[0]) - total_l) < 0.1
-        assert abs((bb[3] - bb[1]) - p["STAND_SPREAD_W"]) < 0.1
-        assert holes == []
+    def test_slot_d_is_quarter_width(self):
+        """STAND_X_SLOT_D = STAND_X_W / 4 (half of triangle height at slot_cx = L/2)."""
+        expected = p["STAND_X_W"] / 4.0
+        assert abs(p["STAND_X_SLOT_D"] - expected) < 0.1
 
-    def test_slotted_cross_has_cutouts(self):
-        """Cross with stile slots: polygon has >4 points (two concave cutouts)."""
-        pts, _ = build_stand_cross(p, with_stile_slots=True)
-        assert len(pts) > 4, f"Expected >4 pts for slotted cross, got {len(pts)}"
+    def test_stand_x_l_present(self):
+        """D-23: STAND_X_L = 450mm."""
+        assert "STAND_X_L" in p
+        assert abs(p["STAND_X_L"] - 450.0) < 0.1
 
-    def test_stile_slot_depth(self):
-        """Stile slots reach STAND_STILE_SLOT_D from top edge (y=0)."""
-        pts, _ = build_stand_cross(p, with_stile_slots=True)
-        sd = p["STAND_STILE_SLOT_D"]
-        depth_pts = [pt for pt in pts if abs(pt[1] - sd) < 1e-6]
-        assert len(depth_pts) >= 4, \
-            f"Expected ≥4 pts at slot depth y={sd}, got {len(depth_pts)}"
+    def test_stand_x_tab_l_present(self):
+        """D-23: STAND_X_TAB_L present and ~25mm."""
+        assert "STAND_X_TAB_L" in p
+        assert 20.0 <= p["STAND_X_TAB_L"] <= 35.0
 
-    def test_stile_slots_concave(self):
-        """Stile slots go INTO body; no point at y < 0."""
-        pts, _ = build_stand_cross(p, with_stile_slots=True)
-        ys = [pt[1] for pt in pts]
-        assert min(ys) >= -1e-9
+    def test_stand_x_bump_l_present(self):
+        """D-23: STAND_X_BUMP_L present and ~5mm."""
+        assert "STAND_X_BUMP_L" in p
+        assert 2.0 <= p["STAND_X_BUMP_L"] <= 10.0
 
-    def test_stile_slot_width(self):
-        """Stile slot total width = STAND_STILE_SLOT_W."""
-        pts, _ = build_stand_cross(p, with_stile_slots=True)
-        sd = p["STAND_STILE_SLOT_D"]
-        sw = p["STAND_STILE_SLOT_W"]
-        # Get x-coords of points at slot depth
-        pts_at_sd = [pt for pt in pts if abs(pt[1] - sd) < 1e-6]
-        # Should have 2 pairs of points (one per slot)
-        xs = sorted(pt[0] for pt in pts_at_sd)
-        assert len(xs) >= 4, f"Expected ≥4 points at slot depth, got {len(xs)}"
-        slot1_w = xs[1] - xs[0]
-        slot2_w = xs[3] - xs[2]
-        assert abs(slot1_w - sw) < 0.1, f"Slot 1 width={slot1_w:.3f} != {sw}"
-        assert abs(slot2_w - sw) < 0.1, f"Slot 2 width={slot2_w:.3f} != {sw}"
+    def test_rail_notch_params_removed(self):
+        """D-23: STAND_X_RAIL_NOTCH_W/D removed (replaced by foot tab)."""
+        assert "STAND_X_RAIL_NOTCH_W" not in p, "STAND_X_RAIL_NOTCH_W should be removed in D-23"
+        assert "STAND_X_RAIL_NOTCH_D" not in p, "STAND_X_RAIL_NOTCH_D should be removed in D-23"
 
-    def test_stile_slots_within_body(self):
-        """Stile slots start at or after the tenon end (x ≥ STAND_SPREAD_TEN_L)."""
-        pts, _ = build_stand_cross(p, with_stile_slots=True)
-        ten_l = p["STAND_SPREAD_TEN_L"]
-        sd = p["STAND_STILE_SLOT_D"]
-        pts_at_sd = [pt for pt in pts if abs(pt[1] - sd) < 1e-6]
-        xs = sorted(pt[0] for pt in pts_at_sd)
-        assert xs[0] >= ten_l - 1e-6, \
-            f"Left slot starts at x={xs[0]:.3f} before tenon end x={ten_l}"
-        total_l = p["STAND_SPREAD_L"] + 2.0 * ten_l
-        assert xs[-1] <= total_l - ten_l + 1e-6, \
-            f"Right slot ends at x={xs[-1]:.3f} after body end x={total_l-ten_l}"
+    def test_pieces_fit_in_box_length(self):
+        """STAND_X_L < BOX_INTERIOR_L (piece body fits lengthwise; tab protrusion is SHOULD/COULD)."""
+        assert p["STAND_X_L"] < p["BOX_INTERIOR_L"], \
+            f"STAND_X_L={p['STAND_X_L']} >= BOX_INTERIOR_L={p['BOX_INTERIOR_L']}"
+
+    def test_two_pieces_fit_in_box_width(self):
+        """2 × STAND_X_W + 2mm gap < BOX_INTERIOR_W (flat-pack in box layer 2)."""
+        two_w = 2.0 * p["STAND_X_W"] + 2.0
+        assert two_w < p["BOX_INTERIOR_W"], \
+            f"2×STAND_X_W+gap={two_w} >= BOX_INTERIOR_W={p['BOX_INTERIOR_W']}"
 
 
 # ---------------------------------------------------------------------------
@@ -212,27 +297,12 @@ class TestLayout:
         self.by_id = {pt["id"]: pt for pt in self.placed}
 
     def test_part_count(self):
-        assert len(self.placed) == len(EXPECTED_IDS), \
-            f"Expected {len(EXPECTED_IDS)} parts, got {len(self.placed)}"
+        """Layout produces exactly 2 parts."""
+        assert len(self.placed) == 2, f"Expected 2 parts, got {len(self.placed)}"
 
     def test_all_expected_ids_present(self):
         ids = {pt["id"] for pt in self.placed}
-        assert ids == EXPECTED_IDS, \
-            f"Missing: {EXPECTED_IDS - ids}; extra: {ids - EXPECTED_IDS}"
-
-    def test_L_R_same_bounding_box_size(self):
-        bb_l = self.by_id["stand_L"]["bbox"]
-        bb_r = self.by_id["stand_R"]["bbox"]
-        assert abs((bb_l[2] - bb_l[0]) - (bb_r[2] - bb_r[0])) < 0.1
-        assert abs((bb_l[3] - bb_l[1]) - (bb_r[3] - bb_r[1])) < 0.1
-
-    def test_all_main_cross_members_same_bounding_box_size(self):
-        """The 5 main cross members (not hyp_cross, which is rotated) have same bbox dims."""
-        main_ids = [k for k in EXPECTED_IDS if "cross" in k and k != "hyp_cross"]
-        bbs = [self.by_id[cid]["bbox"] for cid in main_ids]
-        for bb in bbs[1:]:
-            assert abs((bb[2] - bb[0]) - (bbs[0][2] - bbs[0][0])) < 0.1
-            assert abs((bb[3] - bb[1]) - (bbs[0][3] - bbs[0][1])) < 0.1
+        assert ids == EXPECTED_IDS
 
     def test_all_parts_within_sheet_bounds(self):
         M = p["MARGIN"]
@@ -253,26 +323,35 @@ class TestLayout:
                 assert not bboxes_overlap(a["bbox"], b["bbox"]), \
                     f"'{a['id']}' and '{b['id']}' overlap"
 
-    def test_triangle_bbox_correct(self):
-        """stand_L bounding box is STAND_BASE_L × STAND_UPRIGHT_H."""
-        bb = self.by_id["stand_L"]["bbox"]
-        assert abs((bb[2] - bb[0]) - p["STAND_BASE_L"]) < 0.1
-        assert abs((bb[3] - bb[1]) - p["STAND_UPRIGHT_H"]) < 0.1
+    def test_both_pieces_same_bounding_box_size(self):
+        """Both pieces have the same bounding box dimensions."""
+        bbs = [self.by_id[pid]["bbox"] for pid in ["stand_x_a", "stand_x_b"]]
+        for dim in (0, 1):  # width, height
+            sizes = [(bb[2+dim] - bb[dim]) for bb in bbs]
+            assert abs(sizes[0] - sizes[1]) < 0.1, \
+                f"Part bbox dim {dim} differs: {sizes}"
 
-    def test_cross_bbox_correct(self):
-        """Main cross members: (STAND_SPREAD_L+2*TEN_L) × STAND_SPREAD_W. hyp_cross is rotated."""
-        total_l = p["STAND_SPREAD_L"] + 2.0 * p["STAND_SPREAD_TEN_L"]
-        sw = p["STAND_SPREAD_W"]
-        for cid in [k for k in EXPECTED_IDS if "cross" in k and k != "hyp_cross"]:
-            bb = self.by_id[cid]["bbox"]
-            assert abs((bb[2] - bb[0]) - total_l) < 0.1, f"{cid} w={bb[2]-bb[0]:.2f}"
-            assert abs((bb[3] - bb[1]) - sw) < 0.1, f"{cid} h={bb[3]-bb[1]:.2f}"
-        # hyp_cross placed rotated 90° on sheet: bbox is SW × total_l
-        bb = self.by_id["hyp_cross"]["bbox"]
-        assert abs((bb[2] - bb[0]) - sw) < 0.1, \
-            f"hyp_cross width={bb[2]-bb[0]:.2f} != STAND_SPREAD_W={sw}"
-        assert abs((bb[3] - bb[1]) - total_l) < 0.1, \
-            f"hyp_cross height={bb[3]-bb[1]:.2f} != total_l={total_l}"
+    def test_piece_bbox_width(self):
+        """Each piece bbox width = STAND_X_L + STAND_X_TAB_L + STAND_X_BUMP_L."""
+        expected_w = p["STAND_X_L"] + p["STAND_X_TAB_L"] + p["STAND_X_BUMP_L"]
+        for pid in ["stand_x_a", "stand_x_b"]:
+            bb = self.by_id[pid]["bbox"]
+            w = bb[2] - bb[0]
+            assert abs(w - expected_w) < 0.1, f"{pid} bbox width={w:.2f} != {expected_w}"
+
+    def test_piece_bbox_height(self):
+        """Each piece bbox height = STAND_X_W."""
+        W = p["STAND_X_W"]
+        for pid in ["stand_x_a", "stand_x_b"]:
+            bb = self.by_id[pid]["bbox"]
+            h = bb[3] - bb[1]
+            assert abs(h - W) < 0.1, f"{pid} bbox height={h:.2f} != {W}"
+
+    def test_pieces_stacked_vertically(self):
+        """Pieces are placed at different y positions."""
+        bb_a = self.by_id["stand_x_a"]["bbox"]
+        bb_b = self.by_id["stand_x_b"]["bbox"]
+        assert abs(bb_a[1] - bb_b[1]) > 1.0, "Pieces at same y position"
 
 
 # ---------------------------------------------------------------------------

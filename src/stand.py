@@ -1,27 +1,36 @@
 """
-src/stand.py — Triangle stand SVG generator (D-18 + D-19).
+src/stand.py — 2-piece triangular X easel SVG generator (D-23).
 
-D-18/D-19: Solid right-triangle side pieces + 6 cross members.
-Parts (8 total):
-  stand_L            — right triangle 240×420mm with 5 edge notches + 1 hyp notch (L-shaped upright notches)
-  stand_R            — mirror of stand_L
-  stand_rear_cross_1 — 374×30mm with stile slots (at upright y=60)
-  stand_rear_cross_2 — 374×30mm plain (at upright y=210)
-  stand_rear_cross_3 — 374×30mm with stile slots (at upright y=360)
-  stand_base_cross_1 — 374×30mm plain (at base x=80)
-  stand_base_cross_2 — 374×30mm plain (at base x=160)
-  hyp_cross          — 374×30mm plain (at hyp t=0.25; placed rotated 90° on sheet)
+D-23: 2-piece triangular X easel — cross-halving half-lap joint at centre.
+Two 6mm ply right-triangle pieces with DIFFERENT slot geometry that mates:
+  Piece A: slot from horizontal top edge (y=0), depth W/4 = 20mm.
+  Piece B: slot from hypotenuse edge (y≈W/2 at crossing), depth W/4 = 20mm.
+Both slot bottoms meet at y=W/4 from the top edge; the pieces interlock there.
 
-Assembly: upright/base cross members slide into L-shaped edge notches and drop 2mm (gravity).
-Hyp cross member slides into parallelogram notch on hypotenuse edge.
-Loom stiles drop into stile slots of rear_cross_1 and rear_cross_3.
+Piece geometry (local coords, x=length axis, y=width axis):
+  Right triangle: (0,0), (L,0), (0,W).
+    - Top edge horizontal at y=0: from (0,0) to (L,0).
+    - Hypotenuse: from (L,0) to (0,W).
+    - Foot edge vertical at x=0: from (0,W) to (0,0).
+  At x=L/2, triangle height = W/2; each slot occupies half of that = W/4 deep.
+  Foot tab: protrudes from foot end in −x direction.
+    Width=STAND_X_TAB_L, height=STAND_X_TAB_H (bottom zone of foot, y=W−TAB_H..W).
+  Bump: mechanical stop at outer tab end.
+    STAND_X_BUMP_L wide × STAND_X_BUMP_H tall, at x=−(TAB_L+BUMP_L).
+  Total polygon: 12 points (CW winding).
+
+Assembly:
+  stand_x_a — slot from top edge; tab protrudes left/−x.
+  stand_x_b — slot from hypotenuse edge; tab protrudes left/−x (same orientation on sheet).
+  Slide piece B's slot down over piece A from above; slots interlock at x=L/2.
+
+Flat-pack: both pieces (480×80mm bounding box each) lay side-by-side in box layer 2.
 
 Usage:
   python3 -m src.stand           → writes output/optional_loom_stand.svg
   from src.stand import generate → returns SVG string
 """
 
-import math
 import os
 import sys
 
@@ -29,11 +38,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.params import DEFAULT, make_params
 from src.geometry import (
-    bounding_box, bboxes_overlap, mirror_x, place,
+    bounding_box, bboxes_overlap, place,
     pts_to_path, cut_path, etch_text, svg_open, svg_close, svg_group,
-    rect_pts,
-    triangle_pts,
-    hole_to_path,
 )
 
 OUTPUT_PATH = os.path.join(
@@ -42,113 +48,113 @@ OUTPUT_PATH = os.path.join(
 
 
 # ---------------------------------------------------------------------------
-# Part builders — return (local_pts, local_holes)
+# Part builder
 # ---------------------------------------------------------------------------
 
-def _hyp_notch_pts(p: dict) -> list:
+def build_stand_x_piece(p: dict):
     """
-    Compute the 4 parallelogram points for the hypotenuse edge notch (D-19).
+    Build one X-piece polygon (D-23) — right triangle with slot and foot tab+bump.
 
-    Hyp runs from (base_l, upright_h) toward (0, 0) in the path traversal.
-    Notch centre at (STAND_HYP_CX, STAND_HYP_CY) = (60, 105) at t=0.25 from top vertex.
-    Returns [P_before, P_before_inner, P_after_inner, P_after] in path order.
+    Polygon trace (CW from top-left of foot):
+      (0, 0)                                         ← foot top
+      (slot_cx − slot_w/2, 0)                        ← top edge before slot
+      (slot_cx − slot_w/2, slot_d)                   ← slot left wall
+      (slot_cx + slot_w/2, slot_d)                   ← slot bottom
+      (slot_cx + slot_w/2, 0)                        ← slot right wall top
+      (L, 0)                                         ← triangle tip (hyp starts here)
+      (0, W)                                         ← hypotenuse meets foot (straight edge L→0,W)
+      (−TAB_L − BUMP_L, W)                           ← tab+bump outer bottom
+      (−TAB_L − BUMP_L, W − TAB_H − BUMP_H)         ← outer bump top
+      (−TAB_L, W − TAB_H − BUMP_H)                  ← bump step inner top
+      (−TAB_L, W − TAB_H)                            ← tab outer top
+      (0, W − TAB_H)                                 ← tab inner top (at foot edge)
+      → closes to (0, 0) via foot edge
+
+    Returns (pts, holes) — holes is always [].
     """
-    base_l    = p["STAND_BASE_L"]
-    upright_h = p["STAND_UPRIGHT_H"]
-    cx        = p["STAND_HYP_CX"]
-    cy        = p["STAND_HYP_CY"]
-    notch_w   = p["STAND_NOTCH_W"]
-    notch_d   = p["STAND_NOTCH_D"]
+    L      = p["STAND_X_L"]
+    W      = p["STAND_X_W"]
+    slot_w = p["STAND_X_SLOT_W"]
+    slot_d = p["STAND_X_SLOT_D"]
+    tab_l  = p["STAND_X_TAB_L"]
+    tab_h  = p["STAND_X_TAB_H"]
+    bump_l = p["STAND_X_BUMP_L"]
+    bump_h = p["STAND_X_BUMP_H"]
 
-    hyp_len = math.hypot(base_l, upright_h)   # ≈ 483.74mm
+    slot_cx = L / 2.0
 
-    # Tangent in path direction: from (base_l, upright_h) toward (0, 0)
-    tx = -base_l    / hyp_len   # ≈ -0.4961
-    ty = -upright_h / hyp_len   # ≈ -0.8682
-
-    # Inward normal (right of path direction for CW winding): rotate tangent by -90°
-    nx = ty    # ≈ -0.8682
-    ny = -tx   # ≈  0.4961
-
-    half_w = notch_w / 2.0   # = 15.05mm
-
-    # P_before: on hyp, before centre in path direction (= centre minus tangent × half_w)
-    pbx = cx - half_w * tx
-    pby = cy - half_w * ty
-    # P_before_inner: P_before + depth × inward_normal
-    pbix = pbx + notch_d * nx
-    pbiy = pby + notch_d * ny
-    # P_after: on hyp, after centre
-    pax = cx + half_w * tx
-    pay = cy + half_w * ty
-    # P_after_inner: P_after + depth × inward_normal
-    paix = pax + notch_d * nx
-    paiy = pay + notch_d * ny
-
-    return [(pbx, pby), (pbix, pbiy), (paix, paiy), (pax, pay)]
-
-
-def build_stand_triangle(p: dict):
-    """
-    Solid right-triangle side piece (D-18 + D-19).
-    Vertices: (0,0) top-back, (0,upright_h) bottom-back (right angle),
-              (base_l, upright_h) bottom-front.
-    3 upright notches (L-shaped, D-19) at STAND_MORT_Y_TOP/MID/BOT.
-    2 base notches (plain) at STAND_BASE_NOTCH_X1/X2.
-    1 hyp notch (parallelogram, D-19) at STAND_HYP_CX/CY.
-    """
-    upright_notch_ys = [
-        p["STAND_MORT_Y_TOP"],
-        p["STAND_MORT_Y_MID"],
-        p["STAND_MORT_Y_BOT"],
+    pts = [
+        (0.0,                           0.0),            #  1 foot top
+        (slot_cx - slot_w / 2.0,        0.0),            #  2 top edge before slot
+        (slot_cx - slot_w / 2.0,        slot_d),         #  3 slot left wall
+        (slot_cx + slot_w / 2.0,        slot_d),         #  4 slot bottom
+        (slot_cx + slot_w / 2.0,        0.0),            #  5 slot right wall top
+        (L,                             0.0),            #  6 triangle tip
+        (0.0,                           W),              #  7 hyp meets foot (straight edge 6→7)
+        (-(tab_l + bump_l),             W),              #  8 tab+bump outer bottom
+        (-(tab_l + bump_l),             W - tab_h - bump_h),  #  9 outer bump top
+        (-tab_l,                        W - tab_h - bump_h),  # 10 bump step inner top
+        (-tab_l,                        W - tab_h),      # 11 tab outer top
+        (0.0,                           W - tab_h),      # 12 tab inner top
     ]
-    base_notch_xs = [
-        p["STAND_BASE_NOTCH_X1"],
-        p["STAND_BASE_NOTCH_X2"],
-    ]
-    pts = triangle_pts(
-        p["STAND_UPRIGHT_H"], p["STAND_BASE_L"],
-        upright_notch_ys, base_notch_xs,
-        p["STAND_NOTCH_W"], p["STAND_NOTCH_D"],
-        notch_entry=p["STAND_NOTCH_ENTRY"],
-        notch_entry_d=p["STAND_NOTCH_ENTRY_D"],
-        hyp_notch_pts=_hyp_notch_pts(p),
-    )
     return pts, []
 
 
-def build_stand_cross(p: dict, with_stile_slots: bool = False):
+def build_stand_x_piece_b(p: dict):
     """
-    Cross member: (STAND_SPREAD_L + 2×STAND_SPREAD_TEN_L) × STAND_SPREAD_W.
-    If with_stile_slots: two concave stile slots in top edge (y=0), each
-    STAND_STILE_SLOT_W × STAND_STILE_SLOT_D, flush with the tenon ends.
+    Build piece B — same right triangle + tab/bump, but slot from HYPOTENUSE side.
+
+    For the cross-halving X joint to mate:
+      Piece A slot: from top edge (y=0) DOWN to y=slot_d=W/4.   Material: y=slot_d..hyp_y.
+      Piece B slot: from hyp edge (y≈W/2) UP   to y=slot_d=W/4. Material: y=0..slot_d.
+    At x=L/2: hyp_y=W/2=40mm, slot_d=W/4=20mm — both slot bottoms meet at y=20mm. ✓
+
+    Polygon trace (CW, 12 points):
+      (0, 0)                            ← foot top
+      (L, 0)                            ← tip (top edge continuous, no slot here)
+      (slot_cx+slot_w/2, hyp_y_right)   ← hyp before slot (right wall top)
+      (slot_cx+slot_w/2, slot_d)        ← slot right wall bottom
+      (slot_cx-slot_w/2, slot_d)        ← slot bottom
+      (slot_cx-slot_w/2, hyp_y_left)    ← hyp after slot (left wall top)
+      (0, W)                            ← hyp meets foot
+      (−TAB_L−BUMP_L, W)               ← tab+bump outer bottom
+      (−TAB_L−BUMP_L, W−TAB_H−BUMP_H) ← outer bump top
+      (−TAB_L, W−TAB_H−BUMP_H)        ← bump step inner top
+      (−TAB_L, W−TAB_H)               ← tab outer top
+      (0, W−TAB_H)                     ← tab inner top
+      → closes to (0, 0) via foot edge
+
+    Returns (pts, holes) — holes is always [].
     """
-    total_l = p["STAND_SPREAD_L"] + 2.0 * p["STAND_SPREAD_TEN_L"]
-    w = p["STAND_SPREAD_W"]
+    L      = p["STAND_X_L"]
+    W      = p["STAND_X_W"]
+    slot_w = p["STAND_X_SLOT_W"]
+    slot_d = p["STAND_X_SLOT_D"]
+    tab_l  = p["STAND_X_TAB_L"]
+    tab_h  = p["STAND_X_TAB_H"]
+    bump_l = p["STAND_X_BUMP_L"]
+    bump_h = p["STAND_X_BUMP_H"]
 
-    if not with_stile_slots:
-        return rect_pts(0.0, 0.0, total_l, w), []
+    slot_cx = L / 2.0
+    # Hyp: y = W*(1 - x/L). At slot walls:
+    hyp_y_right = W * (1.0 - (slot_cx + slot_w / 2.0) / L)  # smaller y (right wall, x larger)
+    hyp_y_left  = W * (1.0 - (slot_cx - slot_w / 2.0) / L)  # larger y  (left wall,  x smaller)
+    # slot_d = W/4 = slot bottom y from top — same as piece A's slot bottom. Slots mate there.
 
-    sw = p["STAND_STILE_SLOT_W"]
-    sd = p["STAND_STILE_SLOT_D"]
-    ten_l = p["STAND_SPREAD_TEN_L"]
-
-    # Slot centres: left slot flush-left with body start, right flush-right with body end
-    cx1 = ten_l + sw / 2.0
-    cx2 = total_l - ten_l - sw / 2.0
-
-    pts = [(0.0, 0.0)]
-    for cx in (cx1, cx2):
-        x0 = cx - sw / 2.0
-        x1 = cx + sw / 2.0
-        pts.append((x0, 0.0))
-        pts.append((x0, sd))
-        pts.append((x1, sd))
-        pts.append((x1, 0.0))
-    pts.append((total_l, 0.0))
-    pts.append((total_l, w))
-    pts.append((0.0, w))
-
+    pts = [
+        (0.0,                           0.0),            #  1 foot top
+        (L,                             0.0),            #  2 tip (no slot on top edge)
+        (slot_cx + slot_w / 2.0,        hyp_y_right),   #  3 hyp before slot (right wall top)
+        (slot_cx + slot_w / 2.0,        slot_d),         #  4 slot right wall bottom
+        (slot_cx - slot_w / 2.0,        slot_d),         #  5 slot bottom
+        (slot_cx - slot_w / 2.0,        hyp_y_left),    #  6 hyp after slot (left wall top)
+        (0.0,                           W),              #  7 hyp meets foot
+        (-(tab_l + bump_l),             W),              #  8 tab+bump outer bottom
+        (-(tab_l + bump_l),             W - tab_h - bump_h),  #  9 outer bump top
+        (-tab_l,                        W - tab_h - bump_h),  # 10 bump step inner top
+        (-tab_l,                        W - tab_h),      # 11 tab outer top
+        (0.0,                           W - tab_h),      # 12 tab inner top
+    ]
     return pts, []
 
 
@@ -158,54 +164,30 @@ def build_stand_cross(p: dict, with_stile_slots: bool = False):
 
 def layout(p: dict) -> list:
     """
-    Place all 7 parts on the 600×600mm 6mm ply sheet.
+    Place both X pieces on the 600×600mm 6mm ply sheet.
 
-    Layout (all mm, origin top-left, M=2mm margin, G=2mm gap):
-      stand_L          at (M, M)              — 240×420mm
-      stand_R          at (M+240+G, M)        — 240×420mm (mirror of L)
-      hyp_cross        at (M+240+G+240+G, M)  — 30×374mm (rotated 90°, right of triangles)
-      stand_rear_cross_1 at (M, M+420+G)      — 374×30mm (with stile slots)
-      stand_rear_cross_2 at (M, +G)           — 374×30mm
-      stand_rear_cross_3 at (M, +G)           — 374×30mm (with stile slots)
-      stand_base_cross_1 at (M, +G)           — 374×30mm
-      stand_base_cross_2 at (M, +G)           — 374×30mm
+    Layout (M = MARGIN = 2mm, G = 2mm gap, TAB_OFF = TAB_L + BUMP_L = 30mm):
+      stand_x_a at (M + TAB_OFF, M)           — shifted right so tab fits at left margin
+      stand_x_b at (M + TAB_OFF, M + W + G)   — below piece a
 
-    6 cross members total (D-19): 5 horizontal + 1 rotated (hyp_cross).
+    The tab protrudes in −x from each piece, reaching x = M at the sheet boundary.
+
     Returns list of dicts: {id, label, sheet_pts, sheet_holes, bbox}.
     Raises ValueError if any part exceeds sheet bounds or parts overlap.
     """
     M = p["MARGIN"]
     G = 2.0
 
-    tri_pts, tri_holes = build_stand_triangle(p)
-    tri_bb = bounding_box(tri_pts)
-    tri_w = tri_bb[2] - tri_bb[0]   # = STAND_BASE_L = 240mm
-    tri_h = tri_bb[3] - tri_bb[1]   # = STAND_UPRIGHT_H = 420mm
+    pts_a, holes_a = build_stand_x_piece(p)
+    pts_b, holes_b = build_stand_x_piece_b(p)
 
-    # Mirror stand_L about its own centre x to get stand_R
-    cx = tri_w / 2.0
-    tri_pts_r = mirror_x(tri_pts, cx)
+    W = p["STAND_X_W"]
 
-    cross_plain_pts, _ = build_stand_cross(p, with_stile_slots=False)
-    cross_slot_pts, _ = build_stand_cross(p, with_stile_slots=True)
-    cross_h = p["STAND_SPREAD_W"]   # = 30mm
-    total_l = p["STAND_SPREAD_L"] + 2.0 * p["STAND_SPREAD_TEN_L"]  # = 374mm
-
-    # hyp_cross placed rotated 90° (30mm wide × 374mm tall on sheet)
-    cross_rotated_pts = rect_pts(0.0, 0.0, cross_h, total_l)
-
-    y_cross = M + tri_h + G
-    x_hyp = M + tri_w + G + tri_w + G   # = 2 + 240 + 2 + 240 + 2 = 486mm
-
+    # place() maps sx to the left edge of the local bounding box (the tab tip at x=-(TAB_L+BUMP_L)).
+    # Passing sx=M puts the tab tip at the margin, foot at M+(TAB_L+BUMP_L), tip at M+L+(TAB_L+BUMP_L).
     parts_local = [
-        ("stand_L",            tri_pts,        tri_holes, "STAND L",   M,       M),
-        ("stand_R",            tri_pts_r,      tri_holes, "STAND R",   M+tri_w+G, M),
-        ("hyp_cross",          cross_rotated_pts, [],     "HYP X",     x_hyp,   M),
-        ("stand_rear_cross_1", cross_slot_pts,  [],       "REAR X1",   M,       y_cross),
-        ("stand_rear_cross_2", cross_plain_pts, [],       "REAR X2",   M,       y_cross + (cross_h + G)),
-        ("stand_rear_cross_3", cross_slot_pts,  [],       "REAR X3",   M,       y_cross + 2 * (cross_h + G)),
-        ("stand_base_cross_1", cross_plain_pts, [],       "BASE X1",   M,       y_cross + 3 * (cross_h + G)),
-        ("stand_base_cross_2", cross_plain_pts, [],       "BASE X2",   M,       y_cross + 4 * (cross_h + G)),
+        ("stand_x_a", pts_a, holes_a, "STAND X-A", M,           M),
+        ("stand_x_b", pts_b, holes_b, "STAND X-B", M, M + W + G),
     ]
 
     placed = []
@@ -244,7 +226,7 @@ def render(placed: list, p: dict) -> str:
     parts = []
     for part in placed:
         outer = cut_path(pts_to_path(part["sheet_pts"]))
-        holes = [cut_path(hole_to_path(h)) for h in part["sheet_holes"]]
+        holes = [cut_path(pts_to_path(h)) for h in part["sheet_holes"]]
         label = etch_text(
             part["bbox"][0] + 1.0,
             part["bbox"][1] + 4.0,
@@ -342,5 +324,5 @@ if __name__ == "__main__":
     placed = layout(DEFAULT)
     for part in placed:
         bb = part["bbox"]
-        print(f"  {part['id']:22s}  x={bb[0]:.1f}–{bb[2]:.1f}  y={bb[1]:.1f}–{bb[3]:.1f}"
+        print(f"  {part['id']:12s}  x={bb[0]:.1f}–{bb[2]:.1f}  y={bb[1]:.1f}–{bb[3]:.1f}"
               f"  ({bb[2]-bb[0]:.1f}×{bb[3]-bb[1]:.1f}mm)")
