@@ -87,6 +87,7 @@ Any YES: surface it immediately. Do not proceed until addressed.
 | 2026-03-15 | Stadium hole arcs | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | NO | YES | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | P-C1: sweep=1 produced inward (concave) arcs on both caps. P-C4: hole winding wrong (concave = not cutting out). P-C7(new): fixed top arc sweep, presented as done without applying same analysis to bottom arc — same bug left in place. |
 | 2026-03-15 | Rail notch arc sweep | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | P-C7: fixed sweep in rounded_pts_to_path but did not check rail_path which manually reimplements the same convention — cookie-bite arcs on notch corners. |
 | 2026-03-15 | Beater tooth count/alignment | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | NO | NO | NO | NO | NO | NO | YES | YES | NO | NO | NO | NO | NO | P-C5: beater_tooth_count=notch_count chosen to "match warp count" rather than from geometric proof (should be notch_count-1, one per inter-warp gap). P-S1: no invariant existed for tooth alignment. P-S2: alignment choice made silently without surfacing. Fixed: D-30 locked, test_beater_teeth_interleave_warp_threads added. |
+| 2026-03-15 | Stand lean + heddle bar two-shed | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | NO | NO | NO | NO | P-S2: stand lean angle (10°) not surfaced until spar. Heddle bar all-holes design lacked two-shed functionality — silently resolved as guide bar. Fixed: D-31 (STAND_X_W=120mm, 15°), D-32 (alternating holes/slots). |
 
 ---
 
@@ -119,7 +120,7 @@ Any YES: surface it immediately. Do not proceed until addressed.
 | P-T4 Wrong import | 0 | — |
 | P-T5 Verify not called | 0 | — |
 | P-S1 Invariant after fact | 1 | 2026-03-15 (no beater alignment invariant until bug found) |
-| P-S2 Silent arch choice | 2 | 2026-03-15 (beater tooth count chosen without surfacing) |
+| P-S2 Silent arch choice | 3 | 2026-03-15 (heddle bar all-holes, stand lean angle) |
 | P-S3 Param not locked | 0 | — |
 | P-S4 Missing mating pair | 0 | — |
 | P-Q1 SVG/spec mismatch | 0 | — |

@@ -160,7 +160,8 @@ def make_params(
     heddle_bar_hole_h = 6.0  # mm total hole height (was 8mm; shortened to preserve material between holes)
     heddle_bar_hole_pitch = notch_pitch
     heddle_bar_hole_count = notch_count
-    heddle_bar_offset = 4.5  # mm — alternating hole stagger (was 2.5; increased to widen vertical gap)
+    heddle_bar_slot_w = 2.0 * heddle_bar_hole_r  # = 3.0mm — rect slot width (D-32)
+    heddle_bar_slot_h = 12.0                     # mm — rect slot height; 4mm material margin each side (D-32)
     heddle_bar_corner_r = 2.0  # mm — outer corner fillet (hand-held moving part)
 
     corner_r = 0.5  # mm — fillet radius on rail notch and beater tooth corners (D-25)
@@ -173,7 +174,7 @@ def make_params(
     # ------------------------------------------------------------------
     stand_rail_tab_l  = 0.0            # D-18 legacy: no top-rail tabs; top rail = FRAME_OUTER_W
     stand_x_l         = frame_outer_h  # D-29: piece length = frame outer height
-    stand_x_w         = 80.0    # mm foot width (wide end of triangle)
+    stand_x_w         = 120.0   # mm foot width (wide end of triangle; D-31: 15° lean)
     stand_x_slot_w    = mat + 0.1               # = 6.1mm cross-halving slot width (clearance fit)
     # At slot_cx = L/2, triangle height = W/2. Slot depth = half that = W/4.
     stand_x_slot_d    = stand_x_w / 4.0         # = 20.0mm slot depth (cross-halving at triangle mid)
@@ -297,7 +298,8 @@ def make_params(
         "HEDDLE_BAR_HOLE_H":     heddle_bar_hole_h,
         "HEDDLE_BAR_HOLE_PITCH": heddle_bar_hole_pitch,
         "HEDDLE_BAR_HOLE_COUNT": heddle_bar_hole_count,
-        "HEDDLE_BAR_OFFSET":     heddle_bar_offset,
+        "HEDDLE_BAR_SLOT_W":     heddle_bar_slot_w,
+        "HEDDLE_BAR_SLOT_H":     heddle_bar_slot_h,
         "HEDDLE_BAR_CORNER_R":   heddle_bar_corner_r,
         "CORNER_R":              corner_r,
 

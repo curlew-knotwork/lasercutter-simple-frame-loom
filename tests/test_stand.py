@@ -288,6 +288,18 @@ class TestStandXParams:
         assert abs(p["STAND_X_L"] - p["FRAME_OUTER_H"]) < 0.1, \
             f"STAND_X_L={p['STAND_X_L']}, expected FRAME_OUTER_H={p['FRAME_OUTER_H']}"
 
+    def test_stand_x_w_is_120mm(self):
+        """D-31: STAND_X_W = 120mm → arctan(120/444) ≈ 15° lean from vertical."""
+        assert abs(p["STAND_X_W"] - 120.0) < 0.1, \
+            f"STAND_X_W={p['STAND_X_W']}, expected 120"
+
+    def test_stand_lean_angle_15_degrees(self):
+        """D-31: assembled stand leans at arctan(W/L) ≈ 15° from vertical."""
+        import math
+        angle_deg = math.degrees(math.atan2(p["STAND_X_W"], p["STAND_X_L"]))
+        assert abs(angle_deg - 15.0) < 1.0, \
+            f"Stand lean angle={angle_deg:.1f}°, expected ~15°"
+
     def test_stand_x_tab_l_is_30mm(self):
         """D-23: STAND_X_TAB_L = 30mm (RAIL_W=22mm + 8mm clearance for secure rail seating)."""
         assert "STAND_X_TAB_L" in p

@@ -143,14 +143,18 @@ def build_heddle_bar(p: dict):
     span = (count - 1) * pitch
     x0 = (p["HEDDLE_BAR_L"] - span) / 2.0   # x of first hole in local coords
     cy = p["HEDDLE_BAR_W"] / 2.0
-    offset = p["HEDDLE_BAR_OFFSET"]
-    holes = [
-        stadium_hole(x0 + i * pitch,
-                     cy - offset if i % 2 == 0 else cy + offset,
-                     p["HEDDLE_BAR_HOLE_R"],
-                     p["HEDDLE_BAR_HOLE_H"])
-        for i in range(count)
-    ]
+    # D-32: alternating holes (controlled threads) and slots (free threads)
+    # Even positions: stadium_hole centred on bar — thread moves with heddle bar
+    # Odd positions: rect_hole (slot) centred on bar — thread slides freely
+    slot_w = p["HEDDLE_BAR_SLOT_W"]
+    slot_h = p["HEDDLE_BAR_SLOT_H"]
+    holes = []
+    for i in range(count):
+        x = x0 + i * pitch
+        if i % 2 == 0:
+            holes.append(stadium_hole(x, cy, p["HEDDLE_BAR_HOLE_R"], p["HEDDLE_BAR_HOLE_H"]))
+        else:
+            holes.append(rect_hole(x - slot_w / 2.0, cy - slot_h / 2.0, slot_w, slot_h))
     return pts, holes
 
 
@@ -283,9 +287,9 @@ def layout(p: dict) -> list:
             ellipse_top = bb[1] + p["SHUTTLE_W"] / 2.0 - p["SHUTTLE_LIGHT_W"] / 2.0
             entry["label_xy"] = (bcx, ellipse_top - 2.0)
         elif pid == "heddle_bar":
-            # Gap between hole rows: local y 8.5..11.5mm. Baseline at gap top → text centered in gap.
-            odd_row_top = bb[1] + p["HEDDLE_BAR_W"] / 2.0 + p["HEDDLE_BAR_OFFSET"] - p["HEDDLE_BAR_HOLE_H"] / 2.0
-            entry["label_xy"] = (bcx, odd_row_top)
+            # D-32: holes/slots all centred on bar. Top solid strip: y=0..3.5mm local.
+            # Place label at HEDDLE_BAR_W/4 from bar top (midpoint of solid strip above holes).
+            entry["label_xy"] = (bcx, bb[1] + p["HEDDLE_BAR_W"] / 4.0)
         placed.append(entry)
 
     # ── Verify: all parts within sheet bounds ─────────────────────────

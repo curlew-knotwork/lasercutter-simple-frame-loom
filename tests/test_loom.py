@@ -46,28 +46,31 @@ class TestPartBuilders:
         assert abs(actual_w - expected_w) < 0.1, \
             f"Top rail width {actual_w:.2f} != {expected_w:.2f}"
 
-    def test_heddle_bar_holes_staggered(self):
-        """Even holes at cy-HEDDLE_BAR_OFFSET, odd holes at cy+HEDDLE_BAR_OFFSET."""
+    def test_heddle_bar_alternating_hole_slot_types(self):
+        """D-32: even positions = stadium holes (controlled threads), odd = rect slots (free threads)."""
         _, holes = build_heddle_bar(p)
-        offset = p["HEDDLE_BAR_OFFSET"]
-        cy = p["HEDDLE_BAR_W"] / 2.0
         for i, h in enumerate(holes):
-            expected_y = cy - offset if i % 2 == 0 else cy + offset
-            assert abs(h[2] - expected_y) < 1e-6, \
-                f"Hole {i} y={h[2]:.4f} != {expected_y:.4f}"
+            expected = 'stadium' if i % 2 == 0 else 'rect'
+            assert h[0] == expected, \
+                f"Position {i}: type={h[0]!r}, expected {expected!r}"
 
-    def test_heddle_bar_holes_are_stadium(self):
-        """Heddle bar holes must be stadium-shaped (not circle) per D-24 update."""
+    def test_heddle_bar_has_both_hole_types(self):
+        """D-32: heddle bar has both stadium holes and rect slots."""
         _, holes = build_heddle_bar(p)
         kinds = {h[0] for h in holes}
-        assert kinds == {'stadium'}, f"Expected {{'stadium'}}, got {kinds}"
+        assert kinds == {'stadium', 'rect'}, f"Expected {{'stadium', 'rect'}}, got {kinds}"
 
-    def test_heddle_bar_hole_height(self):
-        """Each stadium hole has total height HEDDLE_BAR_HOLE_H."""
+    def test_heddle_bar_hole_and_slot_heights(self):
+        """D-32: stadium holes height=HEDDLE_BAR_HOLE_H; rect slots height=HEDDLE_BAR_SLOT_H."""
         _, holes = build_heddle_bar(p)
         for i, h in enumerate(holes):
-            assert abs(h[4] - p["HEDDLE_BAR_HOLE_H"]) < 1e-9, \
-                f"Hole {i} height={h[4]} != HEDDLE_BAR_HOLE_H={p['HEDDLE_BAR_HOLE_H']}"
+            if h[0] == 'stadium':
+                assert abs(h[4] - p["HEDDLE_BAR_HOLE_H"]) < 1e-9, \
+                    f"Stadium hole {i}: height={h[4]} != {p['HEDDLE_BAR_HOLE_H']}"
+            else:
+                _, hx, hy, hw, hh = h
+                assert abs(hh - p["HEDDLE_BAR_SLOT_H"]) < 1e-9, \
+                    f"Rect slot {i}: height={hh} != HEDDLE_BAR_SLOT_H={p['HEDDLE_BAR_SLOT_H']}"
 
     def test_heddle_bar_corner_r_in_params(self):
         """Heddle bar outer corners rounded 2mm for hand-held comfort."""
@@ -272,18 +275,16 @@ class TestLayout:
             assert ly < ellipse_top, \
                 f"{pid} label y={ly:.3f} >= ellipse top {ellipse_top:.3f}"
 
-    def test_heddle_bar_label_in_hole_row_gap(self):
-        """D-27: heddle bar label must fall in the 3mm gap between the two hole rows."""
+    def test_heddle_bar_label_in_top_solid_strip(self):
+        """D-27/D-32: heddle bar label placed in top solid strip (above holes), y < hole top."""
         part = self.by_id["heddle_bar"]
         assert "label_xy" in part, "heddle_bar missing label_xy"
         _, ly = part["label_xy"]
         bb = part["bbox"]
-        # Even holes (row 1): cy = HEDDLE_BAR_W/2 - HEDDLE_BAR_OFFSET; bottom = cy + HEDDLE_BAR_HOLE_H/2
-        even_bottom = bb[1] + p["HEDDLE_BAR_W"] / 2.0 - p["HEDDLE_BAR_OFFSET"] + p["HEDDLE_BAR_HOLE_H"] / 2.0
-        # Odd holes (row 2): cy = HEDDLE_BAR_W/2 + HEDDLE_BAR_OFFSET; top = cy - HEDDLE_BAR_HOLE_H/2
-        odd_top = bb[1] + p["HEDDLE_BAR_W"] / 2.0 + p["HEDDLE_BAR_OFFSET"] - p["HEDDLE_BAR_HOLE_H"] / 2.0
-        assert even_bottom <= ly <= odd_top + 4.0, \
-            f"Heddle bar label y={ly:.3f} not near gap {even_bottom:.3f}..{odd_top:.3f}"
+        # Holes/slots centred at bar midline. Top of holes = bb[1] + W/2 - HOLE_H/2.
+        hole_top = bb[1] + p["HEDDLE_BAR_W"] / 2.0 - p["HEDDLE_BAR_HOLE_H"] / 2.0
+        assert ly < hole_top, \
+            f"Heddle bar label y={ly:.3f} not above hole top y={hole_top:.3f}"
 
 
 # ---------------------------------------------------------------------------

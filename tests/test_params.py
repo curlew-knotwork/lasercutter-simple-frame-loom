@@ -264,10 +264,10 @@ class TestDefaultParams:
             f"STAND_X_L={p['STAND_X_L']}, expected FRAME_OUTER_H={p['FRAME_OUTER_H']}"
 
     def test_stand_x_w_present(self, p):
-        """D-22: STAND_X_W = 80mm piece width."""
+        """D-31: STAND_X_W = 120mm piece width (15° lean)."""
         assert "STAND_X_W" in p, "STAND_X_W missing from params"
-        assert abs(p["STAND_X_W"] - 80.0) < 0.1, \
-            f"STAND_X_W={p['STAND_X_W']}, expected 80"
+        assert abs(p["STAND_X_W"] - 120.0) < 0.1, \
+            f"STAND_X_W={p['STAND_X_W']}, expected 120"
 
     def test_stand_x_slot_w_clearance(self, p):
         """D-22: STAND_X_SLOT_W = MAT + 0.1mm (cross-halving clearance fit)."""
@@ -369,9 +369,13 @@ class TestUnhappyPath:
 
 class TestHeddleBarParams:
 
-    def test_heddle_bar_offset(self, p):
-        """HEDDLE_BAR_OFFSET = 4.5mm alternating hole stagger."""
-        assert abs(p["HEDDLE_BAR_OFFSET"] - 4.5) < 1e-9
+    def test_heddle_bar_slot_params(self, p):
+        """D-32: HEDDLE_BAR_SLOT_W and HEDDLE_BAR_SLOT_H present for rect slots."""
+        assert "HEDDLE_BAR_SLOT_W" in p, "HEDDLE_BAR_SLOT_W missing (D-32)"
+        assert "HEDDLE_BAR_SLOT_H" in p, "HEDDLE_BAR_SLOT_H missing (D-32)"
+        assert p["HEDDLE_BAR_SLOT_W"] > 0
+        assert p["HEDDLE_BAR_SLOT_H"] > p["HEDDLE_BAR_HOLE_H"], \
+            "Slot height must exceed hole height (slots allow vertical thread movement)"
 
     def test_heddle_bar_hole_h_is_6mm(self, p):
         """HEDDLE_BAR_HOLE_H = 6.0mm (stadium hole total height)."""

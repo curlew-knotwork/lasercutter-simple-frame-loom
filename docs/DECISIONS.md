@@ -282,6 +282,25 @@ Writes all 3 SVGs (loom, box, stand), verifies each, exits 1 on failure.
 
 ---
 
+### D-31 — Stand lean angle: 15° (STAND_X_W = 120mm)
+
+- **Decision:** `STAND_X_W = 120mm`. Assembled stand leans at arctan(120/444) ≈ **15.1°** from vertical.
+- **Rationale:** arctan(80/444) ≈ 10° is too upright for comfortable seated use. 15° is a natural working angle for a frame loom; sits stable without being excessively forward-leaning.
+- **Cascade:** `STAND_X_SLOT_D = W/4 = 30mm` (auto-derived). Piece bbox: 407mm × 155mm. Two pieces fit on 600×600mm sheet (top 314mm used). Both pieces still fit in box flat-pack: 2×120+2 = 242mm < BOX_INTERIOR_W ✓.
+- **Locked:** 2026-03-15
+
+### D-32 — Heddle bar: alternating stadium holes and rect slots (true two-shed)
+
+- **Decision:** Replace all-holes design with alternating hole/slot:
+  - Even warp positions (0, 2, 4, … 60): **stadium_hole** (radius 1.5mm, height 6mm), centred on bar. Thread constrained — moves with bar, creates controlled shed.
+  - Odd warp positions (1, 3, 5, … 59): **rect_hole** (width 3mm, height 12mm), centred on bar. Thread slides freely — not displaced when bar moves.
+- **Two-shed operation:** Bar up → even threads lift (hole threads rise), odd threads neutral → Shed 1. Bar down → even threads drop → Shed 2.
+- **Rationale:** All-holes design (prior D-24) guided all threads equally — no shed control. Alternating hole/slot is the standard rigid heddle mechanism.
+- **Geometry:** Slot 3mm wide (= 2×hole_r; thread fits with clearance). Slot 12mm tall → 4mm material margin each side of 20mm bar. `HEDDLE_BAR_OFFSET` removed (no longer needed; holes/slots all centred).
+- **Locked:** 2026-03-15
+
+---
+
 ## Superseded Decisions
 
 - D-07 (original crossbar design): superseded by D-13.
