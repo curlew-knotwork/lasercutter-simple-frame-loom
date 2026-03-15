@@ -210,9 +210,26 @@ class TestDefaultParams:
             f"beater pitch {p['BEATER_TOOTH_PITCH']} != notch pitch {p['NOTCH_PITCH']}"
         )
 
-    def test_beater_tooth_count_matches_notch_count(self, p):
-        assert p["BEATER_TOOTH_COUNT"] == p["NOTCH_COUNT"], (
-            f"beater teeth {p['BEATER_TOOTH_COUNT']} != notches {p['NOTCH_COUNT']}"
+    def test_beater_tooth_count_is_notch_count_minus_1(self, p):
+        """Beater has one tooth per inter-warp gap: notch_count − 1 teeth (D-30)."""
+        assert p["BEATER_TOOTH_COUNT"] == p["NOTCH_COUNT"] - 1, (
+            f"beater teeth {p['BEATER_TOOTH_COUNT']} != notch_count-1 {p['NOTCH_COUNT']-1}"
+        )
+
+    def test_beater_teeth_interleave_warp_threads(self, p):
+        """Beater tooth centres must fall midway between warp thread centres (D-30).
+
+        first_tooth_frame = (stile_w − beater_overhang) + (beater_w − (tooth_count−1)×pitch) / 2
+        Must equal notch_start_x + pitch/2 (midpoint between warps 0 and 1).
+        """
+        beater_left = p["STILE_W"] - p["BEATER_OVERHANG"]
+        array_w     = (p["BEATER_TOOTH_COUNT"] - 1) * p["BEATER_TOOTH_PITCH"]
+        first_cx    = (p["BEATER_W"] - array_w) / 2.0
+        first_tooth = beater_left + first_cx
+        expected    = p["NOTCH_START_X"] + p["NOTCH_PITCH"] / 2.0
+        assert abs(first_tooth - expected) < 0.01, (
+            f"First beater tooth at frame x={first_tooth:.3f}mm, "
+            f"expected {expected:.3f}mm (midway between warps 0 and 1)"
         )
 
     def test_crossbar_body_width_equals_interior_w(self, p):

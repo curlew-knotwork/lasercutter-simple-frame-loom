@@ -86,6 +86,7 @@ Any YES: surface it immediately. Do not proceed until addressed.
 | 2026-03-15 | D-23 tab direction + 2-piece fix | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | NO | NO | NO | NO | YES | P-C1: ledge hung off corner point with no material support (mechanically incoherent). P-S2: silently generated two different cut functions instead of surfacing "should these be identical pieces?". P-Q4: committed without user review. |
 | 2026-03-15 | Stadium hole arcs | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | NO | YES | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | P-C1: sweep=1 produced inward (concave) arcs on both caps. P-C4: hole winding wrong (concave = not cutting out). P-C7(new): fixed top arc sweep, presented as done without applying same analysis to bottom arc — same bug left in place. |
 | 2026-03-15 | Rail notch arc sweep | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | P-C7: fixed sweep in rounded_pts_to_path but did not check rail_path which manually reimplements the same convention — cookie-bite arcs on notch corners. |
+| 2026-03-15 | Beater tooth count/alignment | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | NO | NO | NO | NO | NO | NO | YES | YES | NO | NO | NO | NO | NO | P-C5: beater_tooth_count=notch_count chosen to "match warp count" rather than from geometric proof (should be notch_count-1, one per inter-warp gap). P-S1: no invariant existed for tooth alignment. P-S2: alignment choice made silently without surfacing. Fixed: D-30 locked, test_beater_teeth_interleave_warp_threads added. |
 
 ---
 
@@ -109,7 +110,7 @@ Any YES: surface it immediately. Do not proceed until addressed.
 | P-C2 Off-by-one | 0 | — |
 | P-C3 Coord confusion | 0 | — |
 | P-C4 Hole direction | 1 | 2026-03-15 (stadium concave arcs) |
-| P-C5 Formula from symptom | 0 | — |
+| P-C5 Formula from symptom | 1 | 2026-03-15 (beater_tooth_count=notch_count chosen without geometric proof) |
 | P-C6 Regex ambiguity | 1 | F-004 (test regex) |
 | P-C7 Partial symmetric fix | 2 | 2026-03-15 (rail_path manual sweep not updated when rounded_pts_to_path fixed) |
 | P-T1 Test asserts wrong | 2 | F-004, F-005 |
@@ -117,8 +118,8 @@ Any YES: surface it immediately. Do not proceed until addressed.
 | P-T3 Proof-first skipped | 1 | test_loom.py after loom.py |
 | P-T4 Wrong import | 0 | — |
 | P-T5 Verify not called | 0 | — |
-| P-S1 Invariant after fact | 0 | — |
-| P-S2 Silent arch choice | 1 | 2026-03-15 (two different cut functions vs. one identical piece) |
+| P-S1 Invariant after fact | 1 | 2026-03-15 (no beater alignment invariant until bug found) |
+| P-S2 Silent arch choice | 2 | 2026-03-15 (beater tooth count chosen without surfacing) |
 | P-S3 Param not locked | 0 | — |
 | P-S4 Missing mating pair | 0 | — |
 | P-Q1 SVG/spec mismatch | 0 | — |

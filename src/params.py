@@ -146,7 +146,7 @@ def make_params(
     beater_total_h    = beater_handle_h + beater_tooth_h
     beater_tooth_gap  = notch_pitch - beater_tooth_w   # = 3.0mm at 5mm pitch
     beater_tooth_pitch = beater_tooth_w + beater_tooth_gap  # = notch_pitch
-    beater_tooth_count = notch_count                    # matches warp count
+    beater_tooth_count = notch_count - 1               # D-30: one tooth per inter-warp gap
     beater_grip_count = 3
     beater_grip_rx    = 8.0  # mm ellipse semi-major
     beater_grip_ry    = 3.5  # mm ellipse semi-minor

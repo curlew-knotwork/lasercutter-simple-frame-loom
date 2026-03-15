@@ -272,6 +272,16 @@ Writes all 3 SVGs (loom, box, stand), verifies each, exits 1 on failure.
 
 ---
 
+### D-30 — Beater tooth count: notch_count − 1 (one tooth per inter-warp gap)
+
+- **Decision:** `BEATER_TOOTH_COUNT = NOTCH_COUNT − 1`.
+- **Rationale:** The beater passes through the shed (between raised and lowered warp threads) to pack the weft. Teeth must be centred in the gaps between adjacent warp threads, not at the warp thread positions. With N warp threads there are N−1 inter-thread gaps. Teeth in-phase with warps (count=N) would be blocked by the threads and prevent the beater from entering the shed.
+- **Geometric proof:** With `tooth_count = notch_count − 1`, `first_cx = (beater_w − (tooth_count−1)×pitch) / 2 = pitch/2`. First tooth in frame coords = `(stile_w − beater_overhang) + pitch/2 = notch_start_x + pitch/2` — exactly midway between warps 0 and 1. Clearance from thread edge: `pitch/2 − tooth_w/2 − yarn_radius ≥ 0.5mm` at all supported pitches.
+- **Invariant:** `test_beater_teeth_interleave_warp_threads` in `tests/test_params.py`.
+- **Locked:** 2026-03-15
+
+---
+
 ## Superseded Decisions
 
 - D-07 (original crossbar design): superseded by D-13.
