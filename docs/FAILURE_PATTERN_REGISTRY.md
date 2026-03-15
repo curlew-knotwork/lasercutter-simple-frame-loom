@@ -138,11 +138,14 @@ Any YES: surface it immediately. Do not proceed until addressed.
 - Failing test must exist BEFORE the first src/ edit (P-T3).
 - After writing each formula: trace at boundary values (min, max, edge). Check P-C1 (sign), P-C2 (off-by-one).
 - After each part builder: call `bounding_box(pts)` and compare to expected dims. Catches P-C1 immediately.
+- Before implementing any part geometry: verify in physical/3D terms that every protrusion has material behind it — not just a corner point connection. A tab attached at a single vertex has zero structural width. (P-C1)
+- Before writing any new builder function: explicitly surface whether this is an identical piece (same cut, different assembly orientation) or a genuinely different cut. Name the decision before writing code. (P-S2)
 
 ### SVG generation stage
 - Always call `verify()` before presenting any SVG path (P-Q4).
 - Check that output is written to `output/` not `/tmp` (P-Q3).
 - Scan `' d="([^"]+)"'` matches — all must end with Z (P-G10).
+- After generating SVG: present path to user and STOP. Do not commit until user confirms output is correct. (P-Q4)
 
 ### Test writing stage
 - Read the assertion: does the concrete value checked match the docstring claim? (P-T1)
