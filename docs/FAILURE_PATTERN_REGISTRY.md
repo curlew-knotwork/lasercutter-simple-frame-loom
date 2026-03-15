@@ -126,8 +126,10 @@ Any YES: surface it immediately. Do not proceed until addressed.
 
 ## Enforcement Rules (per stage)
 
+Rules marked **[WRITTEN OUTPUT REQUIRED]** must produce text in the response before proceeding. Unwritten = not checked.
+
 ### Spec / Sparring stage
-- Before locking any parameter: run P-G1 through P-G9 mentally against the parameter set.
+- Before locking any parameter: run P-G1 through P-G9 against the parameter set. **[WRITTEN OUTPUT REQUIRED]**: list each check as "P-Gn: NO — reason" or "P-Gn: YES — blocker".
 - Before locking any joint: name the mating pair; confirm clearance invariant exists (P-S4).
 
 ### Proof / invariant stage
@@ -135,17 +137,19 @@ Any YES: surface it immediately. Do not proceed until addressed.
 - Every invariant must have both a happy-path and an unhappy-path test (P-T2).
 
 ### Code stage (src/ edit)
-- Failing test must exist BEFORE the first src/ edit (P-T3).
-- After writing each formula: trace at boundary values (min, max, edge). Check P-C1 (sign), P-C2 (off-by-one).
-- After each part builder: call `bounding_box(pts)` and compare to expected dims. Catches P-C1 immediately.
-- Before implementing any part geometry: verify in physical/3D terms that every protrusion has material behind it — not just a corner point connection. A tab attached at a single vertex has zero structural width. (P-C1)
-- Before writing any new builder function: explicitly surface whether this is an identical piece (same cut, different assembly orientation) or a genuinely different cut. Name the decision before writing code. (P-S2)
+- **[WRITTEN OUTPUT REQUIRED]** Before any new geometry: write in plain prose — where does the piece stand upright, what direction does each protrusion face, what material connects it to the body. Corner-point connection = zero structural width = STOP. (P-C1)
+- **[WRITTEN OUTPUT REQUIRED]** Before any new builder function: write "Identical piece or different cut? [answer] because [reason]." No code until this is written. (P-S2)
+- Failing test must exist BEFORE the first src/ edit. Name it. (P-T3)
+- After writing each formula: trace at min, max, and zone-edge values with concrete numbers. (P-C1, P-C2)
 
 ### SVG generation stage
-- Always call `verify()` before presenting any SVG path (P-Q4).
-- Check that output is written to `output/` not `/tmp` (P-Q3).
-- Scan `' d="([^"]+)"'` matches — all must end with Z (P-G10).
-- After generating SVG: present path to user and STOP. Do not commit until user confirms output is correct. (P-Q4)
+- Call `verify()` before presenting any path (P-Q4).
+- Output must be in `output/`, not `/tmp` (P-Q3).
+- All `' d="([^"]+)"'` matches must end with Z (P-G10).
+- **[WRITTEN OUTPUT REQUIRED]** After generating: write the file path. Write "Review before commit." STOP. No commit until user confirms in a subsequent turn. (P-Q4)
+
+### Pre-"done" check
+- **[WRITTEN OUTPUT REQUIRED]** Trace 2–3 specific polygon vertices in physical standing orientation with concrete mm values. State what material connects each protrusion to the body. Bbox dimensions are not this check. (P-C1, P-Q4)
 
 ### Test writing stage
 - Read the assertion: does the concrete value checked match the docstring claim? (P-T1)
