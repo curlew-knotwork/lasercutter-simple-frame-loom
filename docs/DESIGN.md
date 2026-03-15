@@ -14,8 +14,8 @@ This file retains all questions (open and closed) for audit trail.
 |---|---|---|---|
 | Q1 | Interior weaving area | ANSWERED | 300×400mm preferred; sheet fit check required |
 | Q2 | Intermediate crossbar type | ANSWERED | Structural only; notches on top/bottom rails only (conventional wisdom) |
-| Q3 | Prop/stand type | ANSWERED | Robust, flat-pack, easy assembly — design TBD |
-| Q4 | Warp notch pitch and count | OPEN — BUG | Fix proposed: 21 notches, 10mm pitch |
+| Q3 | Prop/stand type | SUPERSEDED | D-23: 2-piece triangular X easel, 6mm ply |
+| Q4 | Warp notch pitch and count | SUPERSEDED | D-24: 61 notches, 5mm pitch |
 | Q5 | Heddle bar: flat laser-cut vs round dowel | OPEN | Flat bar proposed |
 | Q6 | Shuttle count | OPEN | 2 proposed |
 | Q7 | Beater span | OPEN | Pending Q4 resolution |
@@ -26,7 +26,7 @@ This file retains all questions (open and closed) for audit trail.
 | Q12 | Old SVG files: archive or delete | OPEN | Archive proposed |
 | Q13 | Stroke width convention | OPEN | Low priority |
 | Q14 | Sheet fit for 300×400mm interior | NEW — OPEN | Analysis below |
-| Q15 | Stand design for tall frame (444mm) | NEW — OPEN | Analysis below |
+| Q15 | Stand design for tall frame (444mm) | SUPERSEDED | D-23: 2-piece triangular X easel |
 
 ---
 
@@ -138,6 +138,10 @@ MAT        = 6mm
 
 ---
 
+## Q3 / Q15 — Stand Design — SUPERSEDED BY D-23
+
+**[SUPERSEDED 2026-03-15]** Stand design resolved as 2-piece triangular X easel. See DECISIONS.md D-22 → D-23. All analysis below is retained for audit trail only.
+
 ## Q3 / Q15 — Stand Design (UPDATED — robust, flat-pack)
 
 **User answer:** Robust, easy assembly, flat-pack to box. No hardware preference.
@@ -195,6 +199,10 @@ Prop foot geometry:
 **QUESTION FOR USER:** A-frame stand (separate from loom, loom rests in notches) vs notched prop + toe-bar (attached to loom stiles, foot locked by bar)? Both flat-pack. A-frame is more stable for the taller frame. Prop+toe-bar is simpler and uses less sheet space.
 
 ---
+
+## Q4 — Warp Notch Pitch and Count — SUPERSEDED BY D-24
+
+**[SUPERSEDED 2026-03-15]** Pitch changed to 5mm, count to 61. See DECISIONS.md D-24. Analysis below is retained for audit trail only.
 
 ## Q4 — Warp Notch Pitch and Count (UPDATED for 300×400mm)
 
@@ -307,13 +315,9 @@ See Q1 analysis. **VERDICT: FITS**, but requires careful nesting. Nesting plan t
 
 ---
 
-## Q15 — Stand Design for 444mm Tall Frame
+## Q15 — Stand Design for 444mm Tall Frame — SUPERSEDED BY D-23
 
-See Q3 analysis. Two candidates:
-- A-frame easel (separate from loom)
-- Notched prop pair + toe-bar (attached to loom)
-
-**OPEN — awaiting user preference.**
+**[SUPERSEDED 2026-03-15]** See DECISIONS.md D-23. Stand is 2-piece triangular X easel, 6mm ply, output/optional_loom_stand.svg.
 
 ---
 

@@ -118,6 +118,30 @@ def ellipse_path(cx: float, cy: float, rx: float, ry: float) -> str:
     )
 
 
+def stadium_path(cx: float, cy: float, r: float, h: float) -> str:
+    """
+    Closed vertical stadium (two semicircles + straight sides) as SVG path.
+    r = semicircle radius, h = total height (must be >= 2r), width = 2r.
+
+    SVG arc direction (y-down coords), sweep=0 for both caps:
+      Top cap  (right→left, θ: 0→π CCW): sweep=0 → goes through y=top_cy-r (above) ✓
+      Bottom cap (left→right, θ: π→0 CCW): sweep=0 → goes through y=bot_cy+r (below) ✓
+
+    sweep=1 for either cap produces an inward (concave) arc. Use sweep=0 for both.
+    Use for inner holes.
+    """
+    h_rect = h - 2.0 * r
+    top_cy = cy - h_rect / 2.0
+    bot_cy = cy + h_rect / 2.0
+    return (
+        f"M {cx + r:.4f},{top_cy:.4f} "
+        f"A {r:.4f},{r:.4f} 0 1,0 {cx - r:.4f},{top_cy:.4f} "
+        f"L {cx - r:.4f},{bot_cy:.4f} "
+        f"A {r:.4f},{r:.4f} 0 1,0 {cx + r:.4f},{bot_cy:.4f} "
+        f"Z"
+    )
+
+
 # ---------------------------------------------------------------------------
 # Polygon path helpers
 # ---------------------------------------------------------------------------
@@ -131,7 +155,7 @@ def rect_pts(x: float, y: float, w: float, h: float) -> list:
 # SVG document helpers
 # ---------------------------------------------------------------------------
 
-CUT_STYLE   = 'fill="none" stroke="#ff0000" stroke-width="0.1"'
+CUT_STYLE   = 'fill="none" stroke="#ff0000" stroke-width="0.3"'
 ETCH_STYLE  = 'fill="none" stroke="#000000" stroke-width="0.4"'
 SHEET_STYLE = 'fill="#faf8f4" stroke="#aaaaaa" stroke-width="0.3"'
 
@@ -469,6 +493,213 @@ def beater_pts(
 
 
 # ---------------------------------------------------------------------------
+# Rounded-corner path builders (D-25)
+#
+# rail_path() and beater_path() return SVG path strings with quarter-circle
+# fillets at notch/tooth corners.  Sweep direction from cross-product rule:
+#   z = dx_in * dy_out − dy_in * dx_out
+#   z > 0 → sweep=0,  z < 0 → sweep=1
+# ox, oy: sheet-coordinate offset applied to all coordinates.
+# ---------------------------------------------------------------------------
+
+def _arc(r: float, sweep: int, ex: float, ey: float) -> str:
+    return f"A {r:.4f},{r:.4f} 0 0,{sweep} {ex:.4f},{ey:.4f}"
+
+
+def rounded_pts_to_path(
+    pts: list,
+    corner_r: float,
+    radii: list = None,
+    ox: float = 0.0,
+    oy: float = 0.0,
+) -> str:
+    """
+    Build a closed SVG path from a polygon point list with quarter-circle fillets
+    at every corner (D-25/D-26).
+
+    corner_r: uniform radius applied to all corners when radii=None.
+    radii: per-corner list of floats (len == len(pts)). Overrides corner_r per corner.
+           r=0 for a corner → emit L directly to corner point (no setback, no arc).
+
+    Sweep direction from cross-product rule:
+      z = dx_in * dy_out - dy_in * dx_out
+      z > 0 → sweep=0,  z < 0 → sweep=1
+
+    M starts at departure of corners[0]; path ends with the arc of corners[0] then Z.
+    ox, oy: sheet-coordinate offset applied to all coordinates.
+    """
+    n = len(pts)
+    r_list = radii if radii is not None else [corner_r] * n
+
+    if all(r == 0.0 for r in r_list):
+        shifted = translate(pts, ox, oy) if (ox or oy) else pts
+        return pts_to_path(shifted)
+
+    def P(x, y):
+        return f"{x + ox:.4f},{y + oy:.4f}"
+
+    def unit(a, b):
+        dx = b[0] - a[0]; dy = b[1] - a[1]
+        d = math.sqrt(dx * dx + dy * dy)
+        return (dx / d, dy / d) if d > 1e-12 else (1.0, 0.0)
+
+    # Precompute approach, departure, sweep, radius for each corner
+    corners = []
+    for i in range(n):
+        prev = pts[(i - 1) % n]
+        curr = pts[i]
+        next_ = pts[(i + 1) % n]
+        r = r_list[i]
+        if r == 0.0:
+            corners.append((curr, curr, 0, 0.0))
+        else:
+            ux_in, uy_in = unit(prev, curr)
+            ux_out, uy_out = unit(curr, next_)
+            approach  = (curr[0] - r * ux_in,  curr[1] - r * uy_in)
+            departure = (curr[0] + r * ux_out, curr[1] + r * uy_out)
+            z = ux_in * uy_out - uy_in * ux_out
+            sweep = 1 if z > 0 else 0
+            corners.append((approach, departure, sweep, r))
+
+    # Start at departure of corner 0; walk corners 1..n-1 then close with corner 0's arc
+    segs = [f"M {P(*corners[0][1])}"]
+    for i in list(range(1, n)) + [0]:
+        approach, departure, sweep, r = corners[i]
+        segs.append(f"L {P(*approach)}")
+        if r > 0.0:
+            segs.append(_arc(r, sweep, departure[0] + ox, departure[1] + oy))
+    segs.append("Z")
+    return " ".join(segs)
+
+
+def shuttle_path(
+    length: float,
+    width: float,
+    taper_l: float,
+    notch_hw: float,
+    corner_r: float = 0.0,
+    ox: float = 0.0,
+    oy: float = 0.0,
+) -> str:
+    """
+    SVG path for a shuttle with fillets on tip/notch corners (D-26/D-28).
+
+    Body/taper junctions (indices 0,1,5,6) use r=0 to prevent cookie-bite arcs
+    at shallow taper angles (D-28). Only the 6 tip/notch corners are rounded.
+    """
+    pts = shuttle_pts_with_notch(length, width, taper_l, notch_hw)
+    # Indices 0,1,5,6: body/taper junctions — r=0 (no setback, no arc)
+    # Indices 2,3,4,7,8,9: tip and V-notch corners — r=corner_r
+    radii = [0.0 if i in (0, 1, 5, 6) else corner_r for i in range(len(pts))]
+    return rounded_pts_to_path(pts, corner_r, radii=radii, ox=ox, oy=oy)
+
+
+def rail_path(
+    rail_w: float,
+    rail_h: float,
+    sock_w: float,
+    sock_d: float,
+    notch_cxs: list,
+    notch_w: float,
+    notch_d: float,
+    corner_r: float = 0.0,
+    notches_open_down: bool = True,
+    stand_tab_l: float = 0.0,
+    ox: float = 0.0,
+    oy: float = 0.0,
+) -> str:
+    """
+    SVG path string for a rail, with optional quarter-circle fillets on all
+    4 corners of every warp notch (D-25).  ox, oy shift to sheet coordinates.
+    Only stand_tab_l=0 supported (current project has STAND_RAIL_TAB_L=0).
+    """
+    r = corner_r
+    sy_top = (rail_h - sock_w) / 2.0
+    sy_bot = sy_top + sock_w
+    edge_y = rail_h if notches_open_down else 0.0
+    d = notch_d if notches_open_down else -notch_d  # signed depth into notch
+
+    def P(x, y):
+        return f"{x + ox:.4f},{y + oy:.4f}"
+
+    segs = [f"M {P(0.0, 0.0)}"]
+
+    # ── Top edge ──────────────────────────────────────────────────────────
+    segs.append(f"L {P(rail_w, 0.0)}")
+
+    # ── Right socket (no rounding — joint surface) ────────────────────────
+    segs.append(f"L {P(rail_w, sy_top)}")
+    segs.append(f"L {P(rail_w - sock_d, sy_top)}")
+    segs.append(f"L {P(rail_w - sock_d, sy_bot)}")
+    segs.append(f"L {P(rail_w, sy_bot)}")
+    segs.append(f"L {P(rail_w, rail_h)}")
+
+    # ── Notch region: right to left ────────────────────────────────────────
+    # Approach to first (rightmost) notch along rail edge
+    for cx in sorted(notch_cxs, reverse=True):
+        nxr = cx + notch_w / 2.0
+        nxl = cx - notch_w / 2.0
+        inner_y = edge_y + d   # y at notch floor (signed)
+
+        if r == 0.0:
+            # Sharp corners — match rail_pts() exactly
+            segs.append(f"L {P(nxr, edge_y)}")
+            segs.append(f"L {P(nxr, inner_y)}")
+            segs.append(f"L {P(nxl, inner_y)}")
+            segs.append(f"L {P(nxl, edge_y)}")
+        else:
+            # Outer right: incoming left(-1,0) → outgoing down(0,+d_sign)
+            # z = (-1)*d_sign - 0*0 = -d_sign  → sweep=1 if d>0, sweep=0 if d<0
+            sw_outer = 0 if d > 0 else 1
+            sw_inner = 1 - sw_outer  # inner corners opposite
+
+            # Outer right corner
+            segs.append(f"L {P(nxr + r, edge_y)}")
+            segs.append(_arc(r, sw_outer, *( (nxr + ox, edge_y + (d/abs(d))*r + oy) )))
+
+            # Inner right corner
+            segs.append(f"L {P(nxr, inner_y - (d/abs(d))*r)}")
+            segs.append(_arc(r, sw_inner, *( (nxr - r + ox, inner_y + oy) )))
+
+            # Inner left corner
+            segs.append(f"L {P(nxl + r, inner_y)}")
+            segs.append(_arc(r, sw_inner, *( (nxl + ox, inner_y - (d/abs(d))*r + oy) )))
+
+            # Outer left corner
+            segs.append(f"L {P(nxl, edge_y + (d/abs(d))*r)}")
+            segs.append(_arc(r, sw_outer, *( (nxl - r + ox, edge_y + oy) )))
+
+    # ── Left end ──────────────────────────────────────────────────────────
+    segs.append(f"L {P(0.0, rail_h)}")
+    segs.append(f"L {P(0.0, sy_bot)}")
+    segs.append(f"L {P(sock_d, sy_bot)}")
+    segs.append(f"L {P(sock_d, sy_top)}")
+    segs.append(f"L {P(0.0, sy_top)}")
+    segs.append("Z")
+
+    return " ".join(segs)
+
+
+def beater_path(
+    beater_w: float,
+    handle_h: float,
+    tooth_h: float,
+    tooth_w: float,
+    tooth_pitch: float,
+    tooth_count: int,
+    corner_r: float = 0.0,
+    ox: float = 0.0,
+    oy: float = 0.0,
+) -> str:
+    """
+    SVG path string for a beater/comb with optional fillets on all corners (D-25/D-26).
+    Rounds every corner: 4 handle corners + 4 per tooth gap = 4 + 4×tooth_count total.
+    """
+    pts = beater_pts(beater_w, handle_h, tooth_h, tooth_w, tooth_pitch, tooth_count)
+    return rounded_pts_to_path(pts, corner_r, ox=ox, oy=oy)
+
+
+# ---------------------------------------------------------------------------
 # Hole tuple helpers — transport holes through translate/place without
 # parsing SVG path strings. Each hole is a tuple: ('circle'|'ellipse', *params).
 # ---------------------------------------------------------------------------
@@ -486,6 +717,11 @@ def rect_hole(x: float, y: float, w: float, h: float) -> tuple:
     return ('rect', x, y, w, h)
 
 
+def stadium_hole(cx: float, cy: float, r: float, h: float) -> tuple:
+    """Vertical stadium hole: two semicircles (radius r) + straight sides, total height h."""
+    return ('stadium', cx, cy, r, h)
+
+
 def translate_hole(hole: tuple, dx: float, dy: float) -> tuple:
     if hole[0] == 'circle':
         _, cx, cy, r = hole
@@ -496,6 +732,9 @@ def translate_hole(hole: tuple, dx: float, dy: float) -> tuple:
     elif hole[0] == 'rect':
         _, x, y, w, h = hole
         return ('rect', x + dx, y + dy, w, h)
+    elif hole[0] == 'stadium':
+        _, cx, cy, r, h = hole
+        return ('stadium', cx + dx, cy + dy, r, h)
     raise ValueError(f"Unknown hole type: {hole[0]}")
 
 
@@ -507,6 +746,8 @@ def hole_to_path(hole: tuple) -> str:
     elif hole[0] == 'rect':
         _, x, y, w, h = hole
         return pts_to_path(rect_pts(x, y, w, h))
+    elif hole[0] == 'stadium':
+        return stadium_path(hole[1], hole[2], hole[3], hole[4])
     raise ValueError(f"Unknown hole type: {hole[0]}")
 
 
@@ -524,152 +765,3 @@ def place(local_pts: list, local_holes: list, sx: float, sy: float):
     return sheet_pts, sheet_holes
 
 
-def triangle_pts(
-    upright_h: float,         # STAND_UPRIGHT_H = 420mm (rear/left edge height)
-    base_l: float,            # STAND_BASE_L = 240mm (bottom edge length)
-    upright_notch_ys: list,   # y-centres of edge notches in upright (left) edge
-    base_notch_xs: list,      # x-centres of edge notches in base (bottom) edge
-    notch_w: float,           # notch opening width (fits cross member body)
-    notch_d: float,           # notch depth into body
-    notch_entry: float = 0.0,       # D-19: extra height above captive zone for L-shaped entry
-    notch_entry_d: float = 0.0,     # D-19: partial depth of entry zone (< notch_d)
-    hyp_notch_pts: list = None,     # D-19: 4 (x,y) pts for parallelogram notch on hypotenuse
-) -> list:
-    """
-    Solid right-triangle side piece for D-18/D-19 stand.
-
-    Local origin: (0,0) = top-back corner.
-    Right angle at (0, upright_h) bottom-back.
-    Third corner at (base_l, upright_h) bottom-front.
-    Hypotenuse: diagonal from (base_l, upright_h) back to (0, 0).
-
-    Upright (left) edge: x=0, traversed top-to-bottom, notches go INTO body (+x).
-      With notch_entry>0: each upright notch is L-shaped — a (notch_w+notch_entry) tall
-      entry zone at partial depth notch_entry_d, then the captive zone at full notch_d.
-      Assembly: slide cross member in at entry level, step at x=notch_entry_d blocks
-      further travel until cross member drops notch_entry mm (gravity) into captive zone.
-    Base (bottom) edge: y=upright_h, traversed left-to-right, notches go INTO body (-y).
-      Plain rectangular (no L-shape).
-    Hyp edge: if hyp_notch_pts given, 4 points interrupt the hypotenuse line.
-    All notches are concave. Clockwise winding.
-    """
-    pts = [(0.0, 0.0)]   # top-back corner
-
-    # Traverse down left (upright) edge with concave notches
-    y_cur = 0.0
-    for ny in sorted(upright_notch_ys):
-        ny0 = ny - notch_w / 2.0        # top of captive zone
-        ny1 = ny + notch_w / 2.0        # bottom of captive zone
-        if notch_entry > 1e-9 and notch_entry_d > 1e-9:
-            # L-shaped entry: entry zone is notch_entry mm above captive zone, at partial depth
-            entry_top = ny0 - notch_entry
-            if entry_top > y_cur + 1e-9:
-                pts.append((0.0, entry_top))        # top of entry zone at edge
-            pts.append((notch_entry_d, entry_top))  # top-right of entry zone
-            pts.append((notch_entry_d, ny0))        # step: transition entry→captive
-            pts.append((notch_d, ny0))              # top of captive at full depth
-        else:
-            if ny0 > y_cur + 1e-9:
-                pts.append((0.0, ny0))
-            pts.append((notch_d, ny0))
-        pts.append((notch_d, ny1))
-        pts.append((0.0, ny1))
-        y_cur = ny1
-    if y_cur < upright_h - 1e-9:
-        pts.append((0.0, upright_h))
-
-    # Traverse right along base edge with concave notches (go UP = -y direction)
-    x_cur = 0.0
-    for nx in sorted(base_notch_xs):
-        nx0 = nx - notch_w / 2.0
-        nx1 = nx + notch_w / 2.0
-        if nx0 > x_cur + 1e-9:
-            pts.append((nx0, upright_h))
-        pts.append((nx0, upright_h - notch_d))
-        pts.append((nx1, upright_h - notch_d))
-        pts.append((nx1, upright_h))
-        x_cur = nx1
-    if x_cur < base_l - 1e-9:
-        pts.append((base_l, upright_h))
-
-    # Hypotenuse: optional parallelogram notch interrupts the line from (base_l, upright_h) to (0,0)
-    if hyp_notch_pts is not None:
-        pts.extend(hyp_notch_pts)   # 4 pts: P_before, P_before_inner, P_after_inner, P_after
-    # Z closes back to (0, 0)
-
-    return pts
-
-
-def prop_pts(
-    body_h: float,       # leg body height (not including tenon)
-    body_w: float,       # leg body width
-    ten_l: float,        # tenon length (protrudes from top)
-    ten_w: float,        # tenon width (centred on body_w)
-    foot_bevel_d: float, # depth of foot bevel (diagonal cut at bottom-opposite corner)
-    bevel_on_right: bool = True,  # True for prop-L, False for prop-R
-) -> list:
-    """
-    Prop arm: a rectangular body with tenon at top and bevelled foot.
-    Local origin: top-left of tenon.
-    Tenon centred on body_w.
-
-    Bevel: for prop-L (bevel_on_right=True), bottom-right corner is cut diagonally.
-    For prop-R (bevel_on_right=False), bottom-left corner is cut.
-
-    The bevel represents the foot sitting flat on the table at the lean angle.
-    """
-    gap = (body_w - ten_w) / 2.0
-    ten_top = 0.0
-    ten_bot = ten_l
-    body_top = ten_l
-    body_bot = ten_l + body_h
-
-    if bevel_on_right:
-        # Clockwise from top-left of tenon (which is at x=gap, y=0)
-        pts = [
-            (gap, ten_top),
-            (gap + ten_w, ten_top),
-            (gap + ten_w, ten_bot),
-            (body_w, ten_bot),
-            # Right side of body, going down to bevel start
-            (body_w, body_bot - foot_bevel_d),
-            # Bevel cut: from (body_w, body_bot - foot_bevel_d) to (0, body_bot)
-            (0.0, body_bot),
-            # Left side of body, going up to tenon
-            (0.0, ten_bot),
-            (gap, ten_bot),
-        ]
-    else:
-        # Mirror: bevel on left
-        pts = [
-            (gap, ten_top),
-            (gap + ten_w, ten_top),
-            (gap + ten_w, ten_bot),
-            (body_w, ten_bot),
-            (body_w, body_bot),
-            # Bevel cut: from (body_w, body_bot) ... wait, bevel on left
-            # Bevel: from (body_w, body_bot) → (0, body_bot - foot_bevel_d)? No.
-            # For prop-R (mirror of prop-L), bottom-left corner is bevelled:
-            # Goes from (0, body_bot - foot_bevel_d) to (body_w, body_bot)
-            # Left side going up to bevel point
-        ]
-        # Redo for left bevel:
-        pts = [
-            (gap, ten_top),
-            (gap + ten_w, ten_top),
-            (gap + ten_w, ten_bot),
-            (body_w, ten_bot),
-            (body_w, body_bot),
-            (foot_bevel_d, body_bot),       # bottom edge (bevel removes left corner)
-            # Actually: bevel from bottom-left. Remove the bottom-left corner:
-            # Instead of going to (0, body_bot), cut diagonally:
-            # (foot_bevel_d, body_bot) → (0, body_bot - ???)
-            # The bevel depth (foot_bevel_d) is the horizontal cut width.
-            # The corresponding vertical cut depth = foot_bevel_d * tan(lean_angle)
-            # tan(25°) = 0.4663 → vertical = foot_bevel_d * 0.4663
-        ]
-        # This is getting complex — stub for now, implement exactly in loom.py
-        # Return rectangular prop for now; bevel added in loom.py
-        pts = rect_pts(0.0, 0.0, body_w, ten_l + body_h)
-
-    return pts

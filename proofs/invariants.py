@@ -328,26 +328,34 @@ def inv_crossbar_geometry(p: dict) -> tuple:
 
 def inv_stand_notch_geometry(p: dict) -> tuple:
     """
-    I-5c: Stand edge-notch geometry (D-18).
-    STAND_NOTCH_W in [STAND_SPREAD_W+0.05, STAND_SPREAD_W+0.5] (clearance fit for cross member).
-    STAND_NOTCH_D >= 10mm (enough retention depth).
-    STAND_STILE_SLOT_W in [STILE_W+0.3, STILE_W+1.0] (clearance fit for loom stile).
+    I-5c: Stand X-piece joint geometry (D-23, triangular piece).
+    STAND_X_SLOT_W in [MAT+0.05, MAT+0.5] — clearance fit for cross-halving.
+    STAND_X_SLOT_D == STAND_X_W/4 ± 0.5 — half of triangle height at slot_cx.
+    STAND_X_TAB_L in [15, 40] — foot tab length plausible.
+    STAND_X_TAB_H in [10, STAND_X_W/2] — tab height at most half the foot width.
+    STAND_X_BUMP_H in [2, 10] — bump height plausible.
     """
-    spread_w = p["STAND_SPREAD_W"]
-    nw = p["STAND_NOTCH_W"]
-    nd = p["STAND_NOTCH_D"]
-    ssw = p["STAND_STILE_SLOT_W"]
-    stile_w = p["STILE_W"]
+    mat   = p["MAT"]
+    sw    = p["STAND_X_SLOT_W"]
+    sd    = p["STAND_X_SLOT_D"]
+    xw    = p["STAND_X_W"]
+    tab_l = p["STAND_X_TAB_L"]
+    tab_h = p["STAND_X_TAB_H"]
+    bump_h = p["STAND_X_BUMP_H"]
 
-    ok_nw = spread_w + 0.05 <= nw <= spread_w + 0.5
-    ok_nd = nd >= 10.0
-    ok_ssw = stile_w + 0.3 <= ssw <= stile_w + 1.0
-    ok = ok_nw and ok_nd and ok_ssw
+    ok_sw  = mat + 0.05 <= sw <= mat + 0.5
+    ok_sd  = abs(sd - xw / 4.0) <= 0.5           # slot_d = W/4 ± 0.5
+    ok_tab_l = 15.0 <= tab_l <= 40.0
+    ok_tab_h = 10.0 <= tab_h <= xw / 2.0
+    ok_bump  = 2.0 <= bump_h <= 10.0
+    ok = ok_sw and ok_sd and ok_tab_l and ok_tab_h and ok_bump
 
     detail = (
-        f"notch_w={nw:.2f} in [{spread_w+0.05:.2f},{spread_w+0.5:.2f}]={'OK' if ok_nw else 'FAIL'}; "
-        f"notch_d={nd:.2f}>=10={'OK' if ok_nd else 'FAIL'}; "
-        f"stile_slot_w={ssw:.2f} in [{stile_w+0.3:.2f},{stile_w+1.0:.2f}]={'OK' if ok_ssw else 'FAIL'}"
+        f"slot_w={sw:.2f} in [{mat+0.05:.2f},{mat+0.5:.2f}]={'OK' if ok_sw else 'FAIL'}; "
+        f"slot_d={sd:.2f}~=W/4={xw/4:.2f}={'OK' if ok_sd else 'FAIL'}; "
+        f"tab_l={tab_l:.1f} in [15,40]={'OK' if ok_tab_l else 'FAIL'}; "
+        f"tab_h={tab_h:.1f} in [10,{xw/2:.1f}]={'OK' if ok_tab_h else 'FAIL'}; "
+        f"bump_h={bump_h:.1f} in [2,10]={'OK' if ok_bump else 'FAIL'}"
     )
     return (_pass("I-5c", detail) if ok else _fail("I-5c", detail))
 

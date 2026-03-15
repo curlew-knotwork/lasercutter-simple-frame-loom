@@ -52,15 +52,16 @@ class TestBuildStandXPiece:
         assert self.holes == []
 
     def test_polygon_point_count(self):
-        """Triangular piece polygon has 11 points (slot 4 + tip 1 + hyp-to-tab 1 + tab+bump 4 + return 1)."""
-        assert len(self.pts) == 11, f"Expected 11 pts, got {len(self.pts)}: {self.pts}"
+        """Triangular piece polygon has 12 points (slot 4 + blunt tip 2 + hyp-to-tab 1 + tab+bump 4 + return 1)."""
+        assert len(self.pts) == 12, f"Expected 12 pts, got {len(self.pts)}: {self.pts}"
 
     def test_bounding_box_length(self):
-        """Piece bbox width = STAND_X_L (no -x tab protrusion with new +y ledge)."""
-        expected_w = p["STAND_X_L"]
+        """Piece bbox width = STAND_X_L - tip_blunt_x (sharp tip replaced by flat blunt end, D-28)."""
+        tip_blunt_x = p["STAND_X_TIP_W"] * p["STAND_X_L"] / p["STAND_X_W"]
+        expected_w = p["STAND_X_L"] - tip_blunt_x
         actual_w = self.bb[2] - self.bb[0]
         assert abs(actual_w - expected_w) < 0.1, \
-            f"bbox width={actual_w:.3f} != L={expected_w}"
+            f"bbox width={actual_w:.3f} != L-tip_blunt_x={expected_w:.3f}"
 
     def test_bounding_box_height(self):
         """Piece bbox height = STAND_X_W + STAND_X_TAB_L + STAND_X_BUMP_L (+y ledge protrusion)."""
@@ -69,11 +70,15 @@ class TestBuildStandXPiece:
         assert abs(actual_h - expected_h) < 0.1, \
             f"bbox height={actual_h:.3f} != W+TAB_L+BUMP_L={expected_h}"
 
-    def test_triangle_tip_at_L_0(self):
-        """Triangle tip at (STAND_X_L, 0) — top-right corner."""
+    def test_tip_blunted(self):
+        """D-28: tip blunted — no point at x=STAND_X_L; max_x = L - tip_blunt_x."""
         L = p["STAND_X_L"]
-        tip = [pt for pt in self.pts if abs(pt[0] - L) < 1e-6 and abs(pt[1]) < 1e-6]
-        assert len(tip) == 1, f"Expected tip at (L,0); found: {tip}"
+        tip_blunt_x = p["STAND_X_TIP_W"] * L / p["STAND_X_W"]
+        sharp_tip = [pt for pt in self.pts if abs(pt[0] - L) < 1e-6]
+        assert len(sharp_tip) == 0, f"Sharp tip at x=L still present: {sharp_tip}"
+        xs = [pt[0] for pt in self.pts]
+        assert abs(max(xs) - (L - tip_blunt_x)) < 0.1, \
+            f"max_x={max(xs):.3f} != L-tip_blunt_x={L-tip_blunt_x:.3f}"
 
     def test_tab_hyp_intercept_inside_triangle(self):
         """Tab connects to hyp at (TAB_H, hyp_y_at_TAB_H) — y < W, inside triangle body, not at corner."""
@@ -205,14 +210,16 @@ class TestBuildStandXPieceB:
         self.pts_b, _ = build_stand_x_piece_b(p)
 
     def test_piece_b_top_edge_no_slot(self):
-        """Piece B top edge (y=0) is continuous — no slot: only pts at x=0 and x=L."""
+        """Piece B top edge (y=0): only x=0 (foot) and x=L-tip_blunt_x (blunted tip, D-28)."""
+        L = p["STAND_X_L"]
+        tip_blunt_x = p["STAND_X_TIP_W"] * L / p["STAND_X_W"]
         top_pts = [(x, y) for x, y in self.pts_b if abs(y) < 1e-6]
         xs = sorted(x for x, y in top_pts)
         assert len(top_pts) == 2, \
-            f"Expected 2 pts at y=0 (foot top and tip), got {len(top_pts)}: {top_pts}"
+            f"Expected 2 pts at y=0 (foot top and blunted tip), got {len(top_pts)}: {top_pts}"
         assert abs(xs[0]) < 1e-6, f"Expected x=0 at foot top, got {xs[0]:.3f}"
-        assert abs(xs[1] - p["STAND_X_L"]) < 1e-6, \
-            f"Expected x=L at tip, got {xs[1]:.3f}"
+        assert abs(xs[1] - (L - tip_blunt_x)) < 0.1, \
+            f"Expected x=L-tip_blunt_x={L-tip_blunt_x:.3f} at blunted tip, got {xs[1]:.3f}"
 
     def test_piece_b_slot_bottom_at_slot_d(self):
         """Piece B slot bottom is at y=STAND_X_SLOT_D (same as piece A — slots mate there)."""
@@ -276,14 +283,25 @@ class TestStandXParams:
         assert abs(p["STAND_X_SLOT_D"] - expected) < 0.1
 
     def test_stand_x_l_present(self):
-        """D-23: STAND_X_L = 450mm."""
+        """D-29: STAND_X_L = FRAME_OUTER_H (= interior_h + 2×rail_w)."""
         assert "STAND_X_L" in p
-        assert abs(p["STAND_X_L"] - 450.0) < 0.1
+        assert abs(p["STAND_X_L"] - p["FRAME_OUTER_H"]) < 0.1, \
+            f"STAND_X_L={p['STAND_X_L']}, expected FRAME_OUTER_H={p['FRAME_OUTER_H']}"
 
-    def test_stand_x_tab_l_present(self):
-        """D-23: STAND_X_TAB_L present and ~25mm."""
+    def test_stand_x_tab_l_is_30mm(self):
+        """D-23: STAND_X_TAB_L = 30mm (RAIL_W=22mm + 8mm clearance for secure rail seating)."""
         assert "STAND_X_TAB_L" in p
-        assert 20.0 <= p["STAND_X_TAB_L"] <= 35.0
+        assert abs(p["STAND_X_TAB_L"] - 30.0) < 1e-9
+
+    def test_stand_corner_r_in_params(self):
+        """D-28: STAND_X_CORNER_R = 0mm — tip squared off only; other corners straight."""
+        assert "STAND_X_CORNER_R" in p, "STAND_X_CORNER_R missing from params"
+        assert abs(p["STAND_X_CORNER_R"] - 0.0) < 1e-9
+
+    def test_stand_tip_w_in_params(self):
+        """D-28: STAND_X_TIP_W = 10mm — blunt-end flat width at triangle tip."""
+        assert "STAND_X_TIP_W" in p, "STAND_X_TIP_W missing from params"
+        assert abs(p["STAND_X_TIP_W"] - 10.0) < 0.1
 
     def test_stand_x_bump_l_present(self):
         """D-23: STAND_X_BUMP_L present and ~5mm."""
@@ -353,12 +371,15 @@ class TestLayout:
                 f"Part bbox dim {dim} differs: {sizes}"
 
     def test_piece_bbox_width(self):
-        """Each piece bbox width = STAND_X_L (no -x tab; +y ledge doesn't affect x range)."""
-        expected_w = p["STAND_X_L"]
+        """Each piece bbox width = L - tip_blunt_x (blunted tip, D-28)."""
+        L = p["STAND_X_L"]
+        tip_blunt_x = p["STAND_X_TIP_W"] * L / p["STAND_X_W"]
+        expected_w = L - tip_blunt_x
         for pid in ["stand_x_a", "stand_x_b"]:
             bb = self.by_id[pid]["bbox"]
             w = bb[2] - bb[0]
-            assert abs(w - expected_w) < 0.1, f"{pid} bbox width={w:.2f} != L={expected_w}"
+            assert abs(w - expected_w) < 0.1, \
+                f"{pid} bbox width={w:.2f} != L-tip_blunt_x={expected_w:.2f}"
 
     def test_piece_bbox_height(self):
         """Each piece bbox height = STAND_X_W + STAND_X_TAB_L + STAND_X_BUMP_L (+y ledge)."""
@@ -417,6 +438,13 @@ class TestGenerate:
         assert paths
         open_paths = [d[:60] for d in paths if not d.rstrip().endswith("Z")]
         assert open_paths == [], f"Open paths: {open_paths}"
+
+    def test_svg_outer_paths_no_arcs(self):
+        """D-28: stand outer paths have no arc commands — tip squared off as flat cut, other corners straight."""
+        svg = generate(p)
+        paths = re.findall(r' d="([^"]+)"', svg)
+        arc_paths = [d for d in paths if " A " in d]
+        assert not arc_paths, f"Unexpected arc commands in stand SVG: {arc_paths}"
 
     def test_write_creates_file(self):
         with tempfile.TemporaryDirectory() as tmpdir:

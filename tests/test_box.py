@@ -128,6 +128,16 @@ class TestPartBuilders:
         assert abs(short_dim - expected) < 0.1, \
             f"Long wall short dim {short_dim:.2f} != BOX_INTERIOR_H+MAT3={expected:.2f}"
 
+    def test_ntabs_l_is_15(self):
+        """D-20: BOX_BASE_NTABS_L == 15 (long wall bottom tab count)."""
+        assert p["BOX_BASE_NTABS_L"] == 15, \
+            f"BOX_BASE_NTABS_L={p['BOX_BASE_NTABS_L']}, expected 15 (D-20)"
+
+    def test_ntabs_s_is_5(self):
+        """D-20: BOX_BASE_NTABS_S == 5 (short wall bottom tab count)."""
+        assert p["BOX_BASE_NTABS_S"] == 5, \
+            f"BOX_BASE_NTABS_S={p['BOX_BASE_NTABS_S']}, expected 5 (D-20)"
+
     def test_long_wall_bottom_tab_count(self):
         """Long wall has BOX_BASE_NTABS_L bottom tabs: that many x-values at h+MAT3."""
         pts, _ = build_box_long_wall(p)

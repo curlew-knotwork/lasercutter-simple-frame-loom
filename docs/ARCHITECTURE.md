@@ -1,7 +1,7 @@
 # Architecture
-**Version:** 1
-**Date:** 2026-03-06
-**Status:** PROPOSED — no code written yet
+**Version:** 2
+**Date:** 2026-03-15
+**Status:** CURRENT — stages 0–6 complete, 340 tests passing
 
 ---
 
@@ -11,11 +11,10 @@
 lasercutter-simple-frame-loom/
 │
 ├── REQUIREMENTS.md          # user + system requirements
-├── SPECIFICATION_LOCK.md    # superseded by DECISIONS.md — keep for history
 ├── DECISIONS.md             # locked design decisions (authority)
-├── DESIGN.md                # sparring, open questions, proposals
-├── DEFECTS.md               # defect log + corrections
-├── FAILURE_PATTERNS.md      # exit-gate pattern scan log
+├── DESIGN.md                # sparring, open questions, proposals (audit trail)
+├── FAILURE_REGISTRY.md      # defect log + corrections
+├── FAILURE_PATTERN_REGISTRY.md  # exit-gate pattern scan log
 ├── ARCHITECTURE.md          # this file
 │
 ├── src/
@@ -23,7 +22,8 @@ lasercutter-simple-frame-loom/
 │   ├── geometry.py          # shared geometric primitives (path builder, polygon ops)
 │   ├── loom.py              # loom SVG generator (imports params, geometry)
 │   ├── box.py               # box SVG generator
-│   ├── stand.py             # A-frame stand SVG generator (output onto box sheet)
+│   ├── stand.py             # stand SVG generator (D-23: 2-piece triangular X easel)
+│   ├── generate.py          # CLI: python -m src.generate --width W --height H --pitch P
 │   └── test_cut.py          # calibration/fit-test cut generator
 │
 ├── proofs/
@@ -41,10 +41,11 @@ lasercutter-simple-frame-loom/
 │
 ├── output/                  # generated SVGs — never hand-edited
 │   ├── loom.svg
-│   ├── box.svg              # includes stand pieces
+│   ├── optional_box.svg     # D-17: renamed from box.svg
+│   ├── optional_loom_stand.svg  # D-16+: separate optional sheet
 │   └── test_cut.svg
 │
-└── archive/                 # old hand-made files, not used
+└── docs/archive/            # old hand-made files, not used
     ├── lasercutter-simple-frame-loom.svg   # V11.0 Ironman — superseded
     └── lasercutter-simple-frame-loom       # v6 draft — superseded
 ```
@@ -109,10 +110,10 @@ Generates `output/loom.svg`. Functions:
 
 ### `src/stand.py`
 
-Generates stand pieces to be placed on `box.svg`:
-- `stand_side(mirror=False)` → single closed path with angled U-notch + spreader mortise
-- `stand_spreader()` → single closed path with tenon each end
-- `check_stand_fits_on_box_sheet(existing_layout)` → bool; raises if not
+Generates `output/optional_loom_stand.svg` (D-23: 2-piece triangular X easel):
+- Two right-triangle pieces, cross-halving half-lap joint at L/2
+- Piece A: slot from top edge; Piece B: slot from hypotenuse edge; slots interlock
+- Foot tab (TAB_L=30mm, TAB_H=20mm) and bump (5×5mm) on each piece capture loom bottom rail
 
 ### `src/box.py`
 
@@ -158,19 +159,19 @@ Parses `output/loom.svg`, extracts bounding boxes of all paths, checks:
 
 ## Development Stages
 
-| Stage | Gate | Output |
-|---|---|---|
-| 0 — Sparring | Design questions resolved | DECISIONS.md locked |
-| 1 — Proofs | invariants.py written; all invariants stated formally | proofs/invariants.py |
-| 2 — Tests (failing) | All test_*.py written; all fail (no generator yet) | tests/*.py |
-| 3 — params.py | Constants defined; assert invariants pass at import | src/params.py |
-| 4 — geometry.py | Primitive path builders; unit-tested | src/geometry.py |
-| 5 — loom.py | Loom generator; loom tests pass | output/loom.svg |
-| 6 — verify_loom.py | SVG verification passes; inspect actual values | proofs/verify_loom.py |
-| 7 — box.py + stand.py | Box/stand generator; box tests pass | output/box.svg |
-| 8 — verify_box.py | Box + assembly verification passes | proofs/verify_box.py |
-| 9 — test_cut.py | Fit test generator | output/test_cut.svg |
-| 10 — parametric | Random size tests; happy + unhappy | tests/test_parametric.py |
+| Stage | Gate | Output | Status |
+|---|---|---|---|
+| 0 — Sparring | Design questions resolved | DECISIONS.md locked | DONE |
+| 1 — Proofs | invariants.py written; all invariants stated formally | proofs/invariants.py | DONE |
+| 2 — Tests (failing) | All test_*.py written; all fail (no generator yet) | tests/*.py | DONE |
+| 3 — params.py | Constants defined; assert invariants pass at import | src/params.py | DONE |
+| 4 — geometry.py | Primitive path builders; unit-tested | src/geometry.py | DONE |
+| 5 — loom.py | Loom generator; loom tests pass | output/loom.svg | DONE |
+| 6 — verify_loom.py | SVG verification passes; inspect actual values | proofs/verify_loom.py | DONE |
+| 7 — box.py + stand.py | Box/stand generator; box+stand tests pass | output/optional_box.svg, output/optional_loom_stand.svg | DONE |
+| 8 — verify_box.py | Box + assembly verification passes | proofs/verify_box.py | DONE |
+| 9 — test_cut.py | Fit test generator | output/test_cut.svg | DONE |
+| 10 — parametric | Random size tests; happy + unhappy; generate CLI | tests/test_parametric.py, src/generate.py | DONE |
 
 ---
 
@@ -207,45 +208,13 @@ All coordinates in mm. SVG viewBox in mm units (1 SVG unit = 1mm).
 
 ---
 
-## Stand Geometry (A-frame easel, 3mm ply)
+## Stand Geometry (D-23: 2-piece triangular X easel, 6mm ply)
 
-### Side pieces (Stand-L, Stand-R — mirror)
+Two identical right-triangle pieces (STAND_X_L × STAND_X_W = 444×80mm for default 400mm interior). Each piece is a 12-point closed polygon:
 
-Each side piece is a closed polygon with the following features:
-- Flat foot (sits on table)
-- Angled upper body to match loom lean angle
-- U-notch in the top edge, angled at 25° from vertical, to cradle the loom stile
-- Spreader mortise on the inner face
+- **Triangle body:** right angle at (0,0); top edge (0,0)→(L,0); hypotenuse (L,0)→(0,W); foot edge (0,W)→(0,0)
+- **Cross-halving slot:** Piece A slot from top edge at x=L/2; Piece B slot from hypotenuse at x=L/2. Both slots depth=W/4=20mm, width=MAT+0.1=6.1mm. Interlock to form X.
+- **Foot tab:** Protrudes +y (outward when standing) from hypotenuse at the foot end. TAB_L=30mm, TAB_H=20mm. Loom bottom rail rests on tab ledge.
+- **Bump:** 5×5mm step at tab outer end prevents rail sliding off.
 
-Nominal dimensions (to be verified by proof):
-- Foot length: 180mm
-- Overall height: 200mm
-- Notch width: STILE_W + 0.5mm = 22.5mm clearance fit
-- Notch depth: 25mm (enough to retain the stile under warp tension)
-- Notch angle: 25° from vertical (= 65° from horizontal)
-- Spreader mortise: MAT3 + 0.1mm wide, 15mm deep, at 80mm from foot
-
-### Spreader (Stand-Spreader)
-
-- Length: outer stile separation = FRAME_OUTER_W = 344mm
-- Width (height of piece when upright): 40mm
-- Tenon each end: MAT3 wide, 15mm long (slots into stand-side mortise)
-- Single closed path (rectangle + tenons)
-
-### Loom support geometry proof
-
-At 65° lean (25° from vertical):
-- Loom bottom edge is at table level (or just above)
-- The stand-side notch must be positioned so the stile rests in it and the loom bottom touches the table
-
-Let `H_notch` = height of notch centre above table when stand is upright.
-The loom stile's distance from its bottom end to the notch contact point = some length `d`.
-
-When loom leans at 65°:
-- Vertical height of notch contact point above table = `d × sin(65°)`
-- Horizontal offset from loom base = `d × cos(65°)`
-
-For the foot to touch the table: the contact point height must equal the stand notch height.
-This geometric constraint determines the notch position for a given leg geometry.
-
-Exact values TBD at implementation (proofs/verify_assembly.py).
+Assembly: slot Piece B (slot-from-hyp) down onto Piece A (slot-from-top). Stand on foot edges. Both foot tabs at 20mm height support loom bottom rail.

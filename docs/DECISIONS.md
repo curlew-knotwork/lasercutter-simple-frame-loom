@@ -206,6 +206,70 @@ The following invariants must hold for every valid parameter set. Any parameter 
 - **Params:** STAND_X_L=450mm, STAND_X_W=80mm, STAND_X_SLOT_W=MAT+0.1=6.1mm, STAND_X_SLOT_D=STAND_X_W/4=20mm, STAND_X_TAB_L=25mm, STAND_X_TAB_H=20mm, STAND_X_BUMP_L=5mm, STAND_X_BUMP_H=5mm.
 - **Locked:** 2026-03-15
 
+### D-24 — Warp notch pitch 5mm, 61 notches (supersedes D-06)
+- **Supersedes:** D-06 (10mm pitch, 31 notches).
+- **Decision:** NOTCH_PITCH=5mm, NOTCH_COUNT=61. Invariant: (61−1)×5=300=INTERIOR_W ✓.
+- **Rationale:** 10mm pitch (~2.5 epi) is limited to chunky/bulky yarn only. 5mm pitch (~5 epi) handles worsted/DK — the most common beginner yarn weight — making the loom broadly useful.
+- **Cascade changes required:**
+  - NOTCH_W: 4mm → 2mm. At 5mm pitch, 4mm notch leaves 1mm tooth — structurally inadequate. 2mm notch → 3mm tooth ✓.
+  - BEATER_TOOTH_W: 4mm → 2mm. Same reason (beater tooth pitch = notch pitch).
+  - HEDDLE_BAR_HOLE_R: 3.5mm → 1.5mm. At 5mm pitch, 3.5mm radius (7mm diameter) holes merge. 1.5mm radius (3mm diameter) → 2mm gap between holes ✓.
+- **Locked:** 2026-03-15
+
+### D-27 — Part labels placed on solid material, not on cut-outs (first pass)
+- **Decision:** Where a part's bbox centre falls inside a cut-out, override the label position to the nearest solid zone. First-pass rules: shuttle labels → above lightening ellipse (top solid strip); heddle bar label → baseline at top of 3mm gap between the two hole rows (centres text visually on bar centreline).
+- **Rationale:** Text etched over a void is illegible; placing on material improves readability.
+- **Implementation:** `layout()` stores a `label_xy` override on each affected placed-part dict; `render()` uses it in preference to the bbox centre.
+- **Scope (first pass):** shuttle_1, shuttle_2, heddle_bar. Other parts' labels land on solid material by default.
+- **Locked:** 2026-03-15
+
+### D-26 — All moving-part corners rounded (r=0.5mm); shuttle V-notch depth 1.7mm
+- **Decision:** All corners of all moving parts rounded with CORNER_R=0.5mm (D-25 radius). Shuttle V-notch half-width reduced to 1.7mm (was 5.0mm, ~1/3).
+- **Moving parts:** beater (handle + all tooth gaps = 4 + 4×tooth_count corners), shuttle × 2 (all 10 polygon corners).
+- **Rationale:** Rounded corners prevent yarn snagging on moving parts. Deeper V-notch (×4/3) holds weft more securely.
+- **Implementation:** `beater_path()` delegates to `rounded_pts_to_path(beater_pts(...))` for all corners. `shuttle_path()` delegates to `rounded_pts_to_path(shuttle_pts_with_notch(...))`. Both use CORNER_R=0.5mm.
+- **Locked:** 2026-03-15
+
+### D-25 — Rounded corners on rail notches and beater teeth (r=0.5mm)
+- **Decision:** CORNER_R=0.5mm fillet on all 4 corners of every warp notch (top and bottom rail) and all 4 corners of every beater tooth gap (shoulder + tip).
+- **Rationale:** Sharp corners snag yarn and increase wear. Rounded corners let yarn run smoothly in/out of notches and past beater teeth.
+- **Geometry:** Each corner replaced by a quarter-circle arc of r=0.5mm tangent to both adjacent edges. r chosen so 2×r=1mm < notch_w=tooth_w=2mm — no arc overlap across the feature.
+- **Implementation:** New `rail_path()` and `beater_path()` wrapper functions return SVG path strings with arc commands; existing `rail_pts()`/`beater_pts()` unchanged for geometry tests.
+- **Scope:** Both top and bottom rail notches (symmetric). Beater tooth tips and shoulder gaps.
+- **Locked:** 2026-03-15
+
+---
+
+### D-29 — Parametric customization: 3 primary knobs + auto-derived accessories
+
+**Supersedes:** nothing (extends existing make_params() system).
+
+**Primary knobs** (parameters of make_params()):
+- `interior_w` — weaving interior width (mm). Range: [150, 500]. Must be divisible by notch_pitch.
+- `interior_h` — weaving interior height (mm). Range: [200, 550].
+- `notch_pitch` — warp notch centre-to-centre pitch (mm). Range: [4, 15]. Default: 5.0.
+
+**Auto-derived from knobs (D-29):**
+- `notch_w = notch_pitch × 0.4`  (40% notch, 60% tooth)
+- `beater_tooth_w = notch_w`
+- `beater_tooth_h = min(notch_w × 6.5, 20.0)`
+- `shuttle_l = round(clamp(interior_w × 0.6, 120, 280) / 5) × 5`
+- `shuttle_light_l = max(shuttle_l − 2 × shuttle_taper_l − 10, 20.0)`
+- `stand_x_l = frame_outer_h`  (= interior_h + 2 × rail_w)
+
+**Validation** (raise ValueError before assert_all):
+- `150 ≤ interior_w ≤ 500`
+- `200 ≤ interior_h ≤ 550`
+- `4 ≤ notch_pitch ≤ 15`
+- `interior_w % notch_pitch ≈ 0`  (within 0.001mm)
+
+**CLI:** `python -m src.generate --width W --height H --pitch P [--mat M] [--kerf K]`
+Writes all 3 SVGs (loom, box, stand), verifies each, exits 1 on failure.
+
+**Docs:** `docs/CUSTOMIZATION_GUIDE.md` — documents knobs, constraints, small/medium/large examples.
+
+**Locked:** 2026-03-15
+
 ---
 
 ## Superseded Decisions
@@ -219,3 +283,4 @@ The following invariants must hold for every valid parameter set. Any parameter 
 - D-19 (L-shaped upright notches + hyp cross member): superseded by D-22.
 - D-20 (upright base cross members, STAND_BASE_NOTCH_W=6.1mm): superseded by D-21, then D-22.
 - D-21 (BASE cross members flat, wide shallow notches): superseded by D-22.
+- D-06 (10mm pitch, 31 notches, 4mm wide): superseded by D-24.

@@ -10,7 +10,8 @@ from src.geometry import (
     circle_path, ellipse_path, rect_pts, bboxes_overlap,
     rail_pts, stile_pts, crossbar_pts, beater_pts,
     rect_hole, translate_hole, hole_to_path,
-    triangle_pts,
+    stadium_path, stadium_hole,
+    rail_path, beater_path,
 )
 from src.params import DEFAULT as p
 
@@ -287,96 +288,221 @@ class TestRectHole:
 
 
 # ---------------------------------------------------------------------------
-# triangle_pts (D-18 — solid right-triangle stand side piece)
+# stadium_path / stadium_hole
+# cx=10, cy=10, r=1.5, h=8  →  h_rect=5, top_cy=7.5, bot_cy=12.5
 # ---------------------------------------------------------------------------
 
-class TestTrianglePts:
+class TestStadiumPath:
+
+    def test_stadium_path_closed(self):
+        path = stadium_path(10, 10, 1.5, 8.0)
+        assert path.rstrip().endswith("Z")
+
+    def test_stadium_path_starts_with_M(self):
+        path = stadium_path(10, 10, 1.5, 8.0)
+        assert path.startswith("M ")
+
+    def test_stadium_path_has_two_arcs(self):
+        path = stadium_path(10, 10, 1.5, 8.0)
+        assert path.count(" A ") == 2
+
+    def test_stadium_path_arc_sweep_flags(self):
+        """Both caps use sweep=0: top goes above top_cy, bottom goes below bot_cy."""
+        path = stadium_path(10, 10, 1.5, 8.0)
+        # Both arcs must use sweep=0 (CCW, outward for both caps)
+        assert path.count("0 1,0") == 2, \
+            f"Expected 2 occurrences of sweep=0 arc, got: {path}"
+
+    def test_stadium_path_has_line_segment(self):
+        path = stadium_path(10, 10, 1.5, 8.0)
+        assert " L " in path
+
+    def test_stadium_path_start_point(self):
+        """Start at (cx+r, top_cy) = (11.5, 7.5)."""
+        path = stadium_path(10, 10, 1.5, 8.0)
+        assert "11.5000,7.5000" in path
+
+    def test_stadium_path_left_edge(self):
+        """Left edge of arcs at cx-r = 8.5."""
+        path = stadium_path(10, 10, 1.5, 8.0)
+        assert "8.5000" in path
+
+    def test_stadium_path_top_cap_y(self):
+        """Top semicircle center at top_cy=7.5; arc endpoints at x=±r, y=7.5."""
+        path = stadium_path(10, 10, 1.5, 8.0)
+        # Both arc endpoints on top cap share y=7.5
+        assert "7.5000" in path
+
+    def test_stadium_path_bottom_cap_y(self):
+        """Bottom semicircle center at bot_cy=12.5; arc endpoints at y=12.5."""
+        path = stadium_path(10, 10, 1.5, 8.0)
+        assert "12.5000" in path
+
+    def test_stadium_hole_tuple_type(self):
+        h = stadium_hole(10, 10, 1.5, 8.0)
+        assert h[0] == 'stadium'
+
+    def test_stadium_hole_params(self):
+        h = stadium_hole(10, 10, 1.5, 8.0)
+        assert h[1] == 10   # cx
+        assert h[2] == 10   # cy
+        assert h[3] == 1.5  # r
+        assert h[4] == 8.0  # h
+
+    def test_stadium_hole_to_path_closed(self):
+        h = stadium_hole(10, 10, 1.5, 8.0)
+        path = hole_to_path(h)
+        assert path.rstrip().endswith("Z")
+
+    def test_stadium_hole_translate_shifts_cx_cy(self):
+        h = stadium_hole(10, 10, 1.5, 8.0)
+        h2 = translate_hole(h, 5, 3)
+        assert h2[0] == 'stadium'
+        assert abs(h2[1] - 15.0) < 1e-9   # cx shifted
+        assert abs(h2[2] - 13.0) < 1e-9   # cy shifted
+        assert abs(h2[3] - 1.5) < 1e-9    # r unchanged
+        assert abs(h2[4] - 8.0) < 1e-9    # h unchanged
+
+
+# ---------------------------------------------------------------------------
+# rail_path / beater_path — rounded corner path builders (D-25)
+# ---------------------------------------------------------------------------
+
+class TestRailPath:
 
     def setup_method(self):
-        # Use D-18 stand params
-        upright_notch_ys = [
-            p["STAND_MORT_Y_TOP"], p["STAND_MORT_Y_MID"], p["STAND_MORT_Y_BOT"]
-        ]
-        base_notch_xs = [p["STAND_BASE_NOTCH_X1"], p["STAND_BASE_NOTCH_X2"]]
-        self.pts = triangle_pts(
-            p["STAND_UPRIGHT_H"], p["STAND_BASE_L"],
-            upright_notch_ys, base_notch_xs,
-            p["STAND_NOTCH_W"], p["STAND_NOTCH_D"],
-        )
-        self.bb = bounding_box(self.pts)
+        self.notch_cxs = [p["NOTCH_START_X"] + i * p["NOTCH_PITCH"]
+                          for i in range(p["NOTCH_COUNT"])]
 
-    def test_bbox_width(self):
-        """Bounding box width = STAND_BASE_L = 240mm."""
-        assert abs((self.bb[2] - self.bb[0]) - p["STAND_BASE_L"]) < 1e-6
+    def test_rail_path_returns_string(self):
+        s = rail_path(p["FRAME_OUTER_W"], p["RAIL_W"], p["SOCK_W"], p["TAB_L"],
+                      self.notch_cxs, p["NOTCH_W"], p["NOTCH_D"], corner_r=0.5)
+        assert isinstance(s, str)
 
-    def test_bbox_height(self):
-        """Bounding box height = STAND_UPRIGHT_H = 420mm."""
-        assert abs((self.bb[3] - self.bb[1]) - p["STAND_UPRIGHT_H"]) < 1e-6
+    def test_rail_path_closed(self):
+        s = rail_path(p["FRAME_OUTER_W"], p["RAIL_W"], p["SOCK_W"], p["TAB_L"],
+                      self.notch_cxs, p["NOTCH_W"], p["NOTCH_D"], corner_r=0.5)
+        assert s.rstrip().endswith("Z")
 
-    def test_top_back_corner(self):
-        """Origin point (0, 0) present in polygon."""
-        assert any(abs(pt[0]) < 1e-9 and abs(pt[1]) < 1e-9 for pt in self.pts), \
-            "Origin (0,0) not in polygon"
+    def test_rail_path_has_arcs_when_corner_r_nonzero(self):
+        s = rail_path(p["FRAME_OUTER_W"], p["RAIL_W"], p["SOCK_W"], p["TAB_L"],
+                      self.notch_cxs, p["NOTCH_W"], p["NOTCH_D"], corner_r=0.5)
+        assert " A " in s
 
-    def test_bottom_front_corner(self):
-        """Bottom-front corner (STAND_BASE_L, STAND_UPRIGHT_H) present."""
-        bl = p["STAND_BASE_L"]
-        uh = p["STAND_UPRIGHT_H"]
-        assert any(abs(pt[0] - bl) < 1e-9 and abs(pt[1] - uh) < 1e-9
-                   for pt in self.pts), "Bottom-front corner not found"
+    def test_rail_path_no_arcs_when_corner_r_zero(self):
+        s = rail_path(p["FRAME_OUTER_W"], p["RAIL_W"], p["SOCK_W"], p["TAB_L"],
+                      self.notch_cxs, p["NOTCH_W"], p["NOTCH_D"], corner_r=0.0)
+        assert " A " not in s
 
-    def test_upright_notches_concave(self):
-        """Upright (left) notches go INTO body: no x < 0."""
-        xs = [pt[0] for pt in self.pts]
-        assert min(xs) >= -1e-9
+    def test_rail_path_arc_count(self):
+        s = rail_path(p["FRAME_OUTER_W"], p["RAIL_W"], p["SOCK_W"], p["TAB_L"],
+                      self.notch_cxs, p["NOTCH_W"], p["NOTCH_D"], corner_r=0.5)
+        arc_count = s.count(" A ")
+        assert arc_count == 4 * p["NOTCH_COUNT"], \
+            f"Expected {4*p['NOTCH_COUNT']} arcs, got {arc_count}"
 
-    def test_base_notches_concave(self):
-        """Base (bottom) notches go INTO body: no y > STAND_UPRIGHT_H."""
-        ys = [pt[1] for pt in self.pts]
-        assert max(ys) <= p["STAND_UPRIGHT_H"] + 1e-9
+    def test_rail_path_notch_arc_sweep_order(self):
+        """Single notch: arc sweep order must be [0,1,1,0] — outer concave, inner convex. P-C7."""
+        import re
+        # One notch at cx=50, rail 100 wide × 27 tall, notch_d=5, corner_r=0.5
+        s = rail_path(100.0, 27.0, 7.0, 6.0, [50.0], 2.0, 5.0, corner_r=0.5)
+        sweeps = [int(m) for m in re.findall(r"0 0,(\d)", s)]
+        # 4 notch arcs; outer two are concave (sweep=0), inner two are convex (sweep=1)
+        assert sweeps == [0, 1, 1, 0], \
+            f"Expected arc sweep order [0,1,1,0], got {sweeps}"
 
-    def test_upright_notch_depth(self):
-        """Upright notches reach STAND_NOTCH_D from left edge."""
-        nd = p["STAND_NOTCH_D"]
-        pts_at_depth = [pt for pt in self.pts if abs(pt[0] - nd) < 1e-6]
-        # 3 notches × 2 points at depth = 6
-        assert len(pts_at_depth) >= 6, \
-            f"Expected ≥6 pts at upright notch depth x={nd}, got {len(pts_at_depth)}"
+    def test_rail_path_offset_shifts_start(self):
+        import re
+        s0 = rail_path(p["FRAME_OUTER_W"], p["RAIL_W"], p["SOCK_W"], p["TAB_L"],
+                       self.notch_cxs, p["NOTCH_W"], p["NOTCH_D"], corner_r=0.5)
+        s1 = rail_path(p["FRAME_OUTER_W"], p["RAIL_W"], p["SOCK_W"], p["TAB_L"],
+                       self.notch_cxs, p["NOTCH_W"], p["NOTCH_D"], corner_r=0.5,
+                       ox=10.0, oy=20.0)
+        m0 = re.search(r"M ([\d.\-]+),([\d.\-]+)", s0)
+        m1 = re.search(r"M ([\d.\-]+),([\d.\-]+)", s1)
+        assert m0 and m1
+        assert abs(float(m1.group(1)) - float(m0.group(1)) - 10.0) < 1e-3
+        assert abs(float(m1.group(2)) - float(m0.group(2)) - 20.0) < 1e-3
 
-    def test_base_notch_depth(self):
-        """Base notches reach STAND_NOTCH_D up from bottom."""
-        nd = p["STAND_NOTCH_D"]
-        uh = p["STAND_UPRIGHT_H"]
-        pts_at_depth = [pt for pt in self.pts if abs(pt[1] - (uh - nd)) < 1e-6]
-        # 2 notches × 2 points at depth = 4
-        assert len(pts_at_depth) >= 4, \
-            f"Expected ≥4 pts at base notch depth y={uh-nd:.2f}, got {len(pts_at_depth)}"
 
-    def test_upright_notch_y_positions(self):
-        """All three upright notch centres appear as edge points."""
-        nw = p["STAND_NOTCH_W"]
-        nd = p["STAND_NOTCH_D"]
-        for cy in [p["STAND_MORT_Y_TOP"], p["STAND_MORT_Y_MID"], p["STAND_MORT_Y_BOT"]]:
-            # Expect pts at (0, cy-nw/2) and (0, cy+nw/2) on the left edge
-            y0_ok = any(abs(pt[0]) < 1e-9 and abs(pt[1] - (cy - nw/2)) < 0.01
-                        for pt in self.pts)
-            y1_ok = any(abs(pt[0]) < 1e-9 and abs(pt[1] - (cy + nw/2)) < 0.01
-                        for pt in self.pts)
-            assert y0_ok and y1_ok, \
-                f"Notch edge pts missing at y-centre {cy}: y0={cy-nw/2}, y1={cy+nw/2}"
+class TestBeaterPath:
 
-    def test_base_notch_x_positions(self):
-        """Both base notch centres appear as edge points."""
-        nw = p["STAND_NOTCH_W"]
-        uh = p["STAND_UPRIGHT_H"]
-        for cx in [p["STAND_BASE_NOTCH_X1"], p["STAND_BASE_NOTCH_X2"]]:
-            x0_ok = any(abs(pt[1] - uh) < 1e-9 and abs(pt[0] - (cx - nw/2)) < 0.01
-                        for pt in self.pts)
-            x1_ok = any(abs(pt[1] - uh) < 1e-9 and abs(pt[0] - (cx + nw/2)) < 0.01
-                        for pt in self.pts)
-            assert x0_ok and x1_ok, \
-                f"Base notch edge pts missing at x-centre {cx}: x0={cx-nw/2}, x1={cx+nw/2}"
+    def test_beater_path_returns_string(self):
+        s = beater_path(p["BEATER_W"], p["BEATER_HANDLE_H"], p["BEATER_TOOTH_H"],
+                        p["BEATER_TOOTH_W"], p["BEATER_TOOTH_PITCH"],
+                        p["BEATER_TOOTH_COUNT"], corner_r=0.5)
+        assert isinstance(s, str)
 
-    def test_no_plain_rectangle(self):
-        """Triangle with 5 notches has >3 polygon vertices."""
-        assert len(self.pts) > 3, f"Expected >3 pts, got {len(self.pts)}"
+    def test_beater_path_closed(self):
+        s = beater_path(p["BEATER_W"], p["BEATER_HANDLE_H"], p["BEATER_TOOTH_H"],
+                        p["BEATER_TOOTH_W"], p["BEATER_TOOTH_PITCH"],
+                        p["BEATER_TOOTH_COUNT"], corner_r=0.5)
+        assert s.rstrip().endswith("Z")
+
+    def test_beater_path_has_arcs(self):
+        s = beater_path(p["BEATER_W"], p["BEATER_HANDLE_H"], p["BEATER_TOOTH_H"],
+                        p["BEATER_TOOTH_W"], p["BEATER_TOOTH_PITCH"],
+                        p["BEATER_TOOTH_COUNT"], corner_r=0.5)
+        assert " A " in s
+
+    def test_beater_path_arc_count(self):
+        s = beater_path(p["BEATER_W"], p["BEATER_HANDLE_H"], p["BEATER_TOOTH_H"],
+                        p["BEATER_TOOTH_W"], p["BEATER_TOOTH_PITCH"],
+                        p["BEATER_TOOTH_COUNT"], corner_r=0.5)
+        arc_count = s.count(" A ")
+        assert arc_count == 4 * p["BEATER_TOOTH_COUNT"] + 4, \
+            f"Expected {4*p['BEATER_TOOTH_COUNT']+4} arcs, got {arc_count}"
+
+class TestRoundedPtsToPath:
+
+    def test_rounded_pts_closed(self):
+        from src.geometry import rounded_pts_to_path
+        pts = [(0,0),(10,0),(10,10),(0,10)]
+        s = rounded_pts_to_path(pts, 0.5)
+        assert s.rstrip().endswith("Z")
+
+    def test_rounded_pts_arc_count_equals_corner_count(self):
+        from src.geometry import rounded_pts_to_path
+        pts = [(0,0),(10,0),(10,10),(0,10)]
+        s = rounded_pts_to_path(pts, 0.5)
+        assert s.count(" A ") == 4
+
+    def test_rounded_pts_zero_r_no_arcs(self):
+        from src.geometry import rounded_pts_to_path
+        pts = [(0,0),(10,0),(10,10),(0,10)]
+        s = rounded_pts_to_path(pts, 0.0)
+        assert " A " not in s
+
+    def test_convex_corners_sweep_outward(self):
+        """Convex corners (CW rect) must use sweep=1 — outward arc, not a cookie bite."""
+        from src.geometry import rounded_pts_to_path
+        pts = [(0,0),(10,0),(10,10),(0,10)]  # CW rect, all convex corners
+        s = rounded_pts_to_path(pts, 1.0)
+        # sweep=1 produces outward (convex) fillet; sweep=0 cuts a concave bite
+        # SVG arc format: A rx,ry x-rot large-arc,sweep ex,ey
+        # sweep=1 → "0,1"; sweep=0 → "0,0"
+        assert "0,1 " in s,  "Expected sweep=1 for convex corners"
+        assert "0,0 " not in s, "sweep=0 found — concave bite bug"
+
+    def test_shuttle_path_returns_string(self):
+        from src.geometry import shuttle_path
+        s = shuttle_path(p["SHUTTLE_L"], p["SHUTTLE_W"],
+                         p["SHUTTLE_TAPER_L"], p["SHUTTLE_NOTCH_HW"],
+                         corner_r=0.5)
+        assert isinstance(s, str)
+
+    def test_shuttle_path_closed(self):
+        from src.geometry import shuttle_path
+        s = shuttle_path(p["SHUTTLE_L"], p["SHUTTLE_W"],
+                         p["SHUTTLE_TAPER_L"], p["SHUTTLE_NOTCH_HW"],
+                         corner_r=0.5)
+        assert s.rstrip().endswith("Z")
+
+    def test_shuttle_path_arc_count(self):
+        """10 corners, but body/taper junctions (4) have r=0 (D-28 cookie-bite fix) → 6 arcs."""
+        from src.geometry import shuttle_path
+        s = shuttle_path(p["SHUTTLE_L"], p["SHUTTLE_W"],
+                         p["SHUTTLE_TAPER_L"], p["SHUTTLE_NOTCH_HW"],
+                         corner_r=0.5)
+        assert s.count(" A ") == 6, \
+            f"Expected 6 arcs (4 body/taper corners at r=0), got {s.count(' A ')}"

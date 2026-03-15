@@ -26,6 +26,7 @@ from proofs.invariants import assert_all
 def make_params(
     interior_w: float = 300.0,   # mm, weaving interior width
     interior_h: float = 400.0,   # mm, weaving interior height
+    notch_pitch: float = 5.0,    # mm, warp notch centre-to-centre pitch (D-29)
     mat: float = 6.0,            # mm, loom material (nominal)
     mat3: float = 3.0,           # mm, box/stand material (nominal)
     sheet_w: float = 600.0,      # mm, sheet width
@@ -35,8 +36,24 @@ def make_params(
 ) -> dict:
     """
     Derive all parameters from base values.
+    Raises ValueError for out-of-range primary knobs (D-29).
     Raises AssertionError if any geometric invariant is violated.
     """
+
+    # ------------------------------------------------------------------
+    # Input validation (D-29)
+    # ------------------------------------------------------------------
+    if not (150.0 <= interior_w <= 500.0):
+        raise ValueError(f"interior_w={interior_w} outside [150, 500]mm (D-29)")
+    if not (200.0 <= interior_h <= 550.0):
+        raise ValueError(f"interior_h={interior_h} outside [200, 550]mm (D-29)")
+    if not (4.0 <= notch_pitch <= 15.0):
+        raise ValueError(f"notch_pitch={notch_pitch} outside [4, 15]mm (D-29)")
+    if abs(round(interior_w / notch_pitch) * notch_pitch - interior_w) > 0.001:
+        raise ValueError(
+            f"interior_w={interior_w} not divisible by notch_pitch={notch_pitch} "
+            f"(D-29: (notch_count-1)×pitch must equal interior_w)"
+        )
 
     # ------------------------------------------------------------------
     # Structural member widths (fixed by finger-joint analysis, D-01)
@@ -68,14 +85,14 @@ def make_params(
     tab_l            = mat                                    # finger tab length = mat thickness
 
     # ------------------------------------------------------------------
-    # Warp notches (D-06)
+    # Warp notches (D-06, D-24, D-29)
     # (count-1) * pitch == interior_w  →  count = interior_w/pitch + 1
-    # Must be an integer. For pitch=10, interior_w=300: count=31 ✓
+    # Must be an integer. For pitch=5, interior_w=300: count=61 ✓ (D-24)
+    # notch_pitch is now a primary knob (D-29); validated above.
     # ------------------------------------------------------------------
-    notch_pitch = 10.0    # mm centre-to-centre
     notch_count = int(round(interior_w / notch_pitch)) + 1
-    notch_w     = 4.0     # mm notch opening width (U-bottom, D-02)
-    notch_d     = 5.0     # mm notch depth
+    notch_w     = notch_pitch * 0.4   # 40% notch, 60% tooth (D-29)
+    notch_d     = 5.0                 # mm notch depth
     notch_start_x = stile_w                              # first centreline from rail outer edge
     notch_end_x   = stile_w + (notch_count - 1) * notch_pitch  # = stile_w + interior_w
 
@@ -108,11 +125,12 @@ def make_params(
     # ------------------------------------------------------------------
     # Shuttle (D-06 accessories)
     # ------------------------------------------------------------------
-    shuttle_l       = 180.0
     shuttle_w       = 28.0
     shuttle_taper_l = 22.0
-    shuttle_notch_hw = 5.0   # V-notch half-width at tip
-    shuttle_light_l = 110.0  # lightening ellipse semi-major axis × 2
+    shuttle_notch_hw = 5.0 * 4.0 / 3.0  # V-notch half-width at tip (D-26: was 5mm; +1/3 larger)
+    # D-29: shuttle_l and shuttle_light_l auto-derived from interior_w
+    shuttle_l       = round(max(120.0, min(interior_w * 0.6, 280.0)) / 5.0) * 5.0
+    shuttle_light_l = max(shuttle_l - 2.0 * shuttle_taper_l - 10.0, 20.0)
     shuttle_light_w = 12.0   # lightening ellipse semi-minor axis × 2
 
     # ------------------------------------------------------------------
@@ -123,10 +141,10 @@ def make_params(
     beater_overhang   = 5.0   # mm each side past inner stile face
     beater_w          = interior_w + 2.0 * beater_overhang
     beater_handle_h   = 22.0
-    beater_tooth_h    = 20.0
+    beater_tooth_w    = notch_w                          # D-29: matches notch_w at any pitch
+    beater_tooth_h    = min(notch_w * 6.5, 20.0)        # D-29: auto-derived from notch_w
     beater_total_h    = beater_handle_h + beater_tooth_h
-    beater_tooth_w    = 4.0
-    beater_tooth_gap  = notch_pitch - beater_tooth_w   # = 6.0mm at 10mm pitch
+    beater_tooth_gap  = notch_pitch - beater_tooth_w   # = 3.0mm at 5mm pitch
     beater_tooth_pitch = beater_tooth_w + beater_tooth_gap  # = notch_pitch
     beater_tooth_count = notch_count                    # matches warp count
     beater_grip_count = 3
@@ -138,43 +156,33 @@ def make_params(
     # ------------------------------------------------------------------
     heddle_bar_l     = frame_outer_w - 2.0 * stile_w + 2.0 * 12.0  # 24mm past each inner face
     heddle_bar_w     = 20.0
-    heddle_bar_hole_r = 3.5  # mm
+    heddle_bar_hole_r = 1.5  # mm semicircle radius (D-24: was 3.5mm; width=3mm, 2mm gap at 5mm pitch)
+    heddle_bar_hole_h = 6.0  # mm total hole height (was 8mm; shortened to preserve material between holes)
     heddle_bar_hole_pitch = notch_pitch
     heddle_bar_hole_count = notch_count
-    heddle_bar_offset = 2.5  # mm — alternating hole stagger for rigid heddle two-shed (D-17 answer)
+    heddle_bar_offset = 4.5  # mm — alternating hole stagger (was 2.5; increased to widen vertical gap)
+    heddle_bar_corner_r = 2.0  # mm — outer corner fillet (hand-held moving part)
+
+    corner_r = 0.5  # mm — fillet radius on rail notch and beater tooth corners (D-25)
 
     # ------------------------------------------------------------------
-    # Triangle stand (D-18 + D-19) — 6mm ply, optional separate sheet
-    # Two solid right-triangle side pieces + 6 cross members (3 rear, 2 base, 1 hyp).
+    # Stand (D-23) — 6mm ply, optional separate sheet, 2-piece triangular X easel
+    # Two identical right-triangle pieces, cross-halving half-lap joint at centre.
+    # Piece B is piece A flipped horizontally for assembly.
+    # Foot tab (convex, +bump) captures loom bottom rail. No rail notch.
     # ------------------------------------------------------------------
-    stand_upright_h   = 420.0    # mm triangle upright height (rear/left edge)
-    stand_base_l      = 240.0    # mm triangle base length (bottom edge)
-    stand_rail_tab_l  = 0.0      # D-18: no top-rail tabs; top rail = FRAME_OUTER_W
-    # Edge notch in triangle for cross member (30mm wide × 15mm deep)
-    stand_spread_l    = frame_outer_w   # = 344mm cross member body span
-    stand_spread_w    = 30.0            # mm cross member height (stands on edge)
-    stand_spread_ten_l = 15.0           # mm each end sits in edge notch
-    stand_notch_w     = stand_spread_w + 0.1   # = 30.1mm notch height (fits cross member + 0.1 clearance)
-    stand_notch_d     = 15.0                   # mm edge notch depth
-    stand_spread_mort_w = stand_notch_w        # = 30.1mm (same as notch width)
-    stand_spread_mort_d = stand_notch_d        # = 15mm (same as notch depth)
-    # D-19: L-shaped drop-Z entry on upright edge notches
-    stand_notch_entry   = 2.0   # mm extra height above captive zone (wide entry allows 2mm vertical play)
-    stand_notch_entry_d = 8.0   # mm partial depth of entry zone (step at x=8 forces 2mm drop before x=15)
-    # Upright edge notch y-centres from top (rear cross member positions)
-    stand_mort_y_top  = 60.0    # mm — upper rear cross centre from upright top
-    stand_mort_y_mid  = 210.0   # mm — middle rear cross centre from upright top
-    stand_mort_y_bot  = 360.0   # mm — lower rear cross centre from upright top
-    # Base edge notch x-centres from back end (base cross member positions)
-    stand_base_notch_x1 = 80.0  # mm — base cross 1 centre from back of base
-    stand_base_notch_x2 = 160.0 # mm — base cross 2 centre from back of base
-    # Stile slots in rear cross members 1 and 3 (loom stile drop-in)
-    stand_stile_slot_w = stile_w + 0.5   # = 22.5mm (STILE_W + 0.5mm clearance each side)
-    stand_stile_slot_d = 15.0            # mm slot depth from loom-facing edge
-    # D-19: hypotenuse cross member — notch on hyp edge at t=0.25 from top vertex
-    stand_hyp_t  = 0.25
-    stand_hyp_cx = stand_hyp_t * stand_base_l      # = 60.0mm from upright (back)
-    stand_hyp_cy = stand_hyp_t * stand_upright_h   # = 105.0mm from top
+    stand_rail_tab_l  = 0.0            # D-18 legacy: no top-rail tabs; top rail = FRAME_OUTER_W
+    stand_x_l         = frame_outer_h  # D-29: piece length = frame outer height
+    stand_x_w         = 80.0    # mm foot width (wide end of triangle)
+    stand_x_slot_w    = mat + 0.1               # = 6.1mm cross-halving slot width (clearance fit)
+    # At slot_cx = L/2, triangle height = W/2. Slot depth = half that = W/4.
+    stand_x_slot_d    = stand_x_w / 4.0         # = 20.0mm slot depth (cross-halving at triangle mid)
+    stand_x_tab_l     = 30.0    # mm foot tab protrusion length (+y from hyp at foot); RAIL_W(22)+8mm clearance
+    stand_x_tab_h     = 20.0    # mm foot tab height (bottom zone of foot edge, y=W−TAB_H..W)
+    stand_x_bump_l    = 5.0     # mm bump length at outer tab end (mechanical stop)
+    stand_x_bump_h    = 5.0     # mm bump height at outer tab end (prevents rail sliding off)
+    stand_x_tip_w     = 10.0   # mm flat blunt-end width at triangle tip (D-28; = 2×CORNER_R → semicircle)
+    stand_x_corner_r  = 0.0    # mm outer corner fillet radius (D-28: tip squared off only; other corners straight)
 
     # ------------------------------------------------------------------
     # Box (D-09) — 3mm ply, holds all loom parts flat in a single layer
@@ -203,10 +211,9 @@ def make_params(
     box_dado_w    = mat3 + 0.2      # mm lid slot depth in short walls (lid slides through)
     box_lid_clear = 0.1             # mm clearance each side of lid
     box_tab_w     = box_interior_h / 3.0  # mm N=1 finger joint tab: 12/3 = 4mm (D-15)
-    # Wall-to-base joint (D-15): tabs on wall bottom edges, edge notches in base
-    # 1 tab per ~22mm, minimum 8 (sparring round 2 answer)
-    box_base_ntabs_l = max(8, round(box_outer_l / 22.0))
-    box_base_ntabs_s = max(8, round(box_interior_w / 22.0))
+    # Wall-to-base joint (D-15, updated D-20): tabs on wall bottom edges, edge notches in base
+    box_base_ntabs_l = 15   # long wall (D-20)
+    box_base_ntabs_s = 5    # short wall (D-20)
 
     # ------------------------------------------------------------------
     # Assemble params dict
@@ -287,33 +294,25 @@ def make_params(
         "HEDDLE_BAR_L":          heddle_bar_l,
         "HEDDLE_BAR_W":          heddle_bar_w,
         "HEDDLE_BAR_HOLE_R":     heddle_bar_hole_r,
+        "HEDDLE_BAR_HOLE_H":     heddle_bar_hole_h,
         "HEDDLE_BAR_HOLE_PITCH": heddle_bar_hole_pitch,
         "HEDDLE_BAR_HOLE_COUNT": heddle_bar_hole_count,
         "HEDDLE_BAR_OFFSET":     heddle_bar_offset,
+        "HEDDLE_BAR_CORNER_R":   heddle_bar_corner_r,
+        "CORNER_R":              corner_r,
 
-        # Stand (6mm ply, D-18 — optional separate sheet)
-        "STAND_UPRIGHT_H":       stand_upright_h,
-        "STAND_BASE_L":          stand_base_l,
-        "STAND_RAIL_TAB_L":      stand_rail_tab_l,
-        "STAND_NOTCH_W":         stand_notch_w,
-        "STAND_NOTCH_D":         stand_notch_d,
-        "STAND_SPREAD_L":        stand_spread_l,
-        "STAND_SPREAD_W":        stand_spread_w,
-        "STAND_SPREAD_TEN_L":    stand_spread_ten_l,
-        "STAND_SPREAD_MORT_W":   stand_spread_mort_w,
-        "STAND_SPREAD_MORT_D":   stand_spread_mort_d,
-        "STAND_MORT_Y_TOP":      stand_mort_y_top,
-        "STAND_MORT_Y_MID":      stand_mort_y_mid,
-        "STAND_MORT_Y_BOT":      stand_mort_y_bot,
-        "STAND_BASE_NOTCH_X1":   stand_base_notch_x1,
-        "STAND_BASE_NOTCH_X2":   stand_base_notch_x2,
-        "STAND_STILE_SLOT_W":    stand_stile_slot_w,
-        "STAND_STILE_SLOT_D":    stand_stile_slot_d,
-        "STAND_NOTCH_ENTRY":     stand_notch_entry,
-        "STAND_NOTCH_ENTRY_D":   stand_notch_entry_d,
-        "STAND_HYP_T":           stand_hyp_t,
-        "STAND_HYP_CX":          stand_hyp_cx,
-        "STAND_HYP_CY":          stand_hyp_cy,
+        # Stand (6mm ply, D-23 — optional separate sheet, 2-piece triangular X easel)
+        "STAND_RAIL_TAB_L":         stand_rail_tab_l,
+        "STAND_X_L":                stand_x_l,
+        "STAND_X_W":                stand_x_w,
+        "STAND_X_SLOT_W":           stand_x_slot_w,
+        "STAND_X_SLOT_D":           stand_x_slot_d,
+        "STAND_X_TAB_L":            stand_x_tab_l,
+        "STAND_X_TAB_H":            stand_x_tab_h,
+        "STAND_X_BUMP_L":           stand_x_bump_l,
+        "STAND_X_BUMP_H":           stand_x_bump_h,
+        "STAND_X_TIP_W":            stand_x_tip_w,
+        "STAND_X_CORNER_R":         stand_x_corner_r,
 
         # Box (3mm ply)
         "BOX_PACK_W_ESTIMATE": pack_w_estimate,

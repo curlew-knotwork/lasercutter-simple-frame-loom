@@ -31,7 +31,8 @@ from src.geometry import (
     bounding_box, bboxes_overlap, translate, mirror_x, place,
     pts_to_path, cut_path, etch_text, svg_open, svg_close, svg_group,
     rail_pts, stile_pts, crossbar_pts, shuttle_pts_with_notch, beater_pts, rect_pts,
-    circle_hole, ellipse_hole, rect_hole, hole_to_path,
+    circle_hole, ellipse_hole, rect_hole, stadium_hole, hole_to_path,
+    rail_path, beater_path, shuttle_path, rounded_pts_to_path,
 )
 
 OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "..", "output", "loom.svg")
@@ -144,9 +145,10 @@ def build_heddle_bar(p: dict):
     cy = p["HEDDLE_BAR_W"] / 2.0
     offset = p["HEDDLE_BAR_OFFSET"]
     holes = [
-        circle_hole(x0 + i * pitch,
-                    cy - offset if i % 2 == 0 else cy + offset,
-                    p["HEDDLE_BAR_HOLE_R"])
+        stadium_hole(x0 + i * pitch,
+                     cy - offset if i % 2 == 0 else cy + offset,
+                     p["HEDDLE_BAR_HOLE_R"],
+                     p["HEDDLE_BAR_HOLE_H"])
         for i in range(count)
     ]
     return pts, holes
@@ -220,19 +222,71 @@ def layout(p: dict) -> list:
         "beater":      bt_pos,
     }
 
+    # ── Rounded-path overrides (D-25): rail notches + beater teeth ────
+    ncxs = _notch_cxs(p)
+    cr = p["CORNER_R"]
+
+    def _rail_outer_path(sx, sy, open_down=True):
+        return rail_path(
+            p["FRAME_OUTER_W"], p["RAIL_W"], p["SOCK_W"], p["TAB_L"],
+            ncxs, p["NOTCH_W"], p["NOTCH_D"],
+            corner_r=cr, notches_open_down=open_down, ox=sx, oy=sy,
+        )
+
+    def _beater_outer_path(sx, sy):
+        return beater_path(
+            p["BEATER_W"], p["BEATER_HANDLE_H"], p["BEATER_TOOTH_H"],
+            p["BEATER_TOOTH_W"], p["BEATER_TOOTH_PITCH"], p["BEATER_TOOTH_COUNT"],
+            corner_r=cr, ox=sx, oy=sy,
+        )
+
+    def _shuttle_outer_path(sx, sy):
+        return shuttle_path(
+            p["SHUTTLE_L"], p["SHUTTLE_W"], p["SHUTTLE_TAPER_L"], p["SHUTTLE_NOTCH_HW"],
+            corner_r=cr, ox=sx, oy=sy,
+        )
+
+    hb_cr = p["HEDDLE_BAR_CORNER_R"]
+
+    _outer_path_fns = {
+        "top_rail":    lambda sx, sy: _rail_outer_path(sx, sy, open_down=True),
+        "bottom_rail": lambda sx, sy: _rail_outer_path(sx, sy, open_down=True),
+        "beater":      lambda sx, sy: _beater_outer_path(sx, sy),
+        "shuttle_1":   lambda sx, sy: _shuttle_outer_path(sx, sy),
+        "shuttle_2":   lambda sx, sy: _shuttle_outer_path(sx, sy),
+        "heddle_bar":  lambda sx, sy: rounded_pts_to_path(
+            rect_pts(0.0, 0.0, p["HEDDLE_BAR_L"], p["HEDDLE_BAR_W"]),
+            corner_r=hb_cr, ox=sx, oy=sy,
+        ),
+    }
+
     # ── Place parts ───────────────────────────────────────────────────
     placed = []
     for pid, local_pts, local_holes, label in parts_local:
         sx, sy = positions[pid]
         sheet_pts, sheet_holes = place(local_pts, local_holes, sx, sy)
         bb = bounding_box(sheet_pts)
-        placed.append({
+        entry = {
             "id":          pid,
             "label":       label,
             "sheet_pts":   sheet_pts,
             "sheet_holes": sheet_holes,
             "bbox":        bb,
-        })
+        }
+        if pid in _outer_path_fns:
+            entry["outer_path"] = _outer_path_fns[pid](sx, sy)
+        # D-27: custom label positions — avoid placing labels on cut-outs
+        bb = entry["bbox"]
+        bcx = (bb[0] + bb[2]) / 2.0
+        if pid in ("shuttle_1", "shuttle_2"):
+            # Place above lightening ellipse (top solid strip y=0..8mm local)
+            ellipse_top = bb[1] + p["SHUTTLE_W"] / 2.0 - p["SHUTTLE_LIGHT_W"] / 2.0
+            entry["label_xy"] = (bcx, ellipse_top - 2.0)
+        elif pid == "heddle_bar":
+            # Gap between hole rows: local y 8.5..11.5mm. Baseline at gap top → text centered in gap.
+            odd_row_top = bb[1] + p["HEDDLE_BAR_W"] / 2.0 + p["HEDDLE_BAR_OFFSET"] - p["HEDDLE_BAR_HOLE_H"] / 2.0
+            entry["label_xy"] = (bcx, odd_row_top)
+        placed.append(entry)
 
     # ── Verify: all parts within sheet bounds ─────────────────────────
     sw, sh = p["SHEET_W"], p["SHEET_H"]
@@ -280,15 +334,17 @@ def render(placed: list, p: dict) -> str:
         bb     = part["bbox"]
 
         children = []
-        # Outer boundary
-        children.append(cut_path(pts_to_path(pts), id_=f"{pid}_outer"))
+        # Outer boundary (use rounded path override if available, D-25)
+        outline = part.get("outer_path") or pts_to_path(pts)
+        children.append(cut_path(outline, id_=f"{pid}_outer"))
         # Inner holes
         for hi, hole in enumerate(holes):
             children.append(cut_path(hole_to_path(hole), id_=f"{pid}_hole{hi}"))
-        # Label (etch, centred on part bbox)
+        # Label (etch): use custom position if set (D-27), else bbox centre
         cx = (bb[0] + bb[2]) / 2.0
         cy = (bb[1] + bb[3]) / 2.0
-        children.append(etch_text(cx, cy, label, size=4.0))
+        lx, ly = part.get("label_xy", (cx, cy))
+        children.append(etch_text(lx, ly, label, size=4.0))
 
         lines.append(svg_group(pid, children))
         lines.append("")

@@ -56,6 +56,24 @@ class TestPartBuilders:
             assert abs(h[2] - expected_y) < 1e-6, \
                 f"Hole {i} y={h[2]:.4f} != {expected_y:.4f}"
 
+    def test_heddle_bar_holes_are_stadium(self):
+        """Heddle bar holes must be stadium-shaped (not circle) per D-24 update."""
+        _, holes = build_heddle_bar(p)
+        kinds = {h[0] for h in holes}
+        assert kinds == {'stadium'}, f"Expected {{'stadium'}}, got {kinds}"
+
+    def test_heddle_bar_hole_height(self):
+        """Each stadium hole has total height HEDDLE_BAR_HOLE_H."""
+        _, holes = build_heddle_bar(p)
+        for i, h in enumerate(holes):
+            assert abs(h[4] - p["HEDDLE_BAR_HOLE_H"]) < 1e-9, \
+                f"Hole {i} height={h[4]} != HEDDLE_BAR_HOLE_H={p['HEDDLE_BAR_HOLE_H']}"
+
+    def test_heddle_bar_corner_r_in_params(self):
+        """Heddle bar outer corners rounded 2mm for hand-held comfort."""
+        assert "HEDDLE_BAR_CORNER_R" in p, "HEDDLE_BAR_CORNER_R missing from params"
+        assert abs(p["HEDDLE_BAR_CORNER_R"] - 2.0) < 1e-9
+
     def test_bottom_rail_has_no_holes(self):
         _, holes = build_bottom_rail(p)
         assert holes == []
@@ -116,11 +134,6 @@ class TestPartBuilders:
         _, holes = build_heddle_bar(p)
         assert len(holes) == p["HEDDLE_BAR_HOLE_COUNT"]
         assert p["HEDDLE_BAR_HOLE_COUNT"] == p["NOTCH_COUNT"]
-
-    def test_heddle_bar_holes_are_circles(self):
-        _, holes = build_heddle_bar(p)
-        for h in holes:
-            assert h[0] == "circle"
 
 
 # ---------------------------------------------------------------------------
@@ -247,6 +260,30 @@ class TestLayout:
             x0, y0, x1, y1 = part["bbox"]
             assert x1 > x0
             assert y1 > y0
+
+    def test_shuttle_labels_above_ellipse(self):
+        """D-27: shuttle labels must not fall inside the lightening ellipse."""
+        for pid in ("shuttle_1", "shuttle_2"):
+            part = self.by_id[pid]
+            assert "label_xy" in part, f"{pid} missing label_xy"
+            _, ly = part["label_xy"]
+            # Ellipse top in sheet coords = bb[1] + SHUTTLE_W/2 - SHUTTLE_LIGHT_W/2
+            ellipse_top = part["bbox"][1] + p["SHUTTLE_W"] / 2.0 - p["SHUTTLE_LIGHT_W"] / 2.0
+            assert ly < ellipse_top, \
+                f"{pid} label y={ly:.3f} >= ellipse top {ellipse_top:.3f}"
+
+    def test_heddle_bar_label_in_hole_row_gap(self):
+        """D-27: heddle bar label must fall in the 3mm gap between the two hole rows."""
+        part = self.by_id["heddle_bar"]
+        assert "label_xy" in part, "heddle_bar missing label_xy"
+        _, ly = part["label_xy"]
+        bb = part["bbox"]
+        # Even holes (row 1): cy = HEDDLE_BAR_W/2 - HEDDLE_BAR_OFFSET; bottom = cy + HEDDLE_BAR_HOLE_H/2
+        even_bottom = bb[1] + p["HEDDLE_BAR_W"] / 2.0 - p["HEDDLE_BAR_OFFSET"] + p["HEDDLE_BAR_HOLE_H"] / 2.0
+        # Odd holes (row 2): cy = HEDDLE_BAR_W/2 + HEDDLE_BAR_OFFSET; top = cy - HEDDLE_BAR_HOLE_H/2
+        odd_top = bb[1] + p["HEDDLE_BAR_W"] / 2.0 + p["HEDDLE_BAR_OFFSET"] - p["HEDDLE_BAR_HOLE_H"] / 2.0
+        assert even_bottom <= ly <= odd_top + 4.0, \
+            f"Heddle bar label y={ly:.3f} not near gap {even_bottom:.3f}..{odd_top:.3f}"
 
 
 # ---------------------------------------------------------------------------

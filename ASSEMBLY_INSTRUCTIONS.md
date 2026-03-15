@@ -78,32 +78,26 @@ All joints are laser-cut press-fits. No glue or tools required. A rubber mallet 
 
 | Part | Label on piece | Description |
 |---|---|---|
-| Stand L (×1) | STAND L | Left triangle side panel |
-| Stand R (×1) | STAND R | Right triangle side panel (mirror of L) |
-| Rear cross 1 (×1) | REAR X1 | Upper upright cross member (with loom stile slots) |
-| Rear cross 2 (×1) | REAR X2 | Middle upright cross member |
-| Rear cross 3 (×1) | REAR X3 | Lower upright cross member (with loom stile slots) |
-| Base cross 1 (×1) | BASE X1 | Front base cross member |
-| Base cross 2 (×1) | BASE X2 | Rear base cross member |
-| Hyp cross (×1) | HYP X | Diagonal (hypotenuse) cross member |
+| Stand X-A (×1) | STAND X-A | First triangle arm (slot from top) |
+| Stand X-B (×1) | STAND X-B | Second triangle arm (same cut, assembled flipped) |
 
-**How the joints work:** Each cross member slides horizontally into an L-shaped notch on the triangle edge, then drops 2mm down into a captive seat. Gravity holds it in place. To release: lift the cross member 2mm and slide out.
+Both pieces are cut identically. The slot position and foot tab are the same on both cuts.
+
+**How the joint works:** The two pieces interlock via cross-halving half-lap joints at their centres. One piece has its slot facing up; the other is flipped horizontally so its slot faces down. They slide together at the crossing to form an X.
+
+The foot tabs (short horizontal extensions at the wide end of each piece) face inward after assembly and cradle the loom's bottom rail. The small bump at the end of each tab prevents the rail from sliding off.
 
 **Assembly:**
 
-1. Lay STAND L flat on your work surface (inner face up).
+1. Take piece STAND X-B. Flip it horizontally (left-to-right) so its slot faces down and its foot tab points to the right.
 
-2. **Upright cross members.** REAR X1, X2, X3 slot into notches on the vertical (upright) edge of the triangle. Hold each cross member horizontal, align with its notch, slide inward until the step stops it, then let it drop 2mm into the seat. The label REAR X1 goes at the top, X3 at the bottom.
+2. Hold STAND X-A with the slot facing up. Lower STAND X-B (slot-down) onto STAND X-A (slot-up), aligning the two slots at the crossing point. Press together until both pieces are flush — the slots interlock at the midpoint.
 
-3. **Base cross members.** BASE X1 and BASE X2 slot into notches on the bottom (base) edge. Same slide-and-drop motion.
+3. Stand the assembled X upright on a flat surface. Both foot tabs point inward, toward each other.
 
-4. **Hyp cross member.** HYP X slots into the notch on the diagonal edge near the top of the triangle. Slide into the parallelogram notch until seated.
-
-5. **Stand R.** Lift STAND R upright. Align the free ends of all cross members with the matching notches on STAND R. Lower STAND R onto the cross members, seating each one, then drop all joints.
-
-6. **Place loom.** Lean the assembled loom frame against the stand with the top rail resting in the slots on REAR X1 and REAR X3. The loom should tilt back slightly toward the user.
+4. **Place loom.** Slide the loom frame down so the bottom rail rests on the two foot tabs. The bumps at the tab ends stop the rail. The loom leans back at a comfortable weaving angle.
 
 **Stability notes:**
-- The stand is free-standing on a flat surface. On uneven surfaces, fold a piece of cardboard under one triangle foot.
-- The hypotenuse cross member prevents the two triangle panels from spreading outward under the loom's weight.
-- Do not lift the stand by the cross members — always grip the triangle panels.
+- Place the stand on a flat surface. The wide triangular footprint is self-stable.
+- The lean angle is set by the triangle geometry — no adjustment needed.
+- To disassemble: lift the loom off, then slide the two X pieces apart at the crossing.

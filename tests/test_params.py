@@ -86,15 +86,28 @@ class TestDefaultParams:
         assert 0.05 <= fc <= 0.40, f"finger clearance={fc:.4f}mm out of range"
 
     def test_notch_count_pitch_span(self, p):
-        """(31-1)*10 = 300 = INTERIOR_W. DEF-001 was (20-1)*10 = 190 ≠ 200."""
+        """(61-1)*5 = 300 = INTERIOR_W. D-24 supersedes D-06."""
         ok, trace = inv_notch_count_pitch_span(p)
         assert ok, trace
 
-    def test_notch_count_is_31(self, p):
-        assert p["NOTCH_COUNT"] == 31, f"NOTCH_COUNT={p['NOTCH_COUNT']}, expected 31"
+    def test_notch_count_is_61(self, p):
+        assert p["NOTCH_COUNT"] == 61, f"NOTCH_COUNT={p['NOTCH_COUNT']}, expected 61 (D-24)"
 
-    def test_notch_pitch_is_10(self, p):
-        assert abs(p["NOTCH_PITCH"] - 10.0) < 1e-9
+    def test_notch_pitch_is_5(self, p):
+        assert abs(p["NOTCH_PITCH"] - 5.0) < 1e-9, f"NOTCH_PITCH={p['NOTCH_PITCH']}, expected 5.0 (D-24)"
+
+    def test_notch_w_is_2mm(self, p):
+        """NOTCH_W=2mm at 5mm pitch gives 3mm tooth — D-24."""
+        assert abs(p["NOTCH_W"] - 2.0) < 1e-9, f"NOTCH_W={p['NOTCH_W']}, expected 2.0 (D-24)"
+
+    def test_beater_tooth_w_is_2mm(self, p):
+        """BEATER_TOOTH_W=2mm at 5mm pitch — D-24."""
+        assert abs(p["BEATER_TOOTH_W"] - 2.0) < 1e-9, f"BEATER_TOOTH_W={p['BEATER_TOOTH_W']}, expected 2.0"
+
+    def test_heddle_bar_hole_r_fits_pitch(self, p):
+        """Heddle bar holes must not overlap: 2*hole_r < NOTCH_PITCH — D-24."""
+        assert 2.0 * p["HEDDLE_BAR_HOLE_R"] < p["NOTCH_PITCH"], \
+            f"Holes overlap: 2×{p['HEDDLE_BAR_HOLE_R']}={2*p['HEDDLE_BAR_HOLE_R']} >= pitch {p['NOTCH_PITCH']}"
 
     def test_notch_positions_within_rail(self, p):
         ok, trace = inv_notch_positions_within_rail(p)
@@ -221,43 +234,35 @@ class TestDefaultParams:
             f"Right heddle hole edge at {right_hole_x + r:.2f} overlaps socket zone"
         )
 
-    # D-18 stand params
+    # D-22 stand params
     def test_stand_rail_tab_l_zero(self, p):
-        """D-18: no top-rail tabs. STAND_RAIL_TAB_L=0."""
+        """D-18/D-22 legacy: STAND_RAIL_TAB_L=0 (no top-rail tabs)."""
         assert abs(p["STAND_RAIL_TAB_L"]) < 1e-9, \
             f"STAND_RAIL_TAB_L={p['STAND_RAIL_TAB_L']}, expected 0"
 
-    def test_stand_mort_y_mid_present(self, p):
-        """D-18: middle rear cross member at y=210."""
-        assert "STAND_MORT_Y_MID" in p, "STAND_MORT_Y_MID missing from params"
-        assert abs(p["STAND_MORT_Y_MID"] - 210.0) < 1e-9, \
-            f"STAND_MORT_Y_MID={p['STAND_MORT_Y_MID']}, expected 210"
+    def test_stand_x_l_present(self, p):
+        """D-29: STAND_X_L = FRAME_OUTER_H (= interior_h + 2×rail_w)."""
+        assert "STAND_X_L" in p, "STAND_X_L missing from params"
+        assert abs(p["STAND_X_L"] - p["FRAME_OUTER_H"]) < 0.1, \
+            f"STAND_X_L={p['STAND_X_L']}, expected FRAME_OUTER_H={p['FRAME_OUTER_H']}"
 
-    def test_stand_stile_slot_params(self, p):
-        """D-18: stile slot width = STILE_W + 0.5 = 22.5mm, depth = 15mm."""
-        assert "STAND_STILE_SLOT_W" in p, "STAND_STILE_SLOT_W missing"
-        assert "STAND_STILE_SLOT_D" in p, "STAND_STILE_SLOT_D missing"
-        expected_w = p["STILE_W"] + 0.5
-        assert abs(p["STAND_STILE_SLOT_W"] - expected_w) < 1e-9, \
-            f"STAND_STILE_SLOT_W={p['STAND_STILE_SLOT_W']}, expected {expected_w}"
-        assert abs(p["STAND_STILE_SLOT_D"] - 15.0) < 1e-9
+    def test_stand_x_w_present(self, p):
+        """D-22: STAND_X_W = 80mm piece width."""
+        assert "STAND_X_W" in p, "STAND_X_W missing from params"
+        assert abs(p["STAND_X_W"] - 80.0) < 0.1, \
+            f"STAND_X_W={p['STAND_X_W']}, expected 80"
 
-    def test_stand_notch_fits_cross_member(self, p):
-        """D-18: edge notch width accepts cross member: STAND_NOTCH_W ≈ STAND_SPREAD_W + 0.1."""
-        expected = p["STAND_SPREAD_W"] + 0.1
-        assert abs(p["STAND_NOTCH_W"] - expected) < 0.05, \
-            f"STAND_NOTCH_W={p['STAND_NOTCH_W']:.3f}, expected {expected:.3f}"
+    def test_stand_x_slot_w_clearance(self, p):
+        """D-22: STAND_X_SLOT_W = MAT + 0.1mm (cross-halving clearance fit)."""
+        expected = p["MAT"] + 0.1
+        assert abs(p["STAND_X_SLOT_W"] - expected) < 0.05, \
+            f"STAND_X_SLOT_W={p['STAND_X_SLOT_W']:.3f}, expected MAT+0.1={expected:.3f}"
 
-    def test_stand_mort_y_positions_ordered(self, p):
-        """D-18: STAND_MORT_Y_TOP < STAND_MORT_Y_MID < STAND_MORT_Y_BOT."""
-        assert p["STAND_MORT_Y_TOP"] < p["STAND_MORT_Y_MID"] < p["STAND_MORT_Y_BOT"]
-
-    def test_stand_base_notch_positions(self, p):
-        """D-18: base notch positions at x=80 and x=160 from back end."""
-        assert "STAND_BASE_NOTCH_X1" in p, "STAND_BASE_NOTCH_X1 missing"
-        assert "STAND_BASE_NOTCH_X2" in p, "STAND_BASE_NOTCH_X2 missing"
-        assert abs(p["STAND_BASE_NOTCH_X1"] - 80.0) < 1e-9
-        assert abs(p["STAND_BASE_NOTCH_X2"] - 160.0) < 1e-9
+    def test_stand_x_slot_d_quarter_width(self, p):
+        """D-23: STAND_X_SLOT_D = STAND_X_W / 4 (half of triangle height at slot_cx = L/2)."""
+        expected = p["STAND_X_W"] / 4.0
+        assert abs(p["STAND_X_SLOT_D"] - expected) < 0.1, \
+            f"STAND_X_SLOT_D={p['STAND_X_SLOT_D']:.2f}, expected W/4={expected:.2f}"
 
 
 # ---------------------------------------------------------------------------
@@ -332,61 +337,111 @@ class TestUnhappyPath:
         ok, trace = inv_critical_parts_fit_sheet(bad)
         assert not ok, f"Expected I-1-partial to fail for oversized stile: {trace}"
 
-    def test_stand_notch_too_narrow_fails(self, p):
-        """Notch narrower than stile — must fail I-5c."""
-        bad = _mutate(p, STAND_NOTCH_W=p["STILE_W"] - 1.0)
+    def test_stand_x_slot_too_tight_fails(self, p):
+        """Slot tighter than MAT+0.05 — can't assemble — must fail I-5c."""
+        bad = _mutate(p, STAND_X_SLOT_W=p["MAT"] + 0.01)
         ok, trace = inv_stand_notch_geometry(bad)
-        assert not ok, f"Expected I-5c to fail for narrow notch: {trace}"
+        assert not ok, f"Expected I-5c to fail for tight slot: {trace}"
 
-    def test_stand_notch_too_wide_fails(self, p):
-        """Notch much wider than stile — loom wobbles — must fail I-5c."""
-        bad = _mutate(p, STAND_NOTCH_W=p["STILE_W"] + 5.0)
+    def test_stand_x_slot_too_loose_fails(self, p):
+        """Slot much wider than MAT+0.5 — wobbly joint — must fail I-5c."""
+        bad = _mutate(p, STAND_X_SLOT_W=p["MAT"] + 2.0)
         ok, trace = inv_stand_notch_geometry(bad)
-        assert not ok, f"Expected I-5c to fail for loose notch: {trace}"
-
-    def test_stand_spread_mort_fits_cross_member(self, p):
-        """D-18: edge notch fits cross member body. STAND_SPREAD_MORT_W = STAND_SPREAD_W + 0.1."""
-        expected = p["STAND_SPREAD_W"] + 0.1
-        assert abs(p["STAND_SPREAD_MORT_W"] - expected) < 1e-9, \
-            f"STAND_SPREAD_MORT_W={p['STAND_SPREAD_MORT_W']:.4f} != STAND_SPREAD_W+0.1={expected:.4f}"
-
-
-class TestStandTriangleParams:
-
-    def test_stand_upright_h(self, p):
-        """Upright height = 420mm (D-18)."""
-        assert abs(p["STAND_UPRIGHT_H"] - 420.0) < 1e-9
-
-    def test_stand_base_l(self, p):
-        """Base length = 240mm (D-18)."""
-        assert abs(p["STAND_BASE_L"] - 240.0) < 1e-9
-
-    def test_stand_notch_d(self, p):
-        """Edge notch depth = 15mm (D-18 cross member retention)."""
-        assert abs(p["STAND_NOTCH_D"] - 15.0) < 1e-9
+        assert not ok, f"Expected I-5c to fail for loose slot: {trace}"
 
 
 class TestHeddleBarParams:
 
     def test_heddle_bar_offset(self, p):
-        """HEDDLE_BAR_OFFSET = 2.5mm alternating hole stagger for rigid heddle."""
-        assert abs(p["HEDDLE_BAR_OFFSET"] - 2.5) < 1e-9
+        """HEDDLE_BAR_OFFSET = 4.5mm alternating hole stagger."""
+        assert abs(p["HEDDLE_BAR_OFFSET"] - 4.5) < 1e-9
+
+    def test_heddle_bar_hole_h_is_6mm(self, p):
+        """HEDDLE_BAR_HOLE_H = 6.0mm (stadium hole total height)."""
+        assert abs(p["HEDDLE_BAR_HOLE_H"] - 6.0) < 1e-9
+
+    def test_beater_tooth_h_derived(self, p):
+        """BEATER_TOOTH_H = min(NOTCH_W × 6.5, 20.0) (D-29)."""
+        expected = min(p["NOTCH_W"] * 6.5, 20.0)
+        assert abs(p["BEATER_TOOTH_H"] - expected) < 1e-9, \
+            f"BEATER_TOOTH_H={p['BEATER_TOOTH_H']}, expected min(NOTCH_W×6.5, 20)={expected}"
 
 
 class TestBoxBaseTabsParams:
 
-    def test_ntabs_l_formula(self, p):
-        """Long wall tabs: max(8, round(BOX_OUTER_L / 22)) — 1 tab per ~22mm."""
-        expected = max(8, round(p["BOX_OUTER_L"] / 22.0))
-        assert p["BOX_BASE_NTABS_L"] == expected
+    def test_ntabs_l_is_15(self, p):
+        """D-20: long wall bottom tab count fixed at 15."""
+        assert p["BOX_BASE_NTABS_L"] == 15
 
-    def test_ntabs_s_formula(self, p):
-        """Short wall tabs: max(8, round(BOX_INTERIOR_W / 22)) — 1 tab per ~22mm."""
-        expected = max(8, round(p["BOX_INTERIOR_W"] / 22.0))
-        assert p["BOX_BASE_NTABS_S"] == expected
+    def test_ntabs_s_is_5(self, p):
+        """D-20: short wall bottom tab count fixed at 5."""
+        assert p["BOX_BASE_NTABS_S"] == 5
 
-    def test_ntabs_l_minimum(self, p):
-        assert p["BOX_BASE_NTABS_L"] >= 8
 
-    def test_ntabs_s_minimum(self, p):
-        assert p["BOX_BASE_NTABS_S"] >= 8
+def test_shuttle_notch_hw_is_6_667mm(p):
+    """SHUTTLE_NOTCH_HW = 5 * 4/3 ≈ 6.6667mm (was 5mm; increased by 1/3, D-26)."""
+    assert abs(p["SHUTTLE_NOTCH_HW"] - 5.0 * 4.0 / 3.0) < 1e-9
+
+
+# ---------------------------------------------------------------------------
+# D-29 parametric knob tests — MUST FAIL until src/params.py is updated
+# ---------------------------------------------------------------------------
+
+class TestParametricKnobs:
+    """D-29: notch_pitch, notch_w, shuttle_l, stand_x_l are parametric."""
+
+    def test_notch_pitch_is_function_param(self):
+        """make_params(notch_pitch=10.0) must accept the argument and set NOTCH_PITCH=10."""
+        from src.params import make_params
+        p = make_params(notch_pitch=10.0)
+        assert abs(p["NOTCH_PITCH"] - 10.0) < 1e-9
+
+    def test_notch_w_derived_from_pitch(self):
+        """NOTCH_W = NOTCH_PITCH × 0.4 (D-29)."""
+        from src.params import make_params
+        p = make_params(notch_pitch=10.0)
+        assert abs(p["NOTCH_W"] - 4.0) < 1e-9
+
+    def test_beater_tooth_h_derived_from_notch_w(self):
+        """BEATER_TOOTH_H = min(NOTCH_W × 6.5, 20.0) (D-29)."""
+        from src.params import make_params
+        p = make_params(notch_pitch=10.0)
+        expected = min(4.0 * 6.5, 20.0)  # = 20.0
+        assert abs(p["BEATER_TOOTH_H"] - expected) < 1e-9
+
+    def test_shuttle_l_auto_from_interior_w(self):
+        """SHUTTLE_L = round(clamp(interior_w×0.6, 120, 280)/5)×5 (D-29)."""
+        from src.params import make_params
+        p = make_params(interior_w=200.0)
+        assert abs(p["SHUTTLE_L"] - 120.0) < 1e-9
+
+    def test_stand_x_l_from_frame_outer_h(self):
+        """STAND_X_L = FRAME_OUTER_H = interior_h + 2×rail_w (D-29)."""
+        from src.params import make_params
+        p = make_params(interior_h=300.0)
+        expected = 300.0 + 2 * 22.0  # = 344.0
+        assert abs(p["STAND_X_L"] - expected) < 1e-9
+
+    def test_invalid_interior_w_too_small(self):
+        """interior_w < 150 raises ValueError."""
+        from src.params import make_params
+        with pytest.raises(ValueError, match="interior_w"):
+            make_params(interior_w=100.0)
+
+    def test_invalid_interior_h_too_small(self):
+        """interior_h < 200 raises ValueError."""
+        from src.params import make_params
+        with pytest.raises(ValueError, match="interior_h"):
+            make_params(interior_h=150.0)
+
+    def test_invalid_notch_pitch_too_small(self):
+        """notch_pitch < 4 raises ValueError."""
+        from src.params import make_params
+        with pytest.raises(ValueError, match="notch_pitch"):
+            make_params(notch_pitch=3.0)
+
+    def test_invalid_pitch_not_multiple_of_width(self):
+        """interior_w not divisible by notch_pitch raises ValueError."""
+        from src.params import make_params
+        with pytest.raises(ValueError, match="divisible"):
+            make_params(interior_w=300.0, notch_pitch=7.0)

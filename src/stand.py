@@ -40,6 +40,7 @@ from src.params import DEFAULT, make_params
 from src.geometry import (
     bounding_box, bboxes_overlap, place,
     pts_to_path, cut_path, etch_text, svg_open, svg_close, svg_group,
+    rounded_pts_to_path,
 )
 
 OUTPUT_PATH = os.path.join(
@@ -80,8 +81,12 @@ def build_stand_x_piece(p: dict):
     tab_h  = p["STAND_X_TAB_H"]
     bump_l = p["STAND_X_BUMP_L"]
     bump_h = p["STAND_X_BUMP_H"]
+    tip_w  = p["STAND_X_TIP_W"]
 
     slot_cx = L / 2.0
+    # tip_blunt_x: x-setback so that the flat end at x=L-tip_blunt_x lies on the hypotenuse
+    # Hyp: y = W*(1 - x/L). At x = L - tip_blunt_x: y = W*tip_blunt_x/L = tip_w  →  tip_blunt_x = tip_w*L/W
+    tip_blunt_x = tip_w * L / W
 
     # Hyp intercept: point on hyp at x=tab_h from foot (y = W*(1−tab_h/L))
     hyp_y_tab = W * (1.0 - tab_h / L)
@@ -92,12 +97,13 @@ def build_stand_x_piece(p: dict):
         (slot_cx - slot_w / 2.0, slot_d),                 #  3 slot left wall
         (slot_cx + slot_w / 2.0, slot_d),                 #  4 slot bottom
         (slot_cx + slot_w / 2.0, 0.0),                    #  5 slot right wall top
-        (L,                      0.0),                    #  6 triangle tip
-        (tab_h,                  hyp_y_tab),              #  7 hyp walk to tab: connected along hyp edge
-        (tab_h,                  hyp_y_tab + tab_l),      #  8 ledge outer (tab extends +y from hyp)
-        (tab_h + bump_h,         hyp_y_tab + tab_l),      #  9 bump inner face
-        (tab_h + bump_h,         hyp_y_tab + tab_l + bump_l),  # 10 bump outer
-        (0.0,                    W + tab_l + bump_l),     # 11 return to foot edge
+        (L - tip_blunt_x,        0.0),                    #  6 blunt end top (D-28: was sharp tip)
+        (L - tip_blunt_x,        tip_w),                  #  7 blunt end bottom (on hypotenuse)
+        (tab_h,                  hyp_y_tab),              #  8 hyp walk to tab: connected along hyp edge
+        (tab_h,                  hyp_y_tab + tab_l),      #  9 ledge outer (tab extends +y from hyp)
+        (tab_h + bump_h,         hyp_y_tab + tab_l),      # 10 bump inner face
+        (tab_h + bump_h,         hyp_y_tab + tab_l + bump_l),  # 11 bump outer
+        (0.0,                    W + tab_l + bump_l),     # 12 return to foot edge
     ]
     return pts, []
 
@@ -111,19 +117,18 @@ def build_stand_x_piece_b(p: dict):
       Piece B slot: from hyp edge (y≈W/2) UP   to y=slot_d=W/4. Material: y=0..slot_d.
     At x=L/2: hyp_y=W/2=40mm, slot_d=W/4=20mm — both slot bottoms meet at y=20mm. ✓
 
-    Polygon trace (CW, 12 points):
-      (0, 0)                            ← foot top
-      (L, 0)                            ← tip (top edge continuous, no slot here)
-      (slot_cx+slot_w/2, hyp_y_right)   ← hyp before slot (right wall top)
-      (slot_cx+slot_w/2, slot_d)        ← slot right wall bottom
-      (slot_cx-slot_w/2, slot_d)        ← slot bottom
-      (slot_cx-slot_w/2, hyp_y_left)    ← hyp after slot (left wall top)
-      (0, W)                            ← hyp meets foot
-      (−TAB_L−BUMP_L, W)               ← tab+bump outer bottom
-      (−TAB_L−BUMP_L, W−TAB_H−BUMP_H) ← outer bump top
-      (−TAB_L, W−TAB_H−BUMP_H)        ← bump step inner top
-      (−TAB_L, W−TAB_H)               ← tab outer top
-      (0, W−TAB_H)                     ← tab inner top
+    Polygon trace (CW, 11 points — same tab geometry as piece A):
+      (0, 0)                                       ← foot top
+      (L, 0)                                       ← tip (no slot on long leg)
+      (slot_cx+slot_w/2, hyp_y_right)              ← hyp before slot (right wall top)
+      (slot_cx+slot_w/2, slot_d)                   ← slot right wall bottom
+      (slot_cx-slot_w/2, slot_d)                   ← slot bottom
+      (slot_cx-slot_w/2, hyp_y_left)               ← hyp after slot (left wall top)
+      (tab_h, hyp_y_tab)                           ← hyp walk to tab attach point
+      (tab_h, hyp_y_tab + tab_l)                   ← ledge outer (+y from hyp, same as piece A)
+      (tab_h + bump_h, hyp_y_tab + tab_l)          ← bump inner face
+      (tab_h + bump_h, hyp_y_tab + tab_l + bump_l) ← bump outer
+      (0, W + tab_l + bump_l)                      ← return to foot edge
       → closes to (0, 0) via foot edge
 
     Returns (pts, holes) — holes is always [].
@@ -136,8 +141,10 @@ def build_stand_x_piece_b(p: dict):
     tab_h  = p["STAND_X_TAB_H"]
     bump_l = p["STAND_X_BUMP_L"]
     bump_h = p["STAND_X_BUMP_H"]
+    tip_w  = p["STAND_X_TIP_W"]
 
     slot_cx = L / 2.0
+    tip_blunt_x = tip_w * L / W   # same formula as piece A
     # Hyp: y = W*(1 - x/L). At slot walls:
     hyp_y_right = W * (1.0 - (slot_cx + slot_w / 2.0) / L)  # smaller y (right wall, x larger)
     hyp_y_left  = W * (1.0 - (slot_cx - slot_w / 2.0) / L)  # larger y  (left wall,  x smaller)
@@ -148,16 +155,17 @@ def build_stand_x_piece_b(p: dict):
 
     pts = [
         (0.0,                    0.0),                    #  1 foot top
-        (L,                      0.0),                    #  2 tip (no slot on long leg)
-        (slot_cx + slot_w / 2.0, hyp_y_right),           #  3 hyp to right slot wall
-        (slot_cx + slot_w / 2.0, slot_d),                 #  4 slot right wall bottom
-        (slot_cx - slot_w / 2.0, slot_d),                 #  5 slot bottom
-        (slot_cx - slot_w / 2.0, hyp_y_left),            #  6 back to hyp (left wall top)
-        (tab_h,                  hyp_y_tab),              #  7 hyp walk to tab: connected along hyp edge
-        (tab_h,                  hyp_y_tab + tab_l),      #  8 ledge outer (tab extends +y from hyp)
-        (tab_h + bump_h,         hyp_y_tab + tab_l),      #  9 bump inner face
-        (tab_h + bump_h,         hyp_y_tab + tab_l + bump_l),  # 10 bump outer
-        (0.0,                    W + tab_l + bump_l),     # 11 return to foot edge
+        (L - tip_blunt_x,        0.0),                    #  2 blunt end top (D-28: was sharp tip)
+        (L - tip_blunt_x,        tip_w),                  #  3 blunt end bottom (on hypotenuse)
+        (slot_cx + slot_w / 2.0, hyp_y_right),           #  4 hyp to right slot wall
+        (slot_cx + slot_w / 2.0, slot_d),                 #  5 slot right wall bottom
+        (slot_cx - slot_w / 2.0, slot_d),                 #  6 slot bottom
+        (slot_cx - slot_w / 2.0, hyp_y_left),            #  7 back to hyp (left wall top)
+        (tab_h,                  hyp_y_tab),              #  8 hyp walk to tab: connected along hyp edge
+        (tab_h,                  hyp_y_tab + tab_l),      #  9 ledge outer (tab extends +y from hyp)
+        (tab_h + bump_h,         hyp_y_tab + tab_l),      # 10 bump inner face
+        (tab_h + bump_h,         hyp_y_tab + tab_l + bump_l),  # 11 bump outer
+        (0.0,                    W + tab_l + bump_l),     # 12 return to foot edge
     ]
     return pts, []
 
@@ -190,15 +198,24 @@ def layout(p: dict) -> list:
     BUMP_L = p["STAND_X_BUMP_L"]
     H = W + TAB_L + BUMP_L  # total piece height: triangle + ledge + bump
 
+    # Per-corner radii (D-28): outer corners get CORNER_R, slot corners get r=0.
+    # Piece A (12 pts): slot at indices 1,2,3,4 → r=0; all others → CORNER_R.
+    # Piece B (12 pts): slot at indices 3,4,5,6 → r=0; all others → CORNER_R.
+    cr = p["STAND_X_CORNER_R"]
+    slot_zero_a = {1, 2, 3, 4}
+    slot_zero_b = {3, 4, 5, 6}
+    radii_a = [0.0 if i in slot_zero_a else cr for i in range(12)]
+    radii_b = [0.0 if i in slot_zero_b else cr for i in range(12)]
+
     # place() maps sx to the left edge of the local bounding box (x=0, foot edge).
     # Tab protrudes in +y (outward from foot when standing on short leg), no -x protrusion.
     parts_local = [
-        ("stand_x_a", pts_a, holes_a, "STAND X-A", M,         M),
-        ("stand_x_b", pts_b, holes_b, "STAND X-B", M, M + H + G),
+        ("stand_x_a", pts_a, holes_a, "STAND X-A", M,         M, radii_a),
+        ("stand_x_b", pts_b, holes_b, "STAND X-B", M, M + H + G, radii_b),
     ]
 
     placed = []
-    for pid, local_pts, local_holes, label, sx, sy in parts_local:
+    for pid, local_pts, local_holes, label, sx, sy, radii in parts_local:
         sheet_pts, sheet_holes = place(local_pts, local_holes, sx, sy)
         bb = bounding_box(sheet_pts)
         placed.append({
@@ -207,6 +224,7 @@ def layout(p: dict) -> list:
             "sheet_pts":   sheet_pts,
             "sheet_holes": sheet_holes,
             "bbox":        bb,
+            "radii":       radii,
         })
 
     # Validate sheet bounds
@@ -232,7 +250,7 @@ def render(placed: list, p: dict) -> str:
     sw, sh = p["SHEET_W"], p["SHEET_H"]
     parts = []
     for part in placed:
-        outer = cut_path(pts_to_path(part["sheet_pts"]))
+        outer = cut_path(rounded_pts_to_path(part["sheet_pts"], 0.0, radii=part["radii"]))
         holes = [cut_path(pts_to_path(h)) for h in part["sheet_holes"]]
         label = etch_text(
             part["bbox"][0] + 1.0,

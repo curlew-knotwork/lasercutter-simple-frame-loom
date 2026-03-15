@@ -21,9 +21,10 @@
 
 ## 2. System Requirements (as stated)
 
-1. **Three SVG outputs, one sheet each:**
+1. **Four SVG outputs, one sheet each:**
    - `loom.svg` — 6mm birch plywood, 600×600mm max
-   - `box.svg` — 3mm birch plywood, 600×600mm max
+   - `optional_box.svg` — 3mm birch plywood, 600×600mm max (D-17)
+   - `optional_loom_stand.svg` — 6mm birch plywood, 600×600mm max (D-23)
    - `test_cut.svg` — 3mm plywood, scrap size
 
 2. **Loom and box must assemble in 3D** — all mortises, tabs, slots must be geometrically consistent with 6mm (loom) and 3mm (box) material thickness
@@ -93,7 +94,7 @@ These are not verbatim but are necessary consequences of the above:
 | No mortise may overlap with any other mortise, tenon, tab, slot, or structural void on the same member in 3D. | User, 2026-03-06 |
 | Every mortise-tenon pair must mate: mortise drawn width ≥ tab drawn width; net clearance 0.05–0.40mm. | User, 2026-03-06 |
 | Every tab-socket pair must mate: same constraint as mortise-tenon. | User, 2026-03-06 |
-| Stand (easel) from 3mm ply, on box sheet if space allows. Extra 3mm sheet permitted if needed. | User, 2026-03-06 |
+| Stand (easel): separate 6mm ply sheet (output/optional_loom_stand.svg). Superseded from 3mm/box-sheet by D-16→D-23. | User, 2026-03-06; updated 2026-03-15 |
 | Output is two sheets minimum (loom 6mm, box/stand 3mm) plus test cut from scrap. | Derived |
 
 ---

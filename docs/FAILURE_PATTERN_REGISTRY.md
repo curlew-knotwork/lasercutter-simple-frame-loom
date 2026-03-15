@@ -38,6 +38,7 @@ Any YES: surface it immediately. Do not proceed until addressed.
 | P-C4 | Hole direction wrong | Are hole outlines CW instead of CCW (or vice versa)? | Holes must use CCW path so fill:evenodd cuts them out |
 | P-C5 | Formula derived from symptoms | Was a constant chosen to make a test pass rather than from spec? | Every constant in params.py has a named reference (D-XX comment) |
 | P-C6 | Ambiguous regex matches wrong element | Does a regex match a different attribute than intended? | Use leading/trailing delimiters (space, quote) not just `attrname=` |
+| P-C7 | Partial symmetric fix | Was a direction/formula bug fixed in one of N symmetric instances without applying the same analysis to all N? | After any formula fix: enumerate all analogous instances (paired arcs, mirrored joints, opposing edges). Fix all before presenting as done. |
 
 ---
 
@@ -77,12 +78,14 @@ Any YES: surface it immediately. Do not proceed until addressed.
 
 ## Session Scan Log
 
-| Date | Task | G1 | G2 | G3 | G4 | G5 | G6 | G7 | G8 | G9 | G10 | C1 | C2 | C3 | C4 | C5 | C6 | T1 | T2 | T3 | T4 | T5 | S1 | S2 | S3 | S4 | Q1 | Q2 | Q3 | Q4 | Notes |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Date | Task | G1 | G2 | G3 | G4 | G5 | G6 | G7 | G8 | G9 | G10 | C1 | C2 | C3 | C4 | C5 | C6 | C7 | T1 | T2 | T3 | T4 | T5 | S1 | S2 | S3 | S4 | Q1 | Q2 | Q3 | Q4 | Notes |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 2026-03-06 | Stage 0 — sparring | YES | YES | — | — | YES | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | All in OLD spec; new design eliminates them |
 | 2026-03-06 | Stage 1–5 — proofs→loom.py→tests | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES(F-003) | NO | NO | NO | NO | NO | YES(F-004,F-005) | NO | YES* | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | *T3: test_loom.py written after loom.py (not before) |
 | 2026-03-07 | Session recheck — D-19 + MD rewrites committed | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | 285 tests pass; all 3 generators ALL PASS; D-10 not marked superseded (doc only, no code impact) |
 | 2026-03-15 | D-23 tab direction + 2-piece fix | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | NO | NO | NO | NO | YES | P-C1: ledge hung off corner point with no material support (mechanically incoherent). P-S2: silently generated two different cut functions instead of surfacing "should these be identical pieces?". P-Q4: committed without user review. |
+| 2026-03-15 | Stadium hole arcs | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | NO | YES | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | P-C1: sweep=1 produced inward (concave) arcs on both caps. P-C4: hole winding wrong (concave = not cutting out). P-C7(new): fixed top arc sweep, presented as done without applying same analysis to bottom arc — same bug left in place. |
+| 2026-03-15 | Rail notch arc sweep | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | P-C7: fixed sweep in rounded_pts_to_path but did not check rail_path which manually reimplements the same convention — cookie-bite arcs on notch corners. |
 
 ---
 
@@ -102,12 +105,13 @@ Any YES: surface it immediately. Do not proceed until addressed.
 | P-G8 Box undersized | 0 | — |
 | P-G9 Notch depth | 0 | — |
 | P-G10 Open path | 0 | — |
-| P-C1 Sign/direction | 2 | 2026-03-15 (ledge at corner, no material support) |
+| P-C1 Sign/direction | 3 | 2026-03-15 (stadium arc sweep wrong on both caps) |
 | P-C2 Off-by-one | 0 | — |
 | P-C3 Coord confusion | 0 | — |
-| P-C4 Hole direction | 0 | — |
+| P-C4 Hole direction | 1 | 2026-03-15 (stadium concave arcs) |
 | P-C5 Formula from symptom | 0 | — |
 | P-C6 Regex ambiguity | 1 | F-004 (test regex) |
+| P-C7 Partial symmetric fix | 2 | 2026-03-15 (rail_path manual sweep not updated when rounded_pts_to_path fixed) |
 | P-T1 Test asserts wrong | 2 | F-004, F-005 |
 | P-T2 Missing unhappy path | 0 | — |
 | P-T3 Proof-first skipped | 1 | test_loom.py after loom.py |
@@ -141,6 +145,8 @@ Rules marked **[WRITTEN OUTPUT REQUIRED]** must produce text in the response bef
 - **[WRITTEN OUTPUT REQUIRED]** Before any new builder function: write "Identical piece or different cut? [answer] because [reason]." No code until this is written. (P-S2)
 - Failing test must exist BEFORE the first src/ edit. Name it. (P-T3)
 - After writing each formula: trace at min, max, and zone-edge values with concrete numbers. (P-C1, P-C2)
+- After fixing any direction/formula bug: **[WRITTEN OUTPUT REQUIRED]** list every symmetric counterpart AND every manual re-implementation of the same logic (grep for the formula/constant/flag in question). Confirm the same fix was applied to all. "Fixed: [A]. Counterparts checked: [B, C]. Manual copies checked: [D, E]. Same fix applied: YES/NO." (P-C7)
+- Specific trigger: after any fix to `rounded_pts_to_path` sweep logic — grep for `_arc(` calls outside that function and verify they use the same sweep convention.
 
 ### SVG generation stage
 - Call `verify()` before presenting any path (P-Q4).
