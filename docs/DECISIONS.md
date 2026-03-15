@@ -193,13 +193,14 @@ The following invariants must hold for every valid parameter set. Any parameter 
 
 ### D-23 — Stand: 2-piece triangular X easel (supersedes D-22)
 - **Supersedes:** D-22 (rectangular piece geometry).
-- **Design:** ONE cut pattern, TWO identical pieces cut from it. One piece is flipped 180° in the plane for assembly. Output: `output/optional_loom_stand.svg`, 6mm birch ply, 600×600mm. Layout = 2 copies of the same polygon; no separate piece-B function.
+- **Design:** TWO different cut patterns, one piece each. Output: `output/optional_loom_stand.svg`, 6mm birch ply, 600×600mm.
 - **Piece geometry (right triangle + hypotenuse foot tab + bump):**
   - **Triangle:** Right angle at (0,0). Top edge horizontal: (0,0)→(L,0). Hypotenuse: (L,0)→(0,W). Foot edge vertical: (0,W)→(0,0).
-  - **Cross-halving slot:** from top edge (y=0) at x=L/2=225mm, STAND_X_SLOT_W=6.1mm wide × STAND_X_SLOT_D=W/4=20mm deep. At x=L/2, triangle height=W/2=40mm; slot depth=half that=20mm. Piece A slot-up, piece B flipped 180° so slot opens downward. They interlock at the crossing.
-  - **Foot tab:** protrudes from the HYPOTENUSE edge at the foot end (near (0,W)), outward (away from triangle interior, in +y direction). Tab is a rectangular protrusion from the hyp body — connected along the hyp edge, not at a corner point — so it has material support. Tab depth (along hyp) = STAND_X_TAB_L=25mm; tab height (perpendicular to hyp, into +y) = STAND_X_TAB_H=20mm.
-  - **Bump:** Mechanical stop at outer end of tab. STAND_X_BUMP_L=5mm × STAND_X_BUMP_H=5mm step at tip of tab. Prevents loom bottom rail from sliding off.
-- **Assembly:** Piece B is piece A rotated 180° in-plane. Slots interlock at x=L/2. Stand stands on short legs; foot tabs on hypotenuse cradle loom bottom rail.
+  - **Piece A cross-halving slot:** from LONG LEG (y=0) at x=L/2=225mm, STAND_X_SLOT_W=6.1mm wide × STAND_X_SLOT_D=W/4=20mm deep.
+  - **Piece B cross-halving slot:** from HYPOTENUSE at x=L/2. Slot bottom at y=slot_d=20mm (same as piece A). Slots mate: piece A material y=20..40 at x=L/2; piece B material y=0..20. No gap, no overlap.
+  - **Foot tab (both pieces):** connects to hyp at foot end from (0,W) to (TAB_H, hyp_y_at_TAB_H). hyp_y_at_TAB_H = W×(1−TAB_H/L) ≈ 76.4mm. Tab extends in +y (parallel to short leg, horizontal when standing) by STAND_X_TAB_L=25mm. Ledge surface is at height TAB_H=20mm when standing. Loom bottom rail rests on this ledge. Tab is connected along ~20mm of hyp edge — not a corner point. Material at x=TAB_H: triangle has ~76mm of ply behind it.
+  - **Bump:** STAND_X_BUMP_H=5mm × STAND_X_BUMP_L=5mm step at outer end of tab. Prevents rail sliding off.
+- **Assembly:** Slot piece B down onto piece A (slots from perpendicular edges interlock). Stand on short legs. Both foot tabs at height TAB_H=20mm support one side of loom bottom rail.
 - **Flat-pack:** Each piece bbox ≈ STAND_X_L × (STAND_X_W + STAND_X_TAB_H) = 450×100mm (approx; exact from geometry). Two pieces stacked with gap.
 - **Sheet layout:** Both pieces horizontal, stacked vertically at y=MARGIN and y=MARGIN+piece_h+GAP.
 - **Params:** STAND_X_L=450mm, STAND_X_W=80mm, STAND_X_SLOT_W=MAT+0.1=6.1mm, STAND_X_SLOT_D=STAND_X_W/4=20mm, STAND_X_TAB_L=25mm, STAND_X_TAB_H=20mm, STAND_X_BUMP_L=5mm, STAND_X_BUMP_H=5mm.

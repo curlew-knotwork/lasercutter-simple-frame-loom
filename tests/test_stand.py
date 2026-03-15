@@ -52,8 +52,8 @@ class TestBuildStandXPiece:
         assert self.holes == []
 
     def test_polygon_point_count(self):
-        """Triangular piece polygon has 12 points (slot 4 + triangle 2 + tab+bump 6)."""
-        assert len(self.pts) == 12, f"Expected 12 pts, got {len(self.pts)}: {self.pts}"
+        """Triangular piece polygon has 11 points (slot 4 + tip 1 + hyp-to-tab 1 + tab+bump 4 + return 1)."""
+        assert len(self.pts) == 11, f"Expected 11 pts, got {len(self.pts)}: {self.pts}"
 
     def test_bounding_box_length(self):
         """Piece bbox width = STAND_X_L (no -x tab protrusion with new +y ledge)."""
@@ -75,11 +75,19 @@ class TestBuildStandXPiece:
         tip = [pt for pt in self.pts if abs(pt[0] - L) < 1e-6 and abs(pt[1]) < 1e-6]
         assert len(tip) == 1, f"Expected tip at (L,0); found: {tip}"
 
-    def test_hypotenuse_foot_corner_at_0_W(self):
-        """Hypotenuse meets foot edge at (0, STAND_X_W)."""
+    def test_tab_hyp_intercept_inside_triangle(self):
+        """Tab connects to hyp at (TAB_H, hyp_y_at_TAB_H) — y < W, inside triangle body, not at corner."""
+        TAB_H = p["STAND_X_TAB_H"]
         W = p["STAND_X_W"]
-        corner = [pt for pt in self.pts if abs(pt[0]) < 1e-6 and abs(pt[1] - W) < 1e-6]
-        assert len(corner) == 1, f"Expected (0,W) corner; found: {corner}"
+        L = p["STAND_X_L"]
+        hyp_y = W * (1.0 - TAB_H / L)
+        intercept = [pt for pt in self.pts if abs(pt[0] - TAB_H) < 1e-6]
+        assert len(intercept) >= 2, f"Expected >=2 pts at x=TAB_H={TAB_H}; got {intercept}"
+        min_y = min(pt[1] for pt in intercept)
+        assert min_y < W - 1e-6, \
+            f"Tab inner y={min_y:.3f} must be < W={W} (connected along hyp body, not corner)"
+        assert abs(min_y - hyp_y) < 0.5, \
+            f"Tab inner y={min_y:.3f} should equal hyp_y={hyp_y:.3f} at x=TAB_H"
 
     def test_cross_halving_slot_centred(self):
         """Slot centred at x = STAND_X_L / 2."""
@@ -140,12 +148,18 @@ class TestBuildStandXPiece:
             f"No +y protrusion past W={W}: max y={max(ys):.4f}"
 
     def test_ledge_face_at_tab_h(self):
-        """Ledge top face at x=STAND_X_TAB_H (ledge height above ground when standing on short leg)."""
+        """Ledge face spans from hyp intercept to tab outer, both at x=STAND_X_TAB_H."""
         TAB_H = p["STAND_X_TAB_H"]
+        TAB_L = p["STAND_X_TAB_L"]
         W = p["STAND_X_W"]
-        ledge_pts = [pt for pt in self.pts if abs(pt[0] - TAB_H) < 1e-6 and pt[1] >= W - 1e-6]
+        L = p["STAND_X_L"]
+        hyp_y = W * (1.0 - TAB_H / L)
+        ledge_pts = [pt for pt in self.pts if abs(pt[0] - TAB_H) < 1e-6]
         assert len(ledge_pts) >= 2, \
-            f"Expected ≥2 pts at ledge height x={TAB_H} with y≥{W}, got {ledge_pts}"
+            f"Expected ≥2 pts at x=TAB_H={TAB_H}; got {ledge_pts}"
+        ys = sorted(pt[1] for pt in ledge_pts)
+        assert abs(ys[-1] - (hyp_y + TAB_L)) < 0.5, \
+            f"Ledge outer y={ys[-1]:.3f} should equal hyp_y+TAB_L={hyp_y+TAB_L:.3f}"
 
     def test_ledge_depth_fits_rail(self):
         """Ledge clear depth (TAB_L) >= RAIL_W so loom bottom rail fits on ledge."""
@@ -153,25 +167,31 @@ class TestBuildStandXPiece:
             f"TAB_L={p['STAND_X_TAB_L']} < RAIL_W={p['RAIL_W']}: rail won't fit on ledge"
 
     def test_bump_above_ledge(self):
-        """Bump top face at x = STAND_X_TAB_H + STAND_X_BUMP_H (rises above ledge)."""
+        """Bump face at x=TAB_H+BUMP_H; inner y = hyp_y_at_TAB_H + TAB_L."""
         TAB_H = p["STAND_X_TAB_H"]
         BUMP_H = p["STAND_X_BUMP_H"]
-        W = p["STAND_X_W"]
         TAB_L = p["STAND_X_TAB_L"]
+        W = p["STAND_X_W"]
+        L = p["STAND_X_L"]
+        hyp_y = W * (1.0 - TAB_H / L)
+        expected_bump_inner_y = hyp_y + TAB_L
         bump_top_x = TAB_H + BUMP_H
-        bump_pts = [pt for pt in self.pts if abs(pt[0] - bump_top_x) < 1e-6 and pt[1] >= W + TAB_L - 1e-6]
+        bump_pts = [pt for pt in self.pts if abs(pt[0] - bump_top_x) < 1e-6]
         assert len(bump_pts) >= 2, \
-            f"Expected ≥2 pts at bump top x={bump_top_x} near y≥{W+TAB_L}, got {bump_pts}"
+            f"Expected ≥2 pts at bump x={bump_top_x}; got {bump_pts}"
+        ys = sorted(pt[1] for pt in bump_pts)
+        assert abs(ys[0] - expected_bump_inner_y) < 0.5, \
+            f"Bump inner y={ys[0]:.3f} should equal hyp_y+TAB_L={expected_bump_inner_y:.3f}"
 
     def test_tab_outer_face_at_ground(self):
-        """Outer face of tab+bump returns to x=0 (ground level) at y=W+TAB_L+BUMP_L."""
+        """Return point at x=0, y=W+TAB_L+BUMP_L closes tab back to foot edge."""
         W = p["STAND_X_W"]
         TAB_L = p["STAND_X_TAB_L"]
         BUMP_L = p["STAND_X_BUMP_L"]
         outer_y = W + TAB_L + BUMP_L
-        outer_pts = [pt for pt in self.pts if abs(pt[1] - outer_y) < 1e-6]
-        assert len(outer_pts) >= 2, \
-            f"Expected ≥2 pts at outer y={outer_y}, got {outer_pts}"
+        outer_pts = [pt for pt in self.pts if abs(pt[1] - outer_y) < 1e-6 and abs(pt[0]) < 1e-6]
+        assert len(outer_pts) >= 1, \
+            f"Expected return point at x=0, y={outer_y}, got {outer_pts}"
 
 
 # ---------------------------------------------------------------------------

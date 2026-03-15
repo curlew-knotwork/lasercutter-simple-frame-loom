@@ -83,19 +83,21 @@ def build_stand_x_piece(p: dict):
 
     slot_cx = L / 2.0
 
+    # Hyp intercept: point on hyp at x=tab_h from foot (y = W*(1−tab_h/L))
+    hyp_y_tab = W * (1.0 - tab_h / L)
+
     pts = [
-        (0.0,                           0.0),             #  1 foot top
-        (slot_cx - slot_w / 2.0,        0.0),             #  2 top edge before slot
-        (slot_cx - slot_w / 2.0,        slot_d),          #  3 slot left wall
-        (slot_cx + slot_w / 2.0,        slot_d),          #  4 slot bottom
-        (slot_cx + slot_w / 2.0,        0.0),             #  5 slot right wall top
-        (L,                             0.0),             #  6 triangle tip
-        (0.0,                           W),               #  7 hyp meets foot (straight edge 6→7)
-        (tab_h,                         W),               #  8 up along foot face to ledge height
-        (tab_h,                         W + tab_l),       #  9 forward along ledge top face
-        (tab_h + bump_h,                W + tab_l),       # 10 up: bump inner face
-        (tab_h + bump_h,                W + tab_l + bump_l),  # 11 forward: bump outer
-        (0.0,                           W + tab_l + bump_l),  # 12 down: outer face to ground
+        (0.0,                    0.0),                    #  1 foot top
+        (slot_cx - slot_w / 2.0, 0.0),                    #  2 top edge before slot
+        (slot_cx - slot_w / 2.0, slot_d),                 #  3 slot left wall
+        (slot_cx + slot_w / 2.0, slot_d),                 #  4 slot bottom
+        (slot_cx + slot_w / 2.0, 0.0),                    #  5 slot right wall top
+        (L,                      0.0),                    #  6 triangle tip
+        (tab_h,                  hyp_y_tab),              #  7 hyp walk to tab: connected along hyp edge
+        (tab_h,                  hyp_y_tab + tab_l),      #  8 ledge outer (tab extends +y from hyp)
+        (tab_h + bump_h,         hyp_y_tab + tab_l),      #  9 bump inner face
+        (tab_h + bump_h,         hyp_y_tab + tab_l + bump_l),  # 10 bump outer
+        (0.0,                    W + tab_l + bump_l),     # 11 return to foot edge
     ]
     return pts, []
 
@@ -141,19 +143,21 @@ def build_stand_x_piece_b(p: dict):
     hyp_y_left  = W * (1.0 - (slot_cx - slot_w / 2.0) / L)  # larger y  (left wall,  x smaller)
     # slot_d = W/4 = slot bottom y from top — same as piece A's slot bottom. Slots mate there.
 
+    # Hyp intercept: point on hyp at x=tab_h from foot (y = W*(1−tab_h/L))
+    hyp_y_tab = W * (1.0 - tab_h / L)
+
     pts = [
-        (0.0,                           0.0),             #  1 foot top
-        (L,                             0.0),             #  2 tip (no slot on top edge)
-        (slot_cx + slot_w / 2.0,        hyp_y_right),    #  3 hyp before slot (right wall top)
-        (slot_cx + slot_w / 2.0,        slot_d),          #  4 slot right wall bottom
-        (slot_cx - slot_w / 2.0,        slot_d),          #  5 slot bottom
-        (slot_cx - slot_w / 2.0,        hyp_y_left),     #  6 hyp after slot (left wall top)
-        (0.0,                           W),               #  7 hyp meets foot
-        (tab_h,                         W),               #  8 up along foot face to ledge height
-        (tab_h,                         W + tab_l),       #  9 forward along ledge top face
-        (tab_h + bump_h,                W + tab_l),       # 10 up: bump inner face
-        (tab_h + bump_h,                W + tab_l + bump_l),  # 11 forward: bump outer
-        (0.0,                           W + tab_l + bump_l),  # 12 down: outer face to ground
+        (0.0,                    0.0),                    #  1 foot top
+        (L,                      0.0),                    #  2 tip (no slot on long leg)
+        (slot_cx + slot_w / 2.0, hyp_y_right),           #  3 hyp to right slot wall
+        (slot_cx + slot_w / 2.0, slot_d),                 #  4 slot right wall bottom
+        (slot_cx - slot_w / 2.0, slot_d),                 #  5 slot bottom
+        (slot_cx - slot_w / 2.0, hyp_y_left),            #  6 back to hyp (left wall top)
+        (tab_h,                  hyp_y_tab),              #  7 hyp walk to tab: connected along hyp edge
+        (tab_h,                  hyp_y_tab + tab_l),      #  8 ledge outer (tab extends +y from hyp)
+        (tab_h + bump_h,         hyp_y_tab + tab_l),      #  9 bump inner face
+        (tab_h + bump_h,         hyp_y_tab + tab_l + bump_l),  # 10 bump outer
+        (0.0,                    W + tab_l + bump_l),     # 11 return to foot edge
     ]
     return pts, []
 
