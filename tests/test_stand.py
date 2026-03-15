@@ -7,8 +7,8 @@ Piece B is piece A flipped horizontally for assembly.
 Piece geometry (piece-local coords, L=STAND_X_L, W=STAND_X_W):
   Right triangle: (0,0), (L,0), (0,W). 12-point polygon with:
     1. Cross-halving slot from top (y=0) at x=L/2, width=SLOT_W, depth=W/4.
-    2. Foot tab: protrudes −x from foot end (x<0), TAB_L wide × TAB_H tall.
-    3. Bump: step at outer end of tab, BUMP_L wide × BUMP_H tall.
+    2. Foot ledge: protrudes +y from foot corner, TAB_H above ground × TAB_L deep.
+    3. Bump: step at outer ledge end, BUMP_H tall × BUMP_L deep.
 """
 
 import re
@@ -56,18 +56,18 @@ class TestBuildStandXPiece:
         assert len(self.pts) == 12, f"Expected 12 pts, got {len(self.pts)}: {self.pts}"
 
     def test_bounding_box_length(self):
-        """Piece bbox width = STAND_X_L (triangle body, not counting tab)."""
-        # x range: from -(TAB_L+BUMP_L) to L
-        expected_w = p["STAND_X_L"] + p["STAND_X_TAB_L"] + p["STAND_X_BUMP_L"]
+        """Piece bbox width = STAND_X_L (no -x tab protrusion with new +y ledge)."""
+        expected_w = p["STAND_X_L"]
         actual_w = self.bb[2] - self.bb[0]
         assert abs(actual_w - expected_w) < 0.1, \
-            f"bbox width={actual_w:.3f} != L+TAB_L+BUMP_L={expected_w}"
+            f"bbox width={actual_w:.3f} != L={expected_w}"
 
     def test_bounding_box_height(self):
-        """Piece bbox height = STAND_X_W."""
+        """Piece bbox height = STAND_X_W + STAND_X_TAB_L + STAND_X_BUMP_L (+y ledge protrusion)."""
+        expected_h = p["STAND_X_W"] + p["STAND_X_TAB_L"] + p["STAND_X_BUMP_L"]
         actual_h = self.bb[3] - self.bb[1]
-        assert abs(actual_h - p["STAND_X_W"]) < 0.1, \
-            f"bbox height={actual_h:.3f} != STAND_X_W={p['STAND_X_W']}"
+        assert abs(actual_h - expected_h) < 0.1, \
+            f"bbox height={actual_h:.3f} != W+TAB_L+BUMP_L={expected_h}"
 
     def test_triangle_tip_at_L_0(self):
         """Triangle tip at (STAND_X_L, 0) — top-right corner."""
@@ -127,50 +127,51 @@ class TestBuildStandXPiece:
         ys = [pt[1] for pt in self.pts]
         assert min(ys) >= -1e-9, f"Point below y=0: min y={min(ys):.4f}"
 
-    def test_piece_does_not_exceed_W(self):
-        """No point at y > STAND_X_W."""
+    def test_no_minus_x_protrusion(self):
+        """Tab does not protrude in -x: no point at x < 0 (old underground tab gone)."""
+        xs = [pt[0] for pt in self.pts]
+        assert min(xs) >= -1e-6, f"Unexpected -x protrusion: min x={min(xs):.4f}"
+
+    def test_tab_protrudes_in_plus_y(self):
+        """Tab protrudes in +y beyond STAND_X_W (outward from foot end when standing)."""
         W = p["STAND_X_W"]
         ys = [pt[1] for pt in self.pts]
-        assert max(ys) <= W + 1e-9, f"Point exceeds W: max y={max(ys):.4f}"
+        assert max(ys) > W + 1e-6, \
+            f"No +y protrusion past W={W}: max y={max(ys):.4f}"
 
-    def test_foot_tab_protrudes_in_minus_x(self):
-        """Tab protrudes from foot (x=0) in -x direction."""
-        xs = [pt[0] for pt in self.pts]
-        assert min(xs) < -1e-6, f"No tab protrusion in -x: min x={min(xs):.4f}"
-
-    def test_foot_tab_length(self):
-        """Tab protrudes STAND_X_TAB_L + STAND_X_BUMP_L from x=0."""
-        expected = -(p["STAND_X_TAB_L"] + p["STAND_X_BUMP_L"])
-        xs = [pt[0] for pt in self.pts]
-        assert abs(min(xs) - expected) < 0.1, \
-            f"Tab outer x={min(xs):.3f} != {expected:.3f}"
-
-    def test_foot_tab_height(self):
-        """Tab top face at y = STAND_X_W - STAND_X_TAB_H."""
-        W = p["STAND_X_W"]
+    def test_ledge_face_at_tab_h(self):
+        """Ledge top face at x=STAND_X_TAB_H (ledge height above ground when standing on short leg)."""
         TAB_H = p["STAND_X_TAB_H"]
-        tab_top_y = W - TAB_H
-        # There should be at least 2 points at the tab top y (inner and outer)
-        tab_top_pts = [pt for pt in self.pts if abs(pt[1] - tab_top_y) < 1e-6]
-        assert len(tab_top_pts) >= 2, \
-            f"Expected ≥2 points at tab top y={tab_top_y:.2f}, got {tab_top_pts}"
-
-    def test_bump_at_tab_outer_end(self):
-        """Bump step present at x = -(STAND_X_TAB_L + STAND_X_BUMP_L)."""
-        outer_x = -(p["STAND_X_TAB_L"] + p["STAND_X_BUMP_L"])
-        outer_pts = [pt for pt in self.pts if abs(pt[0] - outer_x) < 1e-6]
-        assert len(outer_pts) >= 2, \
-            f"Expected ≥2 points at outer x={outer_x:.2f}; got {outer_pts}"
-
-    def test_bump_height(self):
-        """Bump rises STAND_X_BUMP_H above tab top face."""
         W = p["STAND_X_W"]
+        ledge_pts = [pt for pt in self.pts if abs(pt[0] - TAB_H) < 1e-6 and pt[1] >= W - 1e-6]
+        assert len(ledge_pts) >= 2, \
+            f"Expected ≥2 pts at ledge height x={TAB_H} with y≥{W}, got {ledge_pts}"
+
+    def test_ledge_depth_fits_rail(self):
+        """Ledge clear depth (TAB_L) >= RAIL_W so loom bottom rail fits on ledge."""
+        assert p["STAND_X_TAB_L"] >= p["RAIL_W"], \
+            f"TAB_L={p['STAND_X_TAB_L']} < RAIL_W={p['RAIL_W']}: rail won't fit on ledge"
+
+    def test_bump_above_ledge(self):
+        """Bump top face at x = STAND_X_TAB_H + STAND_X_BUMP_H (rises above ledge)."""
         TAB_H = p["STAND_X_TAB_H"]
         BUMP_H = p["STAND_X_BUMP_H"]
-        bump_top_y = W - TAB_H - BUMP_H
-        bump_pts = [pt for pt in self.pts if abs(pt[1] - bump_top_y) < 1e-6]
+        W = p["STAND_X_W"]
+        TAB_L = p["STAND_X_TAB_L"]
+        bump_top_x = TAB_H + BUMP_H
+        bump_pts = [pt for pt in self.pts if abs(pt[0] - bump_top_x) < 1e-6 and pt[1] >= W + TAB_L - 1e-6]
         assert len(bump_pts) >= 2, \
-            f"Expected ≥2 pts at bump top y={bump_top_y:.2f}; got {bump_pts}"
+            f"Expected ≥2 pts at bump top x={bump_top_x} near y≥{W+TAB_L}, got {bump_pts}"
+
+    def test_tab_outer_face_at_ground(self):
+        """Outer face of tab+bump returns to x=0 (ground level) at y=W+TAB_L+BUMP_L."""
+        W = p["STAND_X_W"]
+        TAB_L = p["STAND_X_TAB_L"]
+        BUMP_L = p["STAND_X_BUMP_L"]
+        outer_y = W + TAB_L + BUMP_L
+        outer_pts = [pt for pt in self.pts if abs(pt[1] - outer_y) < 1e-6]
+        assert len(outer_pts) >= 2, \
+            f"Expected ≥2 pts at outer y={outer_y}, got {outer_pts}"
 
 
 # ---------------------------------------------------------------------------
@@ -332,20 +333,20 @@ class TestLayout:
                 f"Part bbox dim {dim} differs: {sizes}"
 
     def test_piece_bbox_width(self):
-        """Each piece bbox width = STAND_X_L + STAND_X_TAB_L + STAND_X_BUMP_L."""
-        expected_w = p["STAND_X_L"] + p["STAND_X_TAB_L"] + p["STAND_X_BUMP_L"]
+        """Each piece bbox width = STAND_X_L (no -x tab; +y ledge doesn't affect x range)."""
+        expected_w = p["STAND_X_L"]
         for pid in ["stand_x_a", "stand_x_b"]:
             bb = self.by_id[pid]["bbox"]
             w = bb[2] - bb[0]
-            assert abs(w - expected_w) < 0.1, f"{pid} bbox width={w:.2f} != {expected_w}"
+            assert abs(w - expected_w) < 0.1, f"{pid} bbox width={w:.2f} != L={expected_w}"
 
     def test_piece_bbox_height(self):
-        """Each piece bbox height = STAND_X_W."""
-        W = p["STAND_X_W"]
+        """Each piece bbox height = STAND_X_W + STAND_X_TAB_L + STAND_X_BUMP_L (+y ledge)."""
+        expected_h = p["STAND_X_W"] + p["STAND_X_TAB_L"] + p["STAND_X_BUMP_L"]
         for pid in ["stand_x_a", "stand_x_b"]:
             bb = self.by_id[pid]["bbox"]
             h = bb[3] - bb[1]
-            assert abs(h - W) < 0.1, f"{pid} bbox height={h:.2f} != {W}"
+            assert abs(h - expected_h) < 0.1, f"{pid} bbox height={h:.2f} != {expected_h}"
 
     def test_pieces_stacked_vertically(self):
         """Pieces are placed at different y positions."""

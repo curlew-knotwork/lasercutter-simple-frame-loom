@@ -13,18 +13,18 @@ Piece geometry (local coords, x=length axis, y=width axis):
     - Hypotenuse: from (L,0) to (0,W).
     - Foot edge vertical at x=0: from (0,W) to (0,0).
   At x=L/2, triangle height = W/2; each slot occupies half of that = W/4 deep.
-  Foot tab: protrudes from foot end in −x direction.
-    Width=STAND_X_TAB_L, height=STAND_X_TAB_H (bottom zone of foot, y=W−TAB_H..W).
-  Bump: mechanical stop at outer tab end.
-    STAND_X_BUMP_L wide × STAND_X_BUMP_H tall, at x=−(TAB_L+BUMP_L).
+  Foot ledge: protrudes from foot end in +y direction (outward when standing on short leg).
+    Rises TAB_H above ground at x=0, extends TAB_L deep, creating ledge for loom bottom rail.
+  Bump: mechanical stop at outer ledge end. BUMP_H tall × BUMP_L deep.
   Total polygon: 12 points (CW winding).
 
 Assembly:
-  stand_x_a — slot from top edge; tab protrudes left/−x.
-  stand_x_b — slot from hypotenuse edge; tab protrudes left/−x (same orientation on sheet).
+  stand_x_a — slot from top edge; ledge protrudes in +y from foot corner.
+  stand_x_b — slot from hypotenuse edge; same ledge orientation.
+  Stand upright on short legs (x=0 edge horizontal). Ledge at foot corner holds loom bottom rail.
   Slide piece B's slot down over piece A from above; slots interlock at x=L/2.
 
-Flat-pack: both pieces (480×80mm bounding box each) lay side-by-side in box layer 2.
+Flat-pack: both pieces (450×110mm bounding box each) lay side-by-side in box layer 2.
 
 Usage:
   python3 -m src.stand           → writes output/optional_loom_stand.svg
@@ -84,18 +84,18 @@ def build_stand_x_piece(p: dict):
     slot_cx = L / 2.0
 
     pts = [
-        (0.0,                           0.0),            #  1 foot top
-        (slot_cx - slot_w / 2.0,        0.0),            #  2 top edge before slot
-        (slot_cx - slot_w / 2.0,        slot_d),         #  3 slot left wall
-        (slot_cx + slot_w / 2.0,        slot_d),         #  4 slot bottom
-        (slot_cx + slot_w / 2.0,        0.0),            #  5 slot right wall top
-        (L,                             0.0),            #  6 triangle tip
-        (0.0,                           W),              #  7 hyp meets foot (straight edge 6→7)
-        (-(tab_l + bump_l),             W),              #  8 tab+bump outer bottom
-        (-(tab_l + bump_l),             W - tab_h - bump_h),  #  9 outer bump top
-        (-tab_l,                        W - tab_h - bump_h),  # 10 bump step inner top
-        (-tab_l,                        W - tab_h),      # 11 tab outer top
-        (0.0,                           W - tab_h),      # 12 tab inner top
+        (0.0,                           0.0),             #  1 foot top
+        (slot_cx - slot_w / 2.0,        0.0),             #  2 top edge before slot
+        (slot_cx - slot_w / 2.0,        slot_d),          #  3 slot left wall
+        (slot_cx + slot_w / 2.0,        slot_d),          #  4 slot bottom
+        (slot_cx + slot_w / 2.0,        0.0),             #  5 slot right wall top
+        (L,                             0.0),             #  6 triangle tip
+        (0.0,                           W),               #  7 hyp meets foot (straight edge 6→7)
+        (tab_h,                         W),               #  8 up along foot face to ledge height
+        (tab_h,                         W + tab_l),       #  9 forward along ledge top face
+        (tab_h + bump_h,                W + tab_l),       # 10 up: bump inner face
+        (tab_h + bump_h,                W + tab_l + bump_l),  # 11 forward: bump outer
+        (0.0,                           W + tab_l + bump_l),  # 12 down: outer face to ground
     ]
     return pts, []
 
@@ -142,18 +142,18 @@ def build_stand_x_piece_b(p: dict):
     # slot_d = W/4 = slot bottom y from top — same as piece A's slot bottom. Slots mate there.
 
     pts = [
-        (0.0,                           0.0),            #  1 foot top
-        (L,                             0.0),            #  2 tip (no slot on top edge)
-        (slot_cx + slot_w / 2.0,        hyp_y_right),   #  3 hyp before slot (right wall top)
-        (slot_cx + slot_w / 2.0,        slot_d),         #  4 slot right wall bottom
-        (slot_cx - slot_w / 2.0,        slot_d),         #  5 slot bottom
-        (slot_cx - slot_w / 2.0,        hyp_y_left),    #  6 hyp after slot (left wall top)
-        (0.0,                           W),              #  7 hyp meets foot
-        (-(tab_l + bump_l),             W),              #  8 tab+bump outer bottom
-        (-(tab_l + bump_l),             W - tab_h - bump_h),  #  9 outer bump top
-        (-tab_l,                        W - tab_h - bump_h),  # 10 bump step inner top
-        (-tab_l,                        W - tab_h),      # 11 tab outer top
-        (0.0,                           W - tab_h),      # 12 tab inner top
+        (0.0,                           0.0),             #  1 foot top
+        (L,                             0.0),             #  2 tip (no slot on top edge)
+        (slot_cx + slot_w / 2.0,        hyp_y_right),    #  3 hyp before slot (right wall top)
+        (slot_cx + slot_w / 2.0,        slot_d),          #  4 slot right wall bottom
+        (slot_cx - slot_w / 2.0,        slot_d),          #  5 slot bottom
+        (slot_cx - slot_w / 2.0,        hyp_y_left),     #  6 hyp after slot (left wall top)
+        (0.0,                           W),               #  7 hyp meets foot
+        (tab_h,                         W),               #  8 up along foot face to ledge height
+        (tab_h,                         W + tab_l),       #  9 forward along ledge top face
+        (tab_h + bump_h,                W + tab_l),       # 10 up: bump inner face
+        (tab_h + bump_h,                W + tab_l + bump_l),  # 11 forward: bump outer
+        (0.0,                           W + tab_l + bump_l),  # 12 down: outer face to ground
     ]
     return pts, []
 
@@ -181,13 +181,16 @@ def layout(p: dict) -> list:
     pts_a, holes_a = build_stand_x_piece(p)
     pts_b, holes_b = build_stand_x_piece_b(p)
 
-    W = p["STAND_X_W"]
+    W     = p["STAND_X_W"]
+    TAB_L = p["STAND_X_TAB_L"]
+    BUMP_L = p["STAND_X_BUMP_L"]
+    H = W + TAB_L + BUMP_L  # total piece height: triangle + ledge + bump
 
-    # place() maps sx to the left edge of the local bounding box (the tab tip at x=-(TAB_L+BUMP_L)).
-    # Passing sx=M puts the tab tip at the margin, foot at M+(TAB_L+BUMP_L), tip at M+L+(TAB_L+BUMP_L).
+    # place() maps sx to the left edge of the local bounding box (x=0, foot edge).
+    # Tab protrudes in +y (outward from foot when standing on short leg), no -x protrusion.
     parts_local = [
-        ("stand_x_a", pts_a, holes_a, "STAND X-A", M,           M),
-        ("stand_x_b", pts_b, holes_b, "STAND X-B", M, M + W + G),
+        ("stand_x_a", pts_a, holes_a, "STAND X-A", M,         M),
+        ("stand_x_b", pts_b, holes_b, "STAND X-B", M, M + H + G),
     ]
 
     placed = []
