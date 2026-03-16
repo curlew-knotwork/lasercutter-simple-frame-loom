@@ -311,6 +311,18 @@ Writes all 3 SVGs (loom, box, stand), verifies each, exits 1 on failure.
 
 ---
 
+### D-38 — QR code etch on bottom rail linking to design source repository
+
+- **Decision:** The bottom rail carries a QR code etch (laser-engraved, not cut) pointing to `https://github.com/curlew-knotwork/lasercutter-simple-frame-loom`. This permanently links any physical loom back to its generative source — cut files, design decisions, and assembly instructions.
+- **Part:** Bottom rail only. Top rail differs (heddle holes); adding QR to both would be redundant and the bottom rail's clean face (no heddle holes) provides the ideal field.
+- **Position:** Centred on the rail body — local x = FRAME_OUTER_W/2, local y = RAIL_W/2. This is well clear of the stile zones (0..STILE_W and FRAME_OUTER_W-STILE_W..FRAME_OUTER_W) and clear of the warp notches (which extend below y=RAIL_W, not into the body).
+- **Size:** QR version 4, error correction L, 1-module quiet zone → 35×35 modules at 0.5mm/module = 17.5×17.5mm. Margins: 4.75mm top/bottom within 27mm rail height; ≈163mm left/right within the stile-free zone.
+- **Render:** Filled black rects (`fill="#000000" stroke="none"`), one per dark QR module. This is laser etch, not cut — no `fill:none` red stroke.
+- **Implementation:** `_QR_URL` and `_QR_MODULE_SIZE` constants in `src/loom.py`; `_qr_etch_rects(ox, oy)` generates the rect list; `qr_etches` field added to the bottom_rail placed-part entry in `layout()`.
+- **Locked:** 2026-03-16
+
+---
+
 ### D-36 — Default notch_pitch changed to 10mm (31 notches, supersedes D-24 default)
 
 - **Decision:** `notch_pitch` default changed from 5mm to 10mm. Default loom now has 31 warp notches at 10mm pitch. `beater_tooth_divisor` default changed from 2 to 1.
