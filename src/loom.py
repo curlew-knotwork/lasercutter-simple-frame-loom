@@ -126,6 +126,7 @@ def build_beater(p: dict):
     pts = beater_pts(
         p["BEATER_W"], p["BEATER_HANDLE_H"], p["BEATER_TOOTH_H"],
         p["BEATER_TOOTH_W"], p["BEATER_TOOTH_PITCH"], p["BEATER_TOOTH_COUNT"],
+        first_cx=p["BEATER_FIRST_CX"],
     )
     # 3 grip ellipses evenly spaced in handle area
     cy = p["BEATER_HANDLE_H"] / 2.0
@@ -242,7 +243,7 @@ def layout(p: dict) -> list:
         return beater_path(
             p["BEATER_W"], p["BEATER_HANDLE_H"], p["BEATER_TOOTH_H"],
             p["BEATER_TOOTH_W"], p["BEATER_TOOTH_PITCH"], p["BEATER_TOOTH_COUNT"],
-            corner_r=cr, ox=sx, oy=sy,
+            corner_r=cr, ox=sx, oy=sy, first_cx=p["BEATER_FIRST_CX"],
         )
 
     def _shuttle_outer_path(sx, sy):
@@ -529,9 +530,28 @@ def print_layout_report(p: dict = None):
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    ok = print_layout_report()
+    import argparse
+    ap = argparse.ArgumentParser(description="Generate loom SVG (6mm birch ply, 600×600mm)")
+    ap.add_argument("--interior-w",          type=float, default=300.0, metavar="MM",
+                    help="weaving interior width in mm (default 300)")
+    ap.add_argument("--interior-h",          type=float, default=400.0, metavar="MM",
+                    help="weaving interior height in mm (default 400)")
+    ap.add_argument("--notch-pitch",         type=float, default=10.0,  metavar="MM",
+                    help="warp notch pitch in mm (default 10)")
+    ap.add_argument("--beater-tooth-divisor",type=int,   default=1,     metavar="N",
+                    help="1=tooth per gap (default), 2=every other gap, etc.")
+    ap.add_argument("--output",              type=str,   default=None,  metavar="PATH",
+                    help="output SVG path (default output/loom.svg)")
+    args = ap.parse_args()
+    p = make_params(
+        interior_w=args.interior_w,
+        interior_h=args.interior_h,
+        notch_pitch=args.notch_pitch,
+        beater_tooth_divisor=args.beater_tooth_divisor,
+    )
+    ok = print_layout_report(p)
     if ok:
-        path = write()
+        path = write(p, args.output)
         print(f"Written: {path}")
     else:
         print("NOT written — fix failures first.")

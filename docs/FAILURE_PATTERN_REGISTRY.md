@@ -62,6 +62,7 @@ Any YES: surface it immediately. Do not proceed until addressed.
 | P-S2 | Silent architectural choice | Was a design question resolved in code without surfacing it? | Before every src/ edit: name any architectural choice being made |
 | P-S3 | Spec parameter not locked | Is any base parameter (interior_w, mat, kerf) floating between sessions? | DECISIONS.md must list every base parameter with rationale |
 | P-S4 | Missing mating-pair check | Is any joint (tab+socket, tenon+mortise) without a matching invariant? | List all joint types; check each has a clearance invariant |
+| P-S5 | Decision without invariant | Does any DECISIONS.md quantitative constraint lack a predicate in `proofs/invariants.py`? | After locking any measurable constraint: write the invariant predicate + happy + unhappy test before closing. |
 
 ---
 
@@ -88,6 +89,8 @@ Any YES: surface it immediately. Do not proceed until addressed.
 | 2026-03-15 | Rail notch arc sweep | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | P-C7: fixed sweep in rounded_pts_to_path but did not check rail_path which manually reimplements the same convention — cookie-bite arcs on notch corners. |
 | 2026-03-15 | Beater tooth count/alignment | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | NO | NO | NO | NO | NO | NO | YES | YES | NO | NO | NO | NO | NO | P-C5: beater_tooth_count=notch_count chosen to "match warp count" rather than from geometric proof (should be notch_count-1, one per inter-warp gap). P-S1: no invariant existed for tooth alignment. P-S2: alignment choice made silently without surfacing. Fixed: D-30 locked, test_beater_teeth_interleave_warp_threads added. |
 | 2026-03-15 | Stand lean + heddle bar two-shed | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | NO | NO | NO | NO | P-S2: stand lean angle (10°) not surfaced until spar. Heddle bar all-holes design lacked two-shed functionality — silently resolved as guide bar. Fixed: D-31 (STAND_X_W=120mm, 15°), D-32 (alternating holes/slots). |
+| 2026-03-16 | Beater tooth structural minimum | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | YES | NO | YES | NO | NO | NO | P-S2: when user noted thread count halved (5mm→10mm pitch change), nearly silently reverted pitch to 5mm — which would have undone an agreed structural constraint (min tooth width 4mm). P-S3: "min tooth width 4mm in 6mm ply" was verbally agreed but not locked in DECISIONS.md, making it invisible and reversible. Fixed: D-37 locks the mechanical robustness requirement explicitly. |
+| 2026-03-16 | I-13 + P-S5 — decision-without-invariant | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | NO | P-S5(new): D-37 locked min tooth width 4mm verbally, no predicate in invariants.py, no test. Fixed: inv_beater_tooth_min_width (I-13) added to invariants.py + ALL_INVARIANTS; BEATER_MIN_TOOTH_W knob in params; 5 tests pass; test_parametric.py pitch=5mm entries use min_tooth_w=2.0 explicit opt-out; generate.py --min-tooth-w CLI flag added. 351 tests pass. |
 
 ---
 
@@ -120,9 +123,10 @@ Any YES: surface it immediately. Do not proceed until addressed.
 | P-T4 Wrong import | 0 | — |
 | P-T5 Verify not called | 0 | — |
 | P-S1 Invariant after fact | 1 | 2026-03-15 (no beater alignment invariant until bug found) |
-| P-S2 Silent arch choice | 3 | 2026-03-15 (heddle bar all-holes, stand lean angle) |
-| P-S3 Param not locked | 0 | — |
+| P-S2 Silent arch choice | 4 | 2026-03-16 (near-silent revert of tooth pitch structural decision) |
+| P-S3 Param not locked | 1 | 2026-03-16 (min tooth width 4mm agreed verbally, not in DECISIONS.md) |
 | P-S4 Missing mating pair | 0 | — |
+| P-S5 Decision without invariant | 1 | 2026-03-16 (D-37 min tooth width had no predicate until I-13 added) |
 | P-Q1 SVG/spec mismatch | 0 | — |
 | P-Q2 Cut/etch confusion | 0 | — |
 | P-Q3 Artifact in /tmp | 0 | — |
@@ -136,11 +140,13 @@ Rules marked **[WRITTEN OUTPUT REQUIRED]** must produce text in the response bef
 
 ### Spec / Sparring stage
 - Before locking any parameter: run P-G1 through P-G9 against the parameter set. **[WRITTEN OUTPUT REQUIRED]**: list each check as "P-Gn: NO — reason" or "P-Gn: YES — blocker".
+- **[WRITTEN OUTPUT REQUIRED]** Before changing any default that affects tooth width or notch pitch: confirm D-37 (min tooth width 4mm in 6mm ply) is still satisfied, or name the material that justifies the exception.
 - Before locking any joint: name the mating pair; confirm clearance invariant exists (P-S4).
 
 ### Proof / invariant stage
 - Every invariant must map to a DECISIONS.md entry (P-S1).
 - Every invariant must have both a happy-path and an unhappy-path test (P-T2).
+- **[WRITTEN OUTPUT REQUIRED]** After locking any DECISIONS.md entry with a measurable constraint: write the invariant predicate + add to ALL_INVARIANTS + write happy and unhappy tests before the session ends. No entry is "done" until its predicate exists. (P-S5)
 
 ### Code stage (src/ edit)
 - **[WRITTEN OUTPUT REQUIRED]** Before any new geometry: write in plain prose — where does the piece stand upright, what direction does each protrusion face, what material connects it to the body. Corner-point connection = zero structural width = STOP. (P-C1)

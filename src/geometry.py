@@ -420,23 +420,24 @@ def beater_pts(
     tooth_w: float,
     tooth_pitch: float,
     tooth_count: int,
+    first_cx: float = None,
 ) -> list:
     """
     Beater/comb: handle rectangle at top, teeth pointing downward.
     Local origin: top-left of handle.
     Total height: handle_h + tooth_h.
 
-    Teeth at pitch `tooth_pitch`, centred on the beater.
-    First tooth centreline: at x = (beater_w - (tooth_count-1)*tooth_pitch) / 2.
-    This ensures the tooth array is centred on the beater.
+    first_cx: local x of first tooth centreline. If None, centres array on beater_w.
+    Pass BEATER_FIRST_CX from params for alignment-correct positioning (D-35).
 
     Going clockwise from top-left of handle.
     """
     gap_w = tooth_pitch - tooth_w
 
-    # First tooth centreline x (centred on beater_w)
-    array_width = (tooth_count - 1) * tooth_pitch
-    first_cx = (beater_w - array_width) / 2.0
+    # First tooth centreline x
+    if first_cx is None:
+        array_width = (tooth_count - 1) * tooth_pitch
+        first_cx = (beater_w - array_width) / 2.0
 
     # The handle bottom edge and the top of the tooth region are at y=handle_h.
     # Going from left to right along the bottom of the handle / top of teeth:
@@ -690,12 +691,15 @@ def beater_path(
     corner_r: float = 0.0,
     ox: float = 0.0,
     oy: float = 0.0,
+    first_cx: float = None,
 ) -> str:
     """
     SVG path string for a beater/comb with optional fillets on all corners (D-25/D-26).
     Rounds every corner: 4 handle corners + 4 per tooth gap = 4 + 4×tooth_count total.
+    Pass first_cx=p["BEATER_FIRST_CX"] for alignment-correct tooth positioning (D-35).
     """
-    pts = beater_pts(beater_w, handle_h, tooth_h, tooth_w, tooth_pitch, tooth_count)
+    pts = beater_pts(beater_w, handle_h, tooth_h, tooth_w, tooth_pitch, tooth_count,
+                     first_cx=first_cx)
     return rounded_pts_to_path(pts, corner_r, ox=ox, oy=oy)
 
 

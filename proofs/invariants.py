@@ -361,6 +361,23 @@ def inv_stand_notch_geometry(p: dict) -> tuple:
 
 
 # ---------------------------------------------------------------------------
+# I-13: Beater tooth min width (D-37)
+# ---------------------------------------------------------------------------
+
+def inv_beater_tooth_min_width(p: dict) -> tuple:
+    """
+    I-13: BEATER_TOOTH_W >= BEATER_MIN_TOOTH_W
+    Beater tooth must be at least BEATER_MIN_TOOTH_W wide to survive handling in the
+    target material. D-37: default floor = 4mm for 6mm birch ply.
+    Override via min_tooth_w knob for stronger materials (acrylic, CNC metal).
+    """
+    tw = p["BEATER_TOOTH_W"]
+    mw = p["BEATER_MIN_TOOTH_W"]
+    detail = f"BEATER_TOOTH_W={tw:.4f} >= BEATER_MIN_TOOTH_W={mw:.4f}"
+    return (_pass("I-13", detail) if tw >= mw else _fail("I-13", detail))
+
+
+# ---------------------------------------------------------------------------
 # Master scan
 # ---------------------------------------------------------------------------
 
@@ -378,6 +395,7 @@ ALL_INVARIANTS = [
     ("I-11 crossbar clears corner",    inv_crossbar_mortises_clear_corner_zone),
     ("I-10 box holds loom",            inv_box_interior_holds_loom),
     ("I-1  critical parts fit sheet",  inv_critical_parts_fit_sheet),
+    ("I-13 beater tooth min width",    inv_beater_tooth_min_width),
 ]
 
 

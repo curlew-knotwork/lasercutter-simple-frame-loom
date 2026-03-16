@@ -90,19 +90,23 @@ class TestDefaultParams:
         ok, trace = inv_notch_count_pitch_span(p)
         assert ok, trace
 
-    def test_notch_count_is_61(self, p):
-        assert p["NOTCH_COUNT"] == 61, f"NOTCH_COUNT={p['NOTCH_COUNT']}, expected 61 (D-24)"
+    def test_notch_count_is_31(self, p):
+        """31 notches at 10mm pitch (D-36: min pitch for structural tooth strength in 6mm ply)."""
+        assert p["NOTCH_COUNT"] == 31, f"NOTCH_COUNT={p['NOTCH_COUNT']}, expected 31 (D-36)"
 
-    def test_notch_pitch_is_5(self, p):
-        assert abs(p["NOTCH_PITCH"] - 5.0) < 1e-9, f"NOTCH_PITCH={p['NOTCH_PITCH']}, expected 5.0 (D-24)"
+    def test_notch_pitch_is_10(self, p):
+        """Default notch_pitch=10mm — minimum for 4mm beater teeth in 6mm birch ply (D-36, D-37)."""
+        assert abs(p["NOTCH_PITCH"] - 10.0) < 1e-9, f"NOTCH_PITCH={p['NOTCH_PITCH']}, expected 10.0 (D-36)"
 
-    def test_notch_w_is_2mm(self, p):
-        """NOTCH_W=2mm at 5mm pitch gives 3mm tooth — D-24."""
-        assert abs(p["NOTCH_W"] - 2.0) < 1e-9, f"NOTCH_W={p['NOTCH_W']}, expected 2.0 (D-24)"
+    def test_notch_w_is_4mm(self, p):
+        """NOTCH_W=4mm at 10mm pitch (40% fill ratio, D-29, D-36)."""
+        assert abs(p["NOTCH_W"] - 4.0) < 1e-9, f"NOTCH_W={p['NOTCH_W']}, expected 4.0 (D-36)"
 
-    def test_beater_tooth_w_is_2mm(self, p):
-        """BEATER_TOOTH_W=2mm at 5mm pitch — D-24."""
-        assert abs(p["BEATER_TOOTH_W"] - 2.0) < 1e-9, f"BEATER_TOOTH_W={p['BEATER_TOOTH_W']}, expected 2.0"
+    def test_beater_tooth_w_at_default_divisor(self, p):
+        """BEATER_TOOTH_W = NOTCH_PITCH × BEATER_TOOTH_DIVISOR × 0.4 (D-35). Default: 5×2×0.4=4mm."""
+        expected = p["NOTCH_PITCH"] * p["BEATER_TOOTH_DIVISOR"] * 0.4
+        assert abs(p["BEATER_TOOTH_W"] - expected) < 1e-9, \
+            f"BEATER_TOOTH_W={p['BEATER_TOOTH_W']}, expected {expected}"
 
     def test_heddle_bar_hole_r_fits_pitch(self, p):
         """Heddle bar holes must not overlap: 2*hole_r < NOTCH_PITCH — D-24."""
@@ -204,33 +208,40 @@ class TestDefaultParams:
         """Catch-all: assert_all() must not raise for default params."""
         assert_all(p)  # raises AssertionError if any invariant fails
 
-    def test_beater_tooth_pitch_matches_notch_pitch(self, p):
-        """Beater tooth pitch must equal warp notch pitch for alignment."""
-        assert abs(p["BEATER_TOOTH_PITCH"] - p["NOTCH_PITCH"]) < 1e-9, (
-            f"beater pitch {p['BEATER_TOOTH_PITCH']} != notch pitch {p['NOTCH_PITCH']}"
+    def test_beater_tooth_pitch_is_notch_pitch_times_divisor(self, p):
+        """BEATER_TOOTH_PITCH = NOTCH_PITCH × BEATER_TOOTH_DIVISOR (D-35)."""
+        expected = p["NOTCH_PITCH"] * p["BEATER_TOOTH_DIVISOR"]
+        assert abs(p["BEATER_TOOTH_PITCH"] - expected) < 1e-9, (
+            f"beater pitch {p['BEATER_TOOTH_PITCH']} != notch_pitch×divisor {expected}"
         )
 
     def test_beater_tooth_count_is_notch_count_minus_1(self, p):
-        """Beater has one tooth per inter-warp gap: notch_count − 1 teeth (D-30)."""
-        assert p["BEATER_TOOTH_COUNT"] == p["NOTCH_COUNT"] - 1, (
-            f"beater teeth {p['BEATER_TOOTH_COUNT']} != notch_count-1 {p['NOTCH_COUNT']-1}"
+        """Beater teeth = (notch_count − 1) // beater_tooth_divisor (D-30, D-35)."""
+        expected = (p["NOTCH_COUNT"] - 1) // p["BEATER_TOOTH_DIVISOR"]
+        assert p["BEATER_TOOTH_COUNT"] == expected, (
+            f"beater teeth {p['BEATER_TOOTH_COUNT']} != (notch_count-1)//divisor={expected}"
         )
 
     def test_beater_teeth_interleave_warp_threads(self, p):
-        """Beater tooth centres must fall midway between warp thread centres (D-30).
+        """First tooth must fall midway between warps 0 and 1 for any divisor (D-30, D-35).
 
-        first_tooth_frame = (stile_w − beater_overhang) + (beater_w − (tooth_count−1)×pitch) / 2
-        Must equal notch_start_x + pitch/2 (midpoint between warps 0 and 1).
+        first_tooth_frame = (stile_w − beater_overhang) + BEATER_FIRST_CX
+        Must equal notch_start_x + notch_pitch/2.
         """
         beater_left = p["STILE_W"] - p["BEATER_OVERHANG"]
-        array_w     = (p["BEATER_TOOTH_COUNT"] - 1) * p["BEATER_TOOTH_PITCH"]
-        first_cx    = (p["BEATER_W"] - array_w) / 2.0
-        first_tooth = beater_left + first_cx
+        first_tooth = beater_left + p["BEATER_FIRST_CX"]
         expected    = p["NOTCH_START_X"] + p["NOTCH_PITCH"] / 2.0
         assert abs(first_tooth - expected) < 0.01, (
             f"First beater tooth at frame x={first_tooth:.3f}mm, "
             f"expected {expected:.3f}mm (midway between warps 0 and 1)"
         )
+
+    def test_beater_tooth_divisor_default_is_1(self, p):
+        """BEATER_TOOTH_DIVISOR=1 by default at pitch=10mm: 4mm teeth cover all inter-warp gaps (D-36)."""
+        assert "BEATER_TOOTH_DIVISOR" in p, "BEATER_TOOTH_DIVISOR missing from params"
+        assert p["BEATER_TOOTH_DIVISOR"] == 1, \
+            f"Default BEATER_TOOTH_DIVISOR={p['BEATER_TOOTH_DIVISOR']}, expected 1"
+        assert "BEATER_FIRST_CX" in p, "BEATER_FIRST_CX missing from params"
 
     def test_crossbar_body_width_equals_interior_w(self, p):
         assert abs(p["CROSS_BODY_W"] - p["INTERIOR_W"]) < 1e-9
@@ -388,6 +399,43 @@ class TestHeddleBarParams:
             f"BEATER_TOOTH_H={p['BEATER_TOOTH_H']}, expected min(NOTCH_W×10, 20)={expected}"
 
 
+class TestBeaterToothStrength:
+
+    def test_inv_beater_tooth_min_width_passes_default(self, p):
+        """I-13: default params must pass min tooth width invariant (D-37)."""
+        from proofs.invariants import inv_beater_tooth_min_width
+        ok, trace = inv_beater_tooth_min_width(p)
+        assert ok, trace
+
+    def test_inv_beater_tooth_below_min_fails(self, p):
+        """I-13 unhappy path: tooth_w below BEATER_MIN_TOOTH_W must fail."""
+        from proofs.invariants import inv_beater_tooth_min_width
+        bad = dict(p)
+        bad["BEATER_TOOTH_W"] = 1.0
+        bad["BEATER_MIN_TOOTH_W"] = 4.0
+        ok, trace = inv_beater_tooth_min_width(bad)
+        assert not ok, f"Expected I-13 to fail for 1mm tooth: {trace}"
+
+    def test_beater_min_tooth_w_in_params(self, p):
+        """BEATER_MIN_TOOTH_W present in params dict (D-37)."""
+        assert "BEATER_MIN_TOOTH_W" in p, "BEATER_MIN_TOOTH_W missing from params"
+        assert abs(p["BEATER_MIN_TOOTH_W"] - 4.0) < 1e-9, \
+            f"Default BEATER_MIN_TOOTH_W={p['BEATER_MIN_TOOTH_W']}, expected 4.0"
+
+    def test_beater_min_tooth_w_overridable(self):
+        """min_tooth_w knob: make_params(notch_pitch=5, min_tooth_w=2.0) must succeed."""
+        from src.params import make_params
+        p = make_params(notch_pitch=5.0, min_tooth_w=2.0)
+        assert abs(p["BEATER_MIN_TOOTH_W"] - 2.0) < 1e-9
+
+    def test_beater_tooth_w_meets_floor(self, p):
+        """Default BEATER_TOOTH_W must be >= BEATER_MIN_TOOTH_W (D-37)."""
+        assert p["BEATER_TOOTH_W"] >= p["BEATER_MIN_TOOTH_W"], (
+            f"BEATER_TOOTH_W={p['BEATER_TOOTH_W']:.2f} < "
+            f"BEATER_MIN_TOOTH_W={p['BEATER_MIN_TOOTH_W']:.2f}"
+        )
+
+
 class TestBoxBaseTabsParams:
 
     def test_ntabs_l_is_15(self, p):
@@ -466,3 +514,11 @@ class TestParametricKnobs:
         from src.params import make_params
         with pytest.raises(ValueError, match="divisible"):
             make_params(interior_w=300.0, notch_pitch=7.0)
+
+    def test_beater_tooth_divisor_2_halves_teeth(self):
+        """beater_tooth_divisor=2 at default pitch=10mm: 15 teeth at 8mm width (D-35)."""
+        from src.params import make_params
+        p = make_params(beater_tooth_divisor=2)
+        assert p["BEATER_TOOTH_COUNT"] == 15, f"Expected 15, got {p['BEATER_TOOTH_COUNT']}"
+        assert abs(p["BEATER_TOOTH_PITCH"] - 20.0) < 1e-9
+        assert abs(p["BEATER_TOOTH_W"] - 8.0) < 1e-9

@@ -26,13 +26,15 @@ from proofs.invariants import assert_all
 def make_params(
     interior_w: float = 300.0,   # mm, weaving interior width
     interior_h: float = 400.0,   # mm, weaving interior height
-    notch_pitch: float = 5.0,    # mm, warp notch centre-to-centre pitch (D-29)
+    notch_pitch: float = 10.0,   # mm, warp notch centre-to-centre pitch (D-29, D-36)
     mat: float = 6.0,            # mm, loom material (nominal)
     mat3: float = 3.0,           # mm, box/stand material (nominal)
     sheet_w: float = 600.0,      # mm, sheet width
     sheet_h: float = 600.0,      # mm, sheet height
     kerf: float = 0.15,          # mm per cut side
     margin: float = 2.0,         # mm, min clearance part-to-edge and part-to-part
+    beater_tooth_divisor: int = 1,  # D-35: 1=all gaps (default at pitch=10mm), 2=every other, etc.
+    min_tooth_w: float = 4.0,       # D-37: structural floor for beater tooth width (mm)
 ) -> dict:
     """
     Derive all parameters from base values.
@@ -54,6 +56,8 @@ def make_params(
             f"interior_w={interior_w} not divisible by notch_pitch={notch_pitch} "
             f"(D-29: (notch_count-1)×pitch must equal interior_w)"
         )
+    if beater_tooth_divisor < 1:
+        raise ValueError(f"beater_tooth_divisor={beater_tooth_divisor} must be >= 1 (D-35)")
 
     # ------------------------------------------------------------------
     # Structural member widths (fixed by finger-joint analysis, D-01)
@@ -138,18 +142,22 @@ def make_params(
     # Spans interior_w + 10mm overhang (5mm each side)
     # Teeth align with warp notches: same pitch, same count
     # ------------------------------------------------------------------
-    beater_overhang   = 5.0   # mm each side past inner stile face
-    beater_w          = interior_w + 2.0 * beater_overhang
-    beater_handle_h   = 22.0
-    beater_tooth_w    = notch_w                          # D-29: matches notch_w at any pitch
-    beater_tooth_h    = min(notch_w * 10.0, 20.0)       # D-29, D-33: 20mm at default pitch=5
-    beater_total_h    = beater_handle_h + beater_tooth_h
-    beater_tooth_gap  = notch_pitch - beater_tooth_w   # = 3.0mm at 5mm pitch
-    beater_tooth_pitch = beater_tooth_w + beater_tooth_gap  # = notch_pitch
-    beater_tooth_count = notch_count - 1               # D-30: one tooth per inter-warp gap
-    beater_grip_count = 3
-    beater_grip_rx    = 8.0  # mm ellipse semi-major
-    beater_grip_ry    = 3.5  # mm ellipse semi-minor
+    beater_overhang    = 5.0   # mm each side past inner stile face
+    beater_w           = interior_w + 2.0 * beater_overhang
+    beater_handle_h    = 22.0
+    # D-35: tooth pitch = notch_pitch × divisor; 40/60 fill ratio same as notch
+    beater_tooth_pitch = notch_pitch * beater_tooth_divisor
+    beater_tooth_w     = beater_tooth_pitch * 0.4      # = 4mm at default pitch=5, divisor=2
+    beater_tooth_h     = min(notch_w * 10.0, 20.0)    # D-29, D-33: 20mm at default pitch=5
+    beater_total_h     = beater_handle_h + beater_tooth_h
+    beater_tooth_gap   = beater_tooth_pitch - beater_tooth_w  # = pitch × 0.6
+    beater_tooth_count = (notch_count - 1) // beater_tooth_divisor  # D-30, D-35
+    # First tooth local x: derived from alignment constraint, not centering (D-35).
+    # Ensures first tooth is always at notch_start_x + notch_pitch/2 in frame coords.
+    beater_first_cx    = notch_start_x + notch_pitch / 2.0 - (stile_w - beater_overhang)
+    beater_grip_count  = 3
+    beater_grip_rx     = 8.0  # mm ellipse semi-major
+    beater_grip_ry     = 3.5  # mm ellipse semi-minor
 
     # ------------------------------------------------------------------
     # Heddle bar (laser-cut flat bar resting across frame top)
@@ -278,18 +286,21 @@ def make_params(
         "SHUTTLE_LIGHT_W":  shuttle_light_w,
 
         # Beater
-        "BEATER_OVERHANG":     beater_overhang,
-        "BEATER_W":            beater_w,
-        "BEATER_HANDLE_H":     beater_handle_h,
-        "BEATER_TOOTH_H":      beater_tooth_h,
-        "BEATER_TOTAL_H":      beater_total_h,
-        "BEATER_TOOTH_W":      beater_tooth_w,
-        "BEATER_TOOTH_GAP":    beater_tooth_gap,
-        "BEATER_TOOTH_PITCH":  beater_tooth_pitch,
-        "BEATER_TOOTH_COUNT":  beater_tooth_count,
-        "BEATER_GRIP_COUNT":   beater_grip_count,
-        "BEATER_GRIP_RX":      beater_grip_rx,
-        "BEATER_GRIP_RY":      beater_grip_ry,
+        "BEATER_OVERHANG":      beater_overhang,
+        "BEATER_W":             beater_w,
+        "BEATER_HANDLE_H":      beater_handle_h,
+        "BEATER_TOOTH_H":       beater_tooth_h,
+        "BEATER_TOTAL_H":       beater_total_h,
+        "BEATER_TOOTH_W":       beater_tooth_w,
+        "BEATER_TOOTH_GAP":     beater_tooth_gap,
+        "BEATER_TOOTH_PITCH":   beater_tooth_pitch,
+        "BEATER_TOOTH_COUNT":   beater_tooth_count,
+        "BEATER_TOOTH_DIVISOR": beater_tooth_divisor,
+        "BEATER_MIN_TOOTH_W":   min_tooth_w,
+        "BEATER_FIRST_CX":      beater_first_cx,
+        "BEATER_GRIP_COUNT":    beater_grip_count,
+        "BEATER_GRIP_RX":       beater_grip_rx,
+        "BEATER_GRIP_RY":       beater_grip_ry,
 
         # Heddle bar
         "HEDDLE_BAR_L":          heddle_bar_l,

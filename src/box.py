@@ -409,9 +409,25 @@ def print_layout_report(p: dict = None):
 
 
 if __name__ == "__main__":
-    ok = print_layout_report()
+    import argparse
+    ap = argparse.ArgumentParser(description="Generate box SVG (3mm birch ply, 600×600mm)")
+    ap.add_argument("--interior-w",  type=float, default=300.0, metavar="MM",
+                    help="loom interior width in mm (default 300)")
+    ap.add_argument("--interior-h",  type=float, default=400.0, metavar="MM",
+                    help="loom interior height in mm (default 400)")
+    ap.add_argument("--notch-pitch", type=float, default=10.0,  metavar="MM",
+                    help="warp notch pitch in mm (default 10)")
+    ap.add_argument("--output",      type=str,   default=None,  metavar="PATH",
+                    help="output SVG path (default output/optional_box.svg)")
+    args = ap.parse_args()
+    p = make_params(
+        interior_w=args.interior_w,
+        interior_h=args.interior_h,
+        notch_pitch=args.notch_pitch,
+    )
+    ok = print_layout_report(p)
     if ok:
-        path = write()
+        path = write(p, args.output)
         print(f"Written: {path}")
     else:
         print("NOT written — fix failures first.")

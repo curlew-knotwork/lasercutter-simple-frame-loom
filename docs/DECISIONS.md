@@ -299,6 +299,39 @@ Writes all 3 SVGs (loom, box, stand), verifies each, exits 1 on failure.
 - **Geometry:** Slot 3mm wide (= 2×hole_r; thread fits with clearance). Slot 12mm tall → 4mm material margin each side of 20mm bar. `HEDDLE_BAR_OFFSET` removed (no longer needed; holes/slots all centred).
 - **Locked:** 2026-03-15
 
+### D-37 — Mechanical robustness requirement: all parts must be strong enough for real functional use
+
+- **Decision:** The loom and all accessories must be mechanically strong and robust for repeated real-world weaving use, not just dimensionally correct. This is a hard design constraint that supersedes aesthetic or parametric convenience choices.
+- **Minimum beater tooth width: 4mm** in 6mm birch ply. Below 4mm, teeth snap under normal beater force. This is not a soft guideline — it is a floor.
+- **Implication:** At 40% fill ratio, `notch_pitch ≥ 10mm` is required for the default 6mm ply configuration. 5mm pitch gives 2mm teeth — they will break.
+- **Scope:** Any parameter change that reduces tooth width below 4mm (in ply) must be explicitly justified and gated on material choice. The `make_params` parametric knob (`notch_pitch`) allows finer pitch for acrylic, metal, or CNC-milled parts, but the default must not silently violate this floor.
+- **Invariant:** `I-13 inv_beater_tooth_min_width(p)` in `proofs/invariants.py` — checks `BEATER_TOOTH_W >= BEATER_MIN_TOOTH_W`. Enforced at `make_params()` time via `assert_all()`. Opt-out: pass `min_tooth_w=2.0` explicitly for fine-pitch non-ply cuts.
+- **Failure pattern:** This constraint was agreed verbally but not recorded. When the user noted the thread count had halved, there was an attempt to silently revert the pitch change — which would have undone an agreed structural requirement. Root cause: P-S3 (spec parameter not locked). The lack of an invariant predicate is P-S5. Recorded here to prevent recurrence.
+- **Locked:** 2026-03-16
+
+---
+
+### D-36 — Default notch_pitch changed to 10mm (31 notches, supersedes D-24 default)
+
+- **Decision:** `notch_pitch` default changed from 5mm to 10mm. Default loom now has 31 warp notches at 10mm pitch. `beater_tooth_divisor` default changed from 2 to 1.
+- **Rationale:** At pitch=5mm with divisor=1, beater teeth are 2mm wide × 20mm tall (10:1 aspect ratio in 6mm ply) — will snap in normal use. At pitch=10mm with divisor=1: teeth are 4mm wide × 20mm tall (5:1), matching the structural minimum. The beater now covers all 30 inter-warp gaps as required for even beating. The rigid heddle bar similarly has 31 openings at 10mm pitch — appropriate for the warp sett.
+- **Cascade:** notch_count=31, notch_w=4mm (40% fill), beater_tooth_count=30, beater_tooth_w=4mm, heddle_bar_hole_count=31. Warp sett ≈ 10 ends/10cm (suitable for chunky/worsted weight yarn — DK to bulky).
+- **Note:** D-35 knob `beater_tooth_divisor` remains available. divisor=2 gives 15 teeth at 20mm pitch for very coarse work or extremely strong materials; divisor=1 (default) covers all gaps.
+- **Supersedes:** D-24 (which set default pitch=5mm, 61 notches).
+- **Locked:** 2026-03-16
+
+---
+
+### D-35 — Beater tooth divisor: knob controlling tooth density (default=2)
+
+- **Decision:** `beater_tooth_divisor` is an explicit `make_params` knob (integer, default=2). `BEATER_TOOTH_COUNT = (NOTCH_COUNT − 1) // divisor`. `BEATER_TOOTH_PITCH = NOTCH_PITCH × divisor`. `BEATER_TOOTH_W = BEATER_TOOTH_PITCH × 0.4`.
+- **Default=2 rationale:** At pitch=5mm, divisor=1 gives 2mm teeth (fragile in plywood — will snap). Divisor=2 gives 4mm teeth at 10mm effective pitch — structurally sound for 6mm birch ply. Divisor=1 remains available for acrylic, metal, or CNC-milled parts.
+- **Alignment:** `BEATER_FIRST_CX = notch_start_x + notch_pitch/2 − (stile_w − beater_overhang) = 7.5mm`. Constant for any divisor. First tooth always at midpoint between warps 0 and 1; subsequent teeth at midpoints between warps 0↔1, 2↔3, 4↔5, … (skipping divisor−1 gaps between each tooth).
+- **Invariant:** `test_beater_teeth_interleave_warp_threads` in `tests/test_params.py`.
+- **Locked:** 2026-03-16
+
+---
+
 ### D-34 — Moving-part openings: no rectangular/sharp corners (stadium holes throughout)
 
 - **Decision:** All through-holes in moving parts (heddle bar, beater grip holes) use stadium or circle/ellipse shapes — never plain rectangles. Heddle bar S-slots changed from `rect_hole` to `stadium_hole` with `r = HEDDLE_BAR_HOLE_R = 1.5mm`, same total width (3mm) and height (12mm). `HEDDLE_BAR_SLOT_W` remains the declared slot width (= 2r).

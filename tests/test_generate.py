@@ -13,15 +13,15 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 class TestGenerateCLI:
 
     def test_run_default_returns_zero(self):
-        """run() with default 300×400mm, 5mm pitch returns 0 (success)."""
+        """run() with 300×400mm, 5mm pitch, min_tooth_w=2.0 (opt-out of 4mm ply floor) returns 0."""
         from src.generate import run
-        rc = run(300.0, 400.0, 5.0, 6.0, 0.15)
+        rc = run(300.0, 400.0, 5.0, 6.0, 0.15, min_tooth_w=2.0)
         assert rc == 0
 
     def test_run_small_returns_zero(self):
-        """run() with 150×200mm, 5mm pitch returns 0 (success)."""
+        """run() with 150×200mm, 5mm pitch, min_tooth_w=2.0 returns 0."""
         from src.generate import run
-        rc = run(150.0, 200.0, 5.0, 6.0, 0.15)
+        rc = run(150.0, 200.0, 5.0, 6.0, 0.15, min_tooth_w=2.0)
         assert rc == 0
 
     def test_run_chunky_pitch_returns_zero(self):

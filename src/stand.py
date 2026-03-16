@@ -344,9 +344,17 @@ def write(p: dict = None, path: str = None) -> str:
 
 
 if __name__ == "__main__":
-    path = write()
+    import argparse
+    ap = argparse.ArgumentParser(description="Generate stand SVG (6mm birch ply, 600×600mm)")
+    ap.add_argument("--interior-h", type=float, default=400.0, metavar="MM",
+                    help="loom interior height in mm — determines stand piece length (default 400)")
+    ap.add_argument("--output",     type=str,   default=None,  metavar="PATH",
+                    help="output SVG path (default output/optional_loom_stand.svg)")
+    args = ap.parse_args()
+    p = make_params(interior_h=args.interior_h)
+    path = write(p, args.output)
     print(f"Written: {path}")
-    placed = layout(DEFAULT)
+    placed = layout(p)
     for part in placed:
         bb = part["bbox"]
         print(f"  {part['id']:12s}  x={bb[0]:.1f}–{bb[2]:.1f}  y={bb[1]:.1f}–{bb[3]:.1f}"
