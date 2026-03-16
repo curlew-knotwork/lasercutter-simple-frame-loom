@@ -287,7 +287,7 @@ Writes all 3 SVGs (loom, box, stand), verifies each, exits 1 on failure.
 - **Decision:** `STAND_X_W = 120mm`. Assembled stand leans at arctan(120/444) ≈ **15.1°** from vertical.
 - **Rationale:** arctan(80/444) ≈ 10° is too upright for comfortable seated use. 15° is a natural working angle for a frame loom; sits stable without being excessively forward-leaning.
 - **Cascade:** `STAND_X_SLOT_D = W/4 = 30mm` (auto-derived). Piece bbox: 407mm × 155mm. Two pieces fit on 600×600mm sheet (top 314mm used). Both pieces still fit in box flat-pack: 2×120+2 = 242mm < BOX_INTERIOR_W ✓.
-- **Locked:** 2026-03-15
+- **Confirmed:** 2026-03-16 (user confirmed 15° is correct; 10° rejected as too upright)
 
 ### D-32 — Heddle bar: alternating stadium holes and rect slots (true two-shed)
 
@@ -311,15 +311,10 @@ Writes all 3 SVGs (loom, box, stand), verifies each, exits 1 on failure.
 
 ---
 
-### D-38 — QR code etch on bottom rail linking to design source repository
+### ~~D-38 — QR code etch on bottom rail~~ REMOVED 2026-03-16
 
-- **Decision:** The bottom rail carries a QR code etch (laser-engraved, not cut) pointing to `https://github.com/curlew-knotwork/lasercutter-simple-frame-loom`. This permanently links any physical loom back to its generative source — cut files, design decisions, and assembly instructions.
-- **Part:** Bottom rail only. Top rail differs (heddle holes); adding QR to both would be redundant and the bottom rail's clean face (no heddle holes) provides the ideal field.
-- **Position:** Centred on the rail body — local x = FRAME_OUTER_W/2, local y = RAIL_W/2. This is well clear of the stile zones (0..STILE_W and FRAME_OUTER_W-STILE_W..FRAME_OUTER_W) and clear of the warp notches (which extend below y=RAIL_W, not into the body).
-- **Size:** QR version 4, error correction L, 1-module quiet zone → 35×35 modules at 0.5mm/module = 17.5×17.5mm. Margins: 4.75mm top/bottom within 27mm rail height; ≈163mm left/right within the stile-free zone.
-- **Render:** Filled black rects (`fill="#000000" stroke="none"`), one per dark QR module. This is laser etch, not cut — no `fill:none` red stroke.
-- **Implementation:** `_QR_URL` and `_QR_MODULE_SIZE` constants in `src/loom.py`; `_qr_etch_rects(ox, oy)` generates the rect list; `qr_etches` field added to the bottom_rail placed-part entry in `layout()`.
-- **Locked:** 2026-03-16
+- **Removed:** 2026-03-16. QR code etch on bottom rail was implemented then removed.
+- **Reason:** 0.5mm modules on 6mm birch ply: laser kerf (~0.3mm total) consumes 60% of each light module gap — code would be unreadable. Increasing module size to 1mm (35mm square) would work but adds complexity (label placement, layout constraints) for marginal value. URL etch adds no structural function. Removed in favour of keeping the bottom rail clean.
 
 ---
 

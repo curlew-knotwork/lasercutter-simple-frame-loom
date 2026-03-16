@@ -290,47 +290,6 @@ class TestLayout:
         assert ly < hole_top, \
             f"Heddle bar label y={ly:.3f} not above hole top y={hole_top:.3f}"
 
-    def test_bottom_rail_label_left_of_qr(self):
-        """D-38: bottom rail label must be to the left of the QR code (no overlap)."""
-        part = self.by_id["bottom_rail"]
-        assert "label_xy" in part, "bottom_rail missing label_xy — label overlaps QR code"
-        lx, _ = part["label_xy"]
-        # QR left edge in sheet coords = sx + FRAME_OUTER_W/2 - 17.5/2
-        sx = part["bbox"][0]
-        qr_left = sx + p["FRAME_OUTER_W"] / 2.0 - 17.5 / 2.0
-        assert lx < qr_left, (
-            f"Bottom rail label x={lx:.1f} not left of QR left={qr_left:.1f} — overlap"
-        )
-
-    def test_bottom_rail_has_qr_etch(self):
-        """D-38: bottom rail has qr_etches field with at least one filled rect (etch)."""
-        part = self.by_id["bottom_rail"]
-        assert "qr_etches" in part, "bottom_rail missing qr_etches field (D-38)"
-        rects = part["qr_etches"]
-        assert len(rects) > 0, "bottom_rail qr_etches is empty"
-        # Every entry must be an SVG rect element string (etch, black fill)
-        for r in rects:
-            assert "<rect" in r, f"qr_etches entry not a rect: {r[:60]}"
-            assert 'fill="#000000"' in r or "fill:#000000" in r, \
-                f"qr_etches rect not black: {r[:80]}"
-
-    def test_bottom_rail_qr_within_body(self):
-        """D-38: QR code etch rects must all lie within the bottom rail bounding box."""
-        part = self.by_id["bottom_rail"]
-        if "qr_etches" not in part:
-            pytest.skip("qr_etches not yet implemented")
-        bb = part["bbox"]    # (x0, y0, x1, y1) in sheet coords
-        import re
-        for r in part["qr_etches"]:
-            m = re.search(r'x="([0-9.]+)".*?y="([0-9.]+)".*?width="([0-9.]+)".*?height="([0-9.]+)"', r)
-            if not m:
-                continue
-            rx, ry, rw, rh = [float(v) for v in m.groups()]
-            assert rx >= bb[0] - 1e-3, f"QR rect x={rx:.3f} < rail left {bb[0]:.3f}"
-            assert ry >= bb[1] - 1e-3, f"QR rect y={ry:.3f} < rail top {bb[1]:.3f}"
-            assert rx + rw <= bb[2] + 1e-3, f"QR rect right={rx+rw:.3f} > rail right {bb[2]:.3f}"
-            assert ry + rh <= bb[3] + 1e-3, f"QR rect bot={ry+rh:.3f} > rail bot {bb[3]:.3f}"
-
     def test_heddle_bar_has_hs_etch_labels(self):
         """D-33: heddle bar has per-position H/S etch labels (hole=H, slot=S)."""
         part = self.by_id["heddle_bar"]

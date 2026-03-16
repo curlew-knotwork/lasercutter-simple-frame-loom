@@ -24,8 +24,6 @@ Usage:
 import os
 import sys
 
-import qrcode
-
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.params import DEFAULT, make_params
@@ -38,37 +36,6 @@ from src.geometry import (
 )
 
 OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "..", "output", "loom.svg")
-
-# D-38: QR code etch on bottom rail — links to the design source repository.
-_QR_URL         = "https://github.com/curlew-knotwork/lasercutter-simple-frame-loom"
-_QR_MODULE_SIZE = 0.5   # mm per QR module — readable by phone camera at ~20cm
-
-
-def _qr_etch_rects(ox: float, oy: float) -> list:
-    """
-    Generate SVG rect elements for the QR code etch at sheet position (ox, oy).
-    ox, oy = top-left corner of the QR code bounding box in sheet coords.
-    Returns a list of SVG element strings (filled black rects, etch style).
-    """
-    qr = qrcode.QRCode(
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        border=1,        # 1-module quiet zone (keeps code compact)
-    )
-    qr.add_data(_QR_URL)
-    qr.make(fit=True)
-    matrix = qr.get_matrix()
-    s = _QR_MODULE_SIZE
-    rects = []
-    for row_i, row in enumerate(matrix):
-        for col_i, dark in enumerate(row):
-            if dark:
-                x = ox + col_i * s
-                y = oy + row_i * s
-                rects.append(
-                    f'<rect x="{x:.3f}" y="{y:.3f}" width="{s}" height="{s}"'
-                    f' fill="#000000" stroke="none"/>'
-                )
-    return rects
 
 
 # ---------------------------------------------------------------------------
@@ -314,17 +281,6 @@ def layout(p: dict) -> list:
         }
         if pid in _outer_path_fns:
             entry["outer_path"] = _outer_path_fns[pid](sx, sy)
-        # D-38: QR code etch on bottom rail — centred on rail body (clear of stile zones)
-        if pid == "bottom_rail":
-            n_modules = 35   # qrcode version 4 + 1-module border = 35 modules
-            qr_size = n_modules * _QR_MODULE_SIZE   # = 17.5mm
-            qr_ox = sx + p["FRAME_OUTER_W"] / 2.0 - qr_size / 2.0
-            qr_oy = sy + p["RAIL_W"] / 2.0 - qr_size / 2.0
-            entry["qr_etches"] = _qr_etch_rects(qr_ox, qr_oy)
-            # Label in left clear zone: centred between stile inner edge and QR left edge
-            label_x = sx + (p["STILE_W"] + (p["FRAME_OUTER_W"] / 2.0 - qr_size / 2.0)) / 2.0
-            label_y = sy + p["RAIL_W"] / 2.0
-            entry["label_xy"] = (label_x, label_y)
         # D-27: custom label positions — avoid placing labels on cut-outs
         bb = entry["bbox"]
         bcx = (bb[0] + bb[2]) / 2.0
@@ -423,9 +379,6 @@ def render(placed: list, p: dict) -> str:
         # Per-hole H/S labels (D-33): heddle bar only
         for (elx, ely, letter, esz) in part.get("hole_labels", []):
             children.append(etch_text(elx, ely, letter, size=esz))
-        # D-38: QR code etch rects on bottom rail
-        for qr_rect in part.get("qr_etches", []):
-            children.append(qr_rect)
 
         lines.append(svg_group(pid, children))
         lines.append("")
