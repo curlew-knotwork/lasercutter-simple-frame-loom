@@ -361,6 +361,26 @@ def inv_stand_notch_geometry(p: dict) -> tuple:
 
 
 # ---------------------------------------------------------------------------
+# I-14: Corner radii positive (D-39)
+# ---------------------------------------------------------------------------
+
+def inv_corner_r_positive(p: dict) -> tuple:
+    """
+    I-14: CORNER_R > 0 AND HEDDLE_BAR_CORNER_R > 0
+    Thread-contact parts (rail notches, beater teeth, heddle bar) must have rounded
+    corners so warp and weft threads slide without snagging or abrasion. D-39.
+    """
+    cr  = p["CORNER_R"]
+    hcr = p["HEDDLE_BAR_CORNER_R"]
+    ok_cr  = cr  > 0.0
+    ok_hcr = hcr > 0.0
+    ok = ok_cr and ok_hcr
+    detail = (f"CORNER_R={cr:.3f}>0={'OK' if ok_cr else 'FAIL'}; "
+              f"HEDDLE_BAR_CORNER_R={hcr:.3f}>0={'OK' if ok_hcr else 'FAIL'}")
+    return (_pass("I-14", detail) if ok else _fail("I-14", detail))
+
+
+# ---------------------------------------------------------------------------
 # I-13: Beater tooth min width (D-37)
 # ---------------------------------------------------------------------------
 
@@ -396,6 +416,7 @@ ALL_INVARIANTS = [
     ("I-10 box holds loom",            inv_box_interior_holds_loom),
     ("I-1  critical parts fit sheet",  inv_critical_parts_fit_sheet),
     ("I-13 beater tooth min width",    inv_beater_tooth_min_width),
+    ("I-14 corner radii positive",     inv_corner_r_positive),
 ]
 
 

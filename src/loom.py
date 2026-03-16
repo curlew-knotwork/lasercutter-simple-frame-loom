@@ -434,6 +434,21 @@ def verify(placed: list, p: dict) -> list:
     else:
         results.append(("I-12", True, "All outer paths are closed"))
 
+    # D-34: moving parts (heddle_bar, beater) must have no rect_hole
+    _moving_parts = {"heddle_bar", "beater"}
+    d34_ok = True
+    d34_bad = []
+    for part in placed:
+        if part["id"] in _moving_parts:
+            for hole in part["sheet_holes"]:
+                if hole[0] == "rect":
+                    d34_ok = False
+                    d34_bad.append(f"{part['id']}:{hole}")
+    if d34_ok:
+        results.append(("D-34", True, "No rect_hole in moving parts (heddle_bar, beater)"))
+    else:
+        results.append(("D-34", False, f"rect_hole found in moving part: {d34_bad}"))
+
     # Spot-check dimensions
     checks = [
         ("stile_L height", "stile_L",

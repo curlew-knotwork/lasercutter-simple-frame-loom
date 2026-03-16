@@ -81,6 +81,18 @@ class TestPartBuilders:
         assert "HEDDLE_BAR_CORNER_R" in p, "HEDDLE_BAR_CORNER_R missing from params"
         assert abs(p["HEDDLE_BAR_CORNER_R"] - 2.0) < 1e-9
 
+    def test_heddle_bar_holes_all_non_rect(self):
+        """D-34: heddle bar holes must be stadium/circle/ellipse — no rect_hole (snagging)."""
+        _, holes = build_heddle_bar(p)
+        for hole in holes:
+            assert hole[0] != 'rect', f"heddle_bar has rect hole: {hole}"
+
+    def test_beater_holes_all_non_rect(self):
+        """D-34: beater grip holes must be ellipse — no rect_hole."""
+        _, holes = build_beater(p)
+        for hole in holes:
+            assert hole[0] != 'rect', f"beater has rect hole: {hole}"
+
     def test_bottom_rail_has_no_holes(self):
         _, holes = build_bottom_rail(p)
         assert holes == []
@@ -235,6 +247,18 @@ class TestLayout:
         expected = p["FRAME_OUTER_W"] + 2.0 * p["STAND_RAIL_TAB_L"]
         assert abs((bb[2] - bb[0]) - expected) < 0.1
 
+    def test_bottom_rail_outer_path_has_arcs(self):
+        """D-39: bottom rail outer path must contain arc commands (CORNER_R applied to notches)."""
+        part = self.by_id["bottom_rail"]
+        assert "outer_path" in part
+        assert " A " in part["outer_path"], "bottom_rail outer_path has no arcs — CORNER_R not applied"
+
+    def test_beater_outer_path_has_arcs(self):
+        """D-39: beater outer path must contain arc commands (CORNER_R applied to teeth)."""
+        part = self.by_id["beater"]
+        assert "outer_path" in part
+        assert " A " in part["outer_path"], "beater outer_path has no arcs — CORNER_R not applied"
+
     def test_bottom_rail_width(self):
         bb = self.by_id["bottom_rail"]["bbox"]
         assert abs((bb[2] - bb[0]) - p["FRAME_OUTER_W"]) < 0.1
@@ -332,6 +356,13 @@ class TestVerify:
     def test_I12_passes(self):
         ok, detail = self.by_name["I-12"]
         assert ok, detail
+
+    def test_D34_check_present_and_passes(self):
+        """D-34: verify() must include a D-34 check (no rect_hole in moving parts)."""
+        assert "D-34" in self.by_name, "loom.verify() missing D-34 check"
+        ok, detail = self.by_name["D-34"]
+        assert ok, detail
+
 
     def test_stile_L_height_spot_check(self):
         ok, detail = self.by_name["dim:stile_L height"]

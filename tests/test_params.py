@@ -436,6 +436,31 @@ class TestBeaterToothStrength:
         )
 
 
+class TestCornerRInvariant:
+
+    def test_inv_corner_r_positive_passes_default(self, p):
+        """I-14: default params must pass corner-r-positive invariant (D-39)."""
+        from proofs.invariants import inv_corner_r_positive
+        ok, trace = inv_corner_r_positive(p)
+        assert ok, trace
+
+    def test_inv_corner_r_zero_fails(self, p):
+        """I-14 unhappy path: CORNER_R=0 must fail."""
+        from proofs.invariants import inv_corner_r_positive
+        bad = dict(p)
+        bad["CORNER_R"] = 0.0
+        ok, trace = inv_corner_r_positive(bad)
+        assert not ok, f"Expected I-14 to fail for CORNER_R=0: {trace}"
+
+    def test_inv_heddle_corner_r_zero_fails(self, p):
+        """I-14 unhappy path: HEDDLE_BAR_CORNER_R=0 must fail."""
+        from proofs.invariants import inv_corner_r_positive
+        bad = dict(p)
+        bad["HEDDLE_BAR_CORNER_R"] = 0.0
+        ok, trace = inv_corner_r_positive(bad)
+        assert not ok, f"Expected I-14 to fail for HEDDLE_BAR_CORNER_R=0: {trace}"
+
+
 class TestBoxBaseTabsParams:
 
     def test_ntabs_l_is_15(self, p):

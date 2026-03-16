@@ -318,6 +318,20 @@ Writes all 3 SVGs (loom, box, stand), verifies each, exits 1 on failure.
 
 ---
 
+### D-39 — Thread-contact surfaces must have rounded corners (CORNER_R > 0)
+
+- **Decision:** All surfaces over which yarn or thread slides must have rounded corners. Sharp corners cause abrasion, snagging, and premature yarn breakage under weaving tension.
+- **Scope:**
+  - Rail warp notches: `CORNER_R = 0.5mm` quarter-circle fillets at all 4 notch corners (outer and inner). Warp threads sit in these notches under tension throughout weaving.
+  - Beater teeth: `CORNER_R = 0.5mm` fillets at all tooth corners. Weft thread passes over teeth on every pick.
+  - Heddle bar outer profile: `HEDDLE_BAR_CORNER_R = 2.0mm` outer corner fillets (hand-held moving part, also thread contact).
+  - Heddle bar openings: covered by D-34 (stadium/circle/ellipse — no rect).
+- **Implementation:** `rail_path(corner_r=p["CORNER_R"])` and `beater_path(corner_r=p["CORNER_R"])` in `src/loom.py`. Heddle bar via `rounded_pts_to_path(..., corner_r=p["HEDDLE_BAR_CORNER_R"])`.
+- **Invariant:** `I-14 inv_corner_r_positive(p)` in `proofs/invariants.py` — enforces `CORNER_R > 0` and `HEDDLE_BAR_CORNER_R > 0`. Regression tests in `test_loom.py`: `test_bottom_rail_outer_path_has_arcs`, `test_beater_outer_path_has_arcs`. Sweep-direction tests: `test_convex_corners_sweep_outward`, `test_rail_path_notch_arc_sweep_order` in `test_geometry.py`.
+- **Locked:** 2026-03-16
+
+---
+
 ### D-36 — Default notch_pitch changed to 10mm (31 notches, supersedes D-24 default)
 
 - **Decision:** `notch_pitch` default changed from 5mm to 10mm. Default loom now has 31 warp notches at 10mm pitch. `beater_tooth_divisor` default changed from 2 to 1.
@@ -344,6 +358,7 @@ Writes all 3 SVGs (loom, box, stand), verifies each, exits 1 on failure.
 - **Decision:** All through-holes in moving parts (heddle bar, beater grip holes) use stadium or circle/ellipse shapes — never plain rectangles. Heddle bar S-slots changed from `rect_hole` to `stadium_hole` with `r = HEDDLE_BAR_HOLE_R = 1.5mm`, same total width (3mm) and height (12mm). `HEDDLE_BAR_SLOT_W` remains the declared slot width (= 2r).
 - **Rationale:** Sharp rectangular corners snag yarn, especially under repeated motion. Semicircular ends guide yarn past the opening without catching. Applies to all openings through which thread or yarn moves relative to the part.
 - **Rule:** Any future opening in a moving part must be circle, ellipse, or stadium — never rect_hole.
+- **Invariant:** `loom.verify()` includes a D-34 check that iterates heddle_bar and beater placed-part holes and asserts none have type `'rect'`. Test: `test_D34_check_present_and_passes` in `tests/test_loom.py`.
 - **Locked:** 2026-03-16
 
 ---

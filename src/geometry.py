@@ -499,7 +499,7 @@ def beater_pts(
 # rail_path() and beater_path() return SVG path strings with quarter-circle
 # fillets at notch/tooth corners.  Sweep direction from cross-product rule:
 #   z = dx_in * dy_out − dy_in * dx_out
-#   z > 0 → sweep=0,  z < 0 → sweep=1
+#   z > 0 → sweep=1 (right turn / convex),  z < 0 → sweep=0 (left turn / concave)
 # ox, oy: sheet-coordinate offset applied to all coordinates.
 # ---------------------------------------------------------------------------
 
@@ -524,7 +524,7 @@ def rounded_pts_to_path(
 
     Sweep direction from cross-product rule:
       z = dx_in * dy_out - dy_in * dx_out
-      z > 0 → sweep=0,  z < 0 → sweep=1
+      z > 0 → sweep=1 (right turn / convex),  z < 0 → sweep=0 (left turn / concave)
 
     M starts at departure of corners[0]; path ends with the arc of corners[0] then Z.
     ox, oy: sheet-coordinate offset applied to all coordinates.
@@ -650,7 +650,7 @@ def rail_path(
             segs.append(f"L {P(nxl, edge_y)}")
         else:
             # Outer right: incoming left(-1,0) → outgoing down(0,+d_sign)
-            # z = (-1)*d_sign - 0*0 = -d_sign  → sweep=1 if d>0, sweep=0 if d<0
+            # z = (-1)*d_sign - 0*0 = -d_sign  → sweep=0 if d>0, sweep=1 if d<0
             sw_outer = 0 if d > 0 else 1
             sw_inner = 1 - sw_outer  # inner corners opposite
 
