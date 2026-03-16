@@ -47,30 +47,34 @@ class TestPartBuilders:
             f"Top rail width {actual_w:.2f} != {expected_w:.2f}"
 
     def test_heddle_bar_alternating_hole_slot_types(self):
-        """D-32: even positions = stadium holes (controlled threads), odd = rect slots (free threads)."""
+        """D-32/D-34: all openings are stadium holes; even=short (HOLE_H), odd=tall (SLOT_H)."""
         _, holes = build_heddle_bar(p)
         for i, h in enumerate(holes):
-            expected = 'stadium' if i % 2 == 0 else 'rect'
-            assert h[0] == expected, \
-                f"Position {i}: type={h[0]!r}, expected {expected!r}"
+            assert h[0] == 'stadium', \
+                f"Position {i}: type={h[0]!r}, expected 'stadium' (D-34: slots rounded)"
+            expected_h = p["HEDDLE_BAR_HOLE_H"] if i % 2 == 0 else p["HEDDLE_BAR_SLOT_H"]
+            assert abs(h[4] - expected_h) < 1e-9, \
+                f"Position {i}: height={h[4]}, expected {expected_h}"
 
-    def test_heddle_bar_has_both_hole_types(self):
-        """D-32: heddle bar has both stadium holes and rect slots."""
+    def test_heddle_bar_has_both_hole_heights(self):
+        """D-32/D-34: heddle bar has short holes (HOLE_H) and tall slots (SLOT_H), all stadium."""
         _, holes = build_heddle_bar(p)
-        kinds = {h[0] for h in holes}
-        assert kinds == {'stadium', 'rect'}, f"Expected {{'stadium', 'rect'}}, got {kinds}"
+        heights = {h[4] for h in holes}
+        assert p["HEDDLE_BAR_HOLE_H"] in heights, "Short H holes not found"
+        assert p["HEDDLE_BAR_SLOT_H"] in heights, "Tall S slots not found"
 
     def test_heddle_bar_hole_and_slot_heights(self):
-        """D-32: stadium holes height=HEDDLE_BAR_HOLE_H; rect slots height=HEDDLE_BAR_SLOT_H."""
+        """D-32/D-34: even positions height=HEDDLE_BAR_HOLE_H; odd positions height=HEDDLE_BAR_SLOT_H."""
         _, holes = build_heddle_bar(p)
         for i, h in enumerate(holes):
-            if h[0] == 'stadium':
-                assert abs(h[4] - p["HEDDLE_BAR_HOLE_H"]) < 1e-9, \
-                    f"Stadium hole {i}: height={h[4]} != {p['HEDDLE_BAR_HOLE_H']}"
+            assert h[0] == 'stadium', f"Position {i} not stadium"
+            _, hcx, hcy, hr, hh = h
+            if i % 2 == 0:
+                assert abs(hh - p["HEDDLE_BAR_HOLE_H"]) < 1e-9, \
+                    f"Even hole {i}: height={hh} != {p['HEDDLE_BAR_HOLE_H']}"
             else:
-                _, hx, hy, hw, hh = h
                 assert abs(hh - p["HEDDLE_BAR_SLOT_H"]) < 1e-9, \
-                    f"Rect slot {i}: height={hh} != HEDDLE_BAR_SLOT_H={p['HEDDLE_BAR_SLOT_H']}"
+                    f"Odd slot {i}: height={hh} != {p['HEDDLE_BAR_SLOT_H']}"
 
     def test_heddle_bar_corner_r_in_params(self):
         """Heddle bar outer corners rounded 2mm for hand-held comfort."""
@@ -285,6 +289,25 @@ class TestLayout:
         hole_top = bb[1] + p["HEDDLE_BAR_W"] / 2.0 - p["HEDDLE_BAR_HOLE_H"] / 2.0
         assert ly < hole_top, \
             f"Heddle bar label y={ly:.3f} not above hole top y={hole_top:.3f}"
+
+    def test_heddle_bar_has_hs_etch_labels(self):
+        """D-33: heddle bar has per-position H/S etch labels (hole=H, slot=S)."""
+        part = self.by_id["heddle_bar"]
+        assert "hole_labels" in part, "heddle_bar missing hole_labels (D-33)"
+        labels = part["hole_labels"]
+        count = p["HEDDLE_BAR_HOLE_COUNT"]
+        # Must have at least count labels (one per position; holes may have two)
+        assert len(labels) >= count, \
+            f"Expected >= {count} labels, got {len(labels)}"
+        letters = [lbl for _, _, lbl, _ in labels]
+        assert "H" in letters, "No H labels found in heddle_bar hole_labels"
+        assert "S" in letters, "No S labels found in heddle_bar hole_labels"
+        # H labels must only appear at even-index positions (stadium holes)
+        # S labels must appear at both even (paired with H) and odd (slots)
+        h_count = letters.count("H")
+        s_count = letters.count("S")
+        assert h_count > 0 and s_count > 0, \
+            f"H count={h_count}, S count={s_count}: both must be positive"
 
 
 # ---------------------------------------------------------------------------

@@ -370,7 +370,7 @@ class TestUnhappyPath:
 class TestHeddleBarParams:
 
     def test_heddle_bar_slot_params(self, p):
-        """D-32: HEDDLE_BAR_SLOT_W and HEDDLE_BAR_SLOT_H present for rect slots."""
+        """D-32/D-34: HEDDLE_BAR_SLOT_W and HEDDLE_BAR_SLOT_H present for tall stadium slots."""
         assert "HEDDLE_BAR_SLOT_W" in p, "HEDDLE_BAR_SLOT_W missing (D-32)"
         assert "HEDDLE_BAR_SLOT_H" in p, "HEDDLE_BAR_SLOT_H missing (D-32)"
         assert p["HEDDLE_BAR_SLOT_W"] > 0
@@ -382,10 +382,10 @@ class TestHeddleBarParams:
         assert abs(p["HEDDLE_BAR_HOLE_H"] - 6.0) < 1e-9
 
     def test_beater_tooth_h_derived(self, p):
-        """BEATER_TOOTH_H = min(NOTCH_W × 6.5, 20.0) (D-29)."""
-        expected = min(p["NOTCH_W"] * 6.5, 20.0)
+        """BEATER_TOOTH_H = min(NOTCH_W × 10, 20.0) (D-29, D-33). At pitch=5, NOTCH_W=2: 20mm."""
+        expected = min(p["NOTCH_W"] * 10.0, 20.0)
         assert abs(p["BEATER_TOOTH_H"] - expected) < 1e-9, \
-            f"BEATER_TOOTH_H={p['BEATER_TOOTH_H']}, expected min(NOTCH_W×6.5, 20)={expected}"
+            f"BEATER_TOOTH_H={p['BEATER_TOOTH_H']}, expected min(NOTCH_W×10, 20)={expected}"
 
 
 class TestBoxBaseTabsParams:
@@ -424,10 +424,10 @@ class TestParametricKnobs:
         assert abs(p["NOTCH_W"] - 4.0) < 1e-9
 
     def test_beater_tooth_h_derived_from_notch_w(self):
-        """BEATER_TOOTH_H = min(NOTCH_W × 6.5, 20.0) (D-29)."""
+        """BEATER_TOOTH_H = min(NOTCH_W × 10, 20.0) (D-29, D-33). At pitch=10, NOTCH_W=4: 20mm."""
         from src.params import make_params
         p = make_params(notch_pitch=10.0)
-        expected = min(4.0 * 6.5, 20.0)  # = 20.0
+        expected = min(4.0 * 10.0, 20.0)  # = 20.0
         assert abs(p["BEATER_TOOTH_H"] - expected) < 1e-9
 
     def test_shuttle_l_auto_from_interior_w(self):

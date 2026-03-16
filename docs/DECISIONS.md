@@ -299,6 +299,22 @@ Writes all 3 SVGs (loom, box, stand), verifies each, exits 1 on failure.
 - **Geometry:** Slot 3mm wide (= 2×hole_r; thread fits with clearance). Slot 12mm tall → 4mm material margin each side of 20mm bar. `HEDDLE_BAR_OFFSET` removed (no longer needed; holes/slots all centred).
 - **Locked:** 2026-03-15
 
+### D-34 — Moving-part openings: no rectangular/sharp corners (stadium holes throughout)
+
+- **Decision:** All through-holes in moving parts (heddle bar, beater grip holes) use stadium or circle/ellipse shapes — never plain rectangles. Heddle bar S-slots changed from `rect_hole` to `stadium_hole` with `r = HEDDLE_BAR_HOLE_R = 1.5mm`, same total width (3mm) and height (12mm). `HEDDLE_BAR_SLOT_W` remains the declared slot width (= 2r).
+- **Rationale:** Sharp rectangular corners snag yarn, especially under repeated motion. Semicircular ends guide yarn past the opening without catching. Applies to all openings through which thread or yarn moves relative to the part.
+- **Rule:** Any future opening in a moving part must be circle, ellipse, or stadium — never rect_hole.
+- **Locked:** 2026-03-16
+
+---
+
+### D-33 — Beater tooth height: min(NOTCH_W × 10, 20mm)
+
+- **Decision:** `BEATER_TOOTH_H = min(NOTCH_W × 10.0, 20.0)`. At default pitch=5mm (NOTCH_W=2mm): 20mm. Capped at 20mm for all larger pitches.
+- **Rationale:** Prior formula (× 6.5) gave 13mm at default pitch — teeth too short to give a firm beat. 20mm teeth engage the warp over a greater depth, pack the weft more efficiently, and give better hand feel. The × 10 coefficient ensures teeth are exactly 20mm at the default operating point and scale proportionally downward only for the smallest supported pitches (4mm: 16mm teeth).
+- **Cascade:** `BEATER_TOTAL_H = BEATER_HANDLE_H + BEATER_TOOTH_H = 22 + 20 = 42mm` at default. Sheet fit re-verified: beater bbox stays well within 600×600mm ✓.
+- **Locked:** 2026-03-16
+
 ---
 
 ## Superseded Decisions

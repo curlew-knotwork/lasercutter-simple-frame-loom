@@ -7,7 +7,7 @@ This guide covers how to use the assembled frame loom for weaving. For assembly,
 ## What you have
 
 - **Loom frame** — 300×400mm weaving interior (suitable for a scarf)
-- **Heddle bar** — notched bar that keeps warp threads evenly spaced
+- **Heddle bar** — rigid heddle bar with alternating holes (H) and slots (S) for two-shed weaving
 - **Shuttles (×2)** — flat tools for carrying weft yarn through the warp
 - **Beater** — comb for packing weft rows down into the cloth
 
@@ -15,7 +15,7 @@ This guide covers how to use the assembled frame loom for weaving. For assembly,
 
 ## I. Setting Up
 
-Place the loom on a table or lean it in the stand. In the stand, it tilts slightly back toward you — this is the intended angle for comfortable weaving.
+Place the loom on a table or lean it in the stand. In the stand, it tilts about 15° back toward you — this is the intended angle for comfortable weaving.
 
 ---
 
@@ -32,42 +32,62 @@ Warp threads are the vertical threads that stay on the loom under tension throug
 
 **Warning:** If the wooden teeth flex visibly as you tension the warp, you are pulling too hard. Loosen slightly. The wood is strong but the notch tips are thin.
 
-**Heddle bar:** Once warped, slide the heddle bar down behind the warp threads so each thread sits in its own notch. This keeps threads evenly spaced and makes it easy to see your shed.
+---
+
+## III. Threading the Heddle Bar
+
+The heddle bar has two types of openings, etched with small H and S markers:
+
+- **H (holes):** Narrow stadium-shaped holes, centred on the bar. The thread is captured — it moves up or down with the bar.
+- **S (slots):** Wider rectangular slots, centred on the bar. The thread slides freely — it does not move when the bar moves.
+
+**Threading order:** H holes are at even warp positions (1st, 3rd, 5th… thread from the left); S slots are at odd positions (2nd, 4th, 6th…).
+
+**Procedure:**
+
+1. Rest the heddle bar across the top rail, supported in the two heddle holes.
+2. Starting at the left: thread warp 1 through the first H hole (hook or bent wire helps).
+3. Thread warp 2 through the first S slot (slide it in from the side — slots are open at the top).
+4. Continue across, alternating H/S.
+5. All 61 warp threads should be threaded. Even positions in holes, odd in slots.
 
 ---
 
-## III. The Shed
+## IV. The Two Sheds
 
-The shed is the gap between alternating warp threads that you pass the shuttle through.
+With the heddle bar threaded, you have two natural shed openings:
 
-On this simple loom, you create the shed manually:
+**Shed 1 (bar raised):**
+Lift the heddle bar above the neutral position. H-threaded warps rise with the bar; S-threaded warps stay at tension level. A gap opens between the two groups — pass the shuttle through this gap.
 
-1. Insert a shuttle (or a flat stick) through the warp threads in an over-under pattern.
-2. Turn the shuttle on its edge. This lifts half the threads and creates a tunnel.
-3. Pass your weft yarn (wound on the shuttle) through the tunnel.
+**Shed 2 (bar lowered):**
+Push the heddle bar below the neutral position. H-threaded warps drop; S-threaded warps stay. The gap is now reversed — pass the shuttle back through.
+
+Alternating Shed 1 and Shed 2 produces plain (tabby) weave automatically. No manual over-under threading needed.
 
 ---
 
-## IV. Weaving
+## V. Weaving
 
 **Load the shuttle:** Wind your weft yarn around the shuttle. Leave a 10–15cm tail at the start.
 
-**First pass:**
-1. Open the shed (step III).
-2. Pass the shuttle through.
+**First pass (Shed 1):**
+1. Lift the heddle bar to open Shed 1.
+2. Pass the shuttle through the shed.
 3. Pull the yarn snug at the edge — do not pull tight.
 
-**The rainbow tip:** Before beating, lay the weft yarn in a slight arc (like a rainbow) across the warp, rather than pulling it straight. This gives the yarn enough slack to wrap around the edge warp threads. Without this, the edges pull inward and the cloth gets narrower.
+**The arc tip:** Before beating, lay the weft yarn in a slight arc across the warp rather than pulling it straight. This gives the yarn enough slack to wrap around the edge warp threads. Without this, the edges pull inward and the cloth narrows.
 
 **Beat:** Insert the beater's teeth into the warp and push the weft row down toward you firmly. One firm stroke is better than many light ones.
 
-**Second pass:** Reverse the over-under pattern (threads that were up are now down), pass the shuttle back, arc the yarn, beat.
+**Second pass (Shed 2):**
+Push the heddle bar down to open Shed 2, pass the shuttle back, arc the yarn, beat.
 
 Repeat. The cloth builds up from the bottom.
 
 ---
 
-## V. Finishing
+## VI. Finishing
 
 When the loom is full or you reach the end of your weft yarn:
 

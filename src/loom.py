@@ -154,7 +154,8 @@ def build_heddle_bar(p: dict):
         if i % 2 == 0:
             holes.append(stadium_hole(x, cy, p["HEDDLE_BAR_HOLE_R"], p["HEDDLE_BAR_HOLE_H"]))
         else:
-            holes.append(rect_hole(x - slot_w / 2.0, cy - slot_h / 2.0, slot_w, slot_h))
+            # D-34: stadium (rounded ends) instead of rect — same r as H holes, no sharp corners
+            holes.append(stadium_hole(x, cy, p["HEDDLE_BAR_HOLE_R"], slot_h))
     return pts, holes
 
 
@@ -290,6 +291,31 @@ def layout(p: dict) -> list:
             # D-32: holes/slots all centred on bar. Top solid strip: y=0..3.5mm local.
             # Place label at HEDDLE_BAR_W/4 from bar top (midpoint of solid strip above holes).
             entry["label_xy"] = (bcx, bb[1] + p["HEDDLE_BAR_W"] / 4.0)
+            # D-33: per-position H/S etch labels in the strip below holes/slots.
+            # Stadium holes (even): bottom at bar_cy + HOLE_H/2. 7mm strip below → H+S both fit.
+            # Rect slots (odd): bottom at bar_cy + SLOT_H/2. 4mm strip below → S only.
+            sx_hb, sy_hb = positions["heddle_bar"]
+            count_hb = p["HEDDLE_BAR_HOLE_COUNT"]
+            pitch_hb = p["HEDDLE_BAR_HOLE_PITCH"]
+            span_hb  = (count_hb - 1) * pitch_hb
+            x0_hb    = (p["HEDDLE_BAR_L"] - span_hb) / 2.0 + sx_hb  # sheet x of first hole
+            bar_cy   = sy_hb + p["HEDDLE_BAR_W"] / 2.0
+            bar_bot  = sy_hb + p["HEDDLE_BAR_W"]
+            hole_labels = []
+            for i in range(count_hb):
+                hx = x0_hb + i * pitch_hb
+                if i % 2 == 0:
+                    # Stadium hole bottom: bar_cy + HOLE_H/2
+                    hole_bot = bar_cy + p["HEDDLE_BAR_HOLE_H"] / 2.0
+                    hole_labels.append((hx, hole_bot + 2.5, "H", 2.0))
+                    if bar_bot - (hole_bot + 5.5) >= 1.0:
+                        hole_labels.append((hx, hole_bot + 5.5, "S", 2.0))
+                else:
+                    # Rect slot bottom: bar_cy + SLOT_H/2
+                    slot_bot = bar_cy + p["HEDDLE_BAR_SLOT_H"] / 2.0
+                    if bar_bot - (slot_bot + 1.5) >= 1.0:
+                        hole_labels.append((hx, slot_bot + 1.5, "S", 2.0))
+            entry["hole_labels"] = hole_labels
         placed.append(entry)
 
     # ── Verify: all parts within sheet bounds ─────────────────────────
@@ -349,6 +375,9 @@ def render(placed: list, p: dict) -> str:
         cy = (bb[1] + bb[3]) / 2.0
         lx, ly = part.get("label_xy", (cx, cy))
         children.append(etch_text(lx, ly, label, size=4.0))
+        # Per-hole H/S labels (D-33): heddle bar only
+        for (elx, ely, letter, esz) in part.get("hole_labels", []):
+            children.append(etch_text(elx, ely, letter, size=esz))
 
         lines.append(svg_group(pid, children))
         lines.append("")

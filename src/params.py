@@ -142,7 +142,7 @@ def make_params(
     beater_w          = interior_w + 2.0 * beater_overhang
     beater_handle_h   = 22.0
     beater_tooth_w    = notch_w                          # D-29: matches notch_w at any pitch
-    beater_tooth_h    = min(notch_w * 6.5, 20.0)        # D-29: auto-derived from notch_w
+    beater_tooth_h    = min(notch_w * 10.0, 20.0)       # D-29, D-33: 20mm at default pitch=5
     beater_total_h    = beater_handle_h + beater_tooth_h
     beater_tooth_gap  = notch_pitch - beater_tooth_w   # = 3.0mm at 5mm pitch
     beater_tooth_pitch = beater_tooth_w + beater_tooth_gap  # = notch_pitch
