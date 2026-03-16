@@ -262,7 +262,7 @@ def render(placed: list, p: dict) -> str:
     lines = [
         svg_open(p["SHEET_W"], p["SHEET_H"],
                  "BOX + STAND | 3mm BIRCH PLY 600x600mm | "
-                 "RED=CUT preview 0.1mm — change to 0.01mm for laser"),
+                 "RED=CUT (preview 0.3mm stroke; use --laser for 0.01mm)"),
         "",
     ]
     for part in placed:

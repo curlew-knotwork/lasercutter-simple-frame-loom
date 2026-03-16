@@ -53,3 +53,21 @@ class TestGenerateCLI:
         from src.generate import run
         rc = run(300.0, 400.0, 5.0, 8.0, 0.15)
         assert rc == 1
+
+    def test_run_laser_mode_writes_thin_stroke(self):
+        """run(..., laser=True) writes output/loom.svg with stroke-width="0.01"."""
+        import pathlib
+        from src.generate import run
+        rc = run(300.0, 400.0, 10.0, 6.0, 0.15, laser=True)
+        assert rc == 0
+        svg_text = pathlib.Path("output/loom.svg").read_text()
+        assert 'stroke-width="0.01"' in svg_text
+
+    def test_run_preview_mode_uses_thick_stroke(self):
+        """run() without laser flag writes output/loom.svg with stroke-width="0.3"."""
+        import pathlib
+        from src.generate import run
+        rc = run(300.0, 400.0, 10.0, 6.0, 0.15, laser=False)
+        assert rc == 0
+        svg_text = pathlib.Path("output/loom.svg").read_text()
+        assert 'stroke-width="0.3"' in svg_text

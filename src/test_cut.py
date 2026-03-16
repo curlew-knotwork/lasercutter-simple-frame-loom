@@ -287,7 +287,7 @@ def render(placed: list, p: dict) -> str:
     lines = [
         svg_open(TC_SHEET_W, TC_SHEET_H,
                  "TEST CUT | 3mm SCRAP | Cut before full box sheet | "
-                 "RED=CUT preview 0.1mm"),
+                 "RED=CUT (preview 0.3mm stroke; use --laser for 0.01mm)"),
         "",
     ]
     for part in placed:

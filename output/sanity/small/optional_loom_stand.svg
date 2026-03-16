@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 600.0 600.0"
+     width="600.0mm" height="600.0mm">
+  <rect x="0" y="0" width="600.0" height="600.0" fill="#faf8f4" stroke="#aaaaaa" stroke-width="0.3"/><g id="stand_x_a">
+  <path d="M 2.0000,2.0000 L 160.9500,2.0000 L 160.9500,32.0000 L 167.0500,32.0000 L 167.0500,2.0000 L 299.0000,2.0000 L 299.0000,12.0000 L 22.0000,114.5926 L 22.0000,144.5926 L 27.0000,144.5926 L 27.0000,149.5926 L 2.0000,157.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.3"/>
+  <text x="3.00" y="6.00" font-size="4.0" font-family="monospace" text-anchor="middle" fill="#000000">STAND X-A</text>
+</g>
+<g id="stand_x_b">
+  <path d="M 2.0000,159.0000 L 299.0000,159.0000 L 299.0000,169.0000 L 167.0500,217.8704 L 167.0500,189.0000 L 160.9500,189.0000 L 160.9500,220.1296 L 22.0000,271.5926 L 22.0000,301.5926 L 27.0000,301.5926 L 27.0000,306.5926 L 2.0000,314.0000 Z" fill="none" stroke="#ff0000" stroke-width="0.3"/>
+  <text x="3.00" y="163.00" font-size="4.0" font-family="monospace" text-anchor="middle" fill="#000000">STAND X-B</text>
+</g></svg>

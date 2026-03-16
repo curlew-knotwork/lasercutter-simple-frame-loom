@@ -155,9 +155,19 @@ def rect_pts(x: float, y: float, w: float, h: float) -> list:
 # SVG document helpers
 # ---------------------------------------------------------------------------
 
-CUT_STYLE   = 'fill="none" stroke="#ff0000" stroke-width="0.3"'
+_CUT_STROKE_PREVIEW = "0.3"   # mm — visible in design tools
+_CUT_STROKE_LASER   = "0.01"  # mm — hairline for laser cutter
+
+CUT_STYLE   = f'fill="none" stroke="#ff0000" stroke-width="{_CUT_STROKE_PREVIEW}"'
 ETCH_STYLE  = 'fill="none" stroke="#000000" stroke-width="0.4"'
 SHEET_STYLE = 'fill="#faf8f4" stroke="#aaaaaa" stroke-width="0.3"'
+
+
+def set_laser_mode(laser: bool) -> None:
+    """Switch CUT_STYLE stroke-width between preview (0.3mm) and laser (0.01mm)."""
+    global CUT_STYLE
+    stroke = _CUT_STROKE_LASER if laser else _CUT_STROKE_PREVIEW
+    CUT_STYLE = f'fill="none" stroke="#ff0000" stroke-width="{stroke}"'
 
 
 def svg_open(w_mm: float, h_mm: float, title: str = "") -> str:

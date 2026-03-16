@@ -7,6 +7,7 @@ Usage:
     python -m src.generate --width 200 --height 300 --pitch 5 --min-tooth-w 2
     python -m src.generate --width 300 --height 400 --pitch 10  # chunky (default)
     python -m src.generate --mat 6.0 --kerf 0.15
+    python -m src.generate --laser                               # 0.01mm stroke for laser cutting
 
 Writes:
     output/loom.svg                6mm ply, loom frame + accessories
@@ -20,12 +21,14 @@ import argparse
 import sys
 
 from src.params import make_params
+from src.geometry import set_laser_mode
 import src.loom as loom_mod
 import src.box as box_mod
 import src.stand as stand_mod
 
 
-def run(interior_w, interior_h, notch_pitch, mat, kerf, min_tooth_w=4.0):
+def run(interior_w, interior_h, notch_pitch, mat, kerf, min_tooth_w=4.0, laser=False):
+    set_laser_mode(laser)
     try:
         p = make_params(
             interior_w=interior_w,
@@ -69,8 +72,11 @@ def main():
                     help="Kerf per cut side mm (default 0.15)")
     ap.add_argument("--min-tooth-w", type=float, default=4.0, metavar="T",
                     help="Min beater tooth width mm; 4mm for 6mm ply (D-37). Lower for metal/acrylic.")
+    ap.add_argument("--laser", action="store_true", default=False,
+                    help="Laser export mode: stroke-width 0.01mm instead of 0.3mm preview.")
     args = ap.parse_args()
-    sys.exit(run(args.width, args.height, args.pitch, args.mat, args.kerf, args.min_tooth_w))
+    sys.exit(run(args.width, args.height, args.pitch, args.mat, args.kerf,
+                 args.min_tooth_w, laser=args.laser))
 
 
 if __name__ == "__main__":

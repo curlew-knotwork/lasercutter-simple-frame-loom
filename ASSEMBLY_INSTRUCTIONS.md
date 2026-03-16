@@ -4,6 +4,18 @@ All joints are laser-cut press-fits. No glue or tools required. A rubber mallet 
 
 ---
 
+## Generating Cut Files
+
+The default SVGs use a **0.3mm preview stroke** visible in design software. Before sending to the laser cutter, regenerate with the `--laser` flag to switch to the **0.01mm hairline stroke** required by most laser software:
+
+```
+python -m src.generate --laser
+```
+
+This overwrites `output/loom.svg`, `output/optional_box.svg`, and `output/optional_loom_stand.svg` in place.
+
+---
+
 ## Before You Start
 
 **Remove char from edges.** Laser cutting leaves black soot on cut edges. If not removed, it will rub off onto your yarn.

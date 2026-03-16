@@ -506,3 +506,40 @@ class TestRoundedPtsToPath:
                          corner_r=0.5)
         assert s.count(" A ") == 6, \
             f"Expected 6 arcs (4 body/taper corners at r=0), got {s.count(' A ')}"
+
+
+# ---------------------------------------------------------------------------
+# Laser mode
+# ---------------------------------------------------------------------------
+
+class TestLaserMode:
+
+    def setup_method(self):
+        """Ensure laser mode is off before each test."""
+        import src.geometry as geo
+        geo.set_laser_mode(False)
+
+    def teardown_method(self):
+        """Restore preview mode after each test."""
+        import src.geometry as geo
+        geo.set_laser_mode(False)
+
+    def test_laser_mode_on_sets_thin_stroke(self):
+        """set_laser_mode(True) → CUT_STYLE contains stroke-width="0.01"."""
+        import src.geometry as geo
+        geo.set_laser_mode(True)
+        assert 'stroke-width="0.01"' in geo.CUT_STYLE
+
+    def test_laser_mode_off_uses_preview_stroke(self):
+        """set_laser_mode(False) → CUT_STYLE contains stroke-width="0.3"."""
+        import src.geometry as geo
+        geo.set_laser_mode(True)   # first flip on
+        geo.set_laser_mode(False)  # then off
+        assert 'stroke-width="0.3"' in geo.CUT_STYLE
+
+    def test_cut_path_laser_mode_embeds_thin_stroke(self):
+        """cut_path() after set_laser_mode(True) → returned string has stroke-width="0.01"."""
+        import src.geometry as geo
+        geo.set_laser_mode(True)
+        path_elem = geo.cut_path("M 0 0 Z")
+        assert 'stroke-width="0.01"' in path_elem
