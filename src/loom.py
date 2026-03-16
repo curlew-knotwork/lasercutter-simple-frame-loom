@@ -321,6 +321,10 @@ def layout(p: dict) -> list:
             qr_ox = sx + p["FRAME_OUTER_W"] / 2.0 - qr_size / 2.0
             qr_oy = sy + p["RAIL_W"] / 2.0 - qr_size / 2.0
             entry["qr_etches"] = _qr_etch_rects(qr_ox, qr_oy)
+            # Label in left clear zone: centred between stile inner edge and QR left edge
+            label_x = sx + (p["STILE_W"] + (p["FRAME_OUTER_W"] / 2.0 - qr_size / 2.0)) / 2.0
+            label_y = sy + p["RAIL_W"] / 2.0
+            entry["label_xy"] = (label_x, label_y)
         # D-27: custom label positions — avoid placing labels on cut-outs
         bb = entry["bbox"]
         bcx = (bb[0] + bb[2]) / 2.0

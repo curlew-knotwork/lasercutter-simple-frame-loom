@@ -290,6 +290,18 @@ class TestLayout:
         assert ly < hole_top, \
             f"Heddle bar label y={ly:.3f} not above hole top y={hole_top:.3f}"
 
+    def test_bottom_rail_label_left_of_qr(self):
+        """D-38: bottom rail label must be to the left of the QR code (no overlap)."""
+        part = self.by_id["bottom_rail"]
+        assert "label_xy" in part, "bottom_rail missing label_xy — label overlaps QR code"
+        lx, _ = part["label_xy"]
+        # QR left edge in sheet coords = sx + FRAME_OUTER_W/2 - 17.5/2
+        sx = part["bbox"][0]
+        qr_left = sx + p["FRAME_OUTER_W"] / 2.0 - 17.5 / 2.0
+        assert lx < qr_left, (
+            f"Bottom rail label x={lx:.1f} not left of QR left={qr_left:.1f} — overlap"
+        )
+
     def test_bottom_rail_has_qr_etch(self):
         """D-38: bottom rail has qr_etches field with at least one filled rect (etch)."""
         part = self.by_id["bottom_rail"]
